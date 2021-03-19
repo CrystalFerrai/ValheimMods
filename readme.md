@@ -2,6 +2,10 @@
 
 This repository hosts all of the Valheim mods created by Crystal. The primary intent of this repo is to serve as a reference for people who want to see how the mods work. If you are considering using code from this repo for your own projects, please read the license.txt file included at the root of the repo for redistribution details.
 
+## Releases
+
+Currently, mod releases are only being published to [Thunderstore](https://valheim.thunderstore.io/package/Crystal/). You can download releases from there, or you can install and use [r2modman](https://valheim.thunderstore.io/package/ebkr/r2modman/) to download and manage the mods for you (recommended).
+
 ## How to Build
 
 For easier development, all mods are part of the same repo and share the same Visual Studio solution. Each mod is a separate project within the solution.
@@ -15,13 +19,13 @@ Before the solution will build, you will need to get some third party DLLs and p
 * Valheim script assemblies from the game client installation. These can be found in `valheim_Data/Managed` and start with `assembly_`. Currently in use are the following, but keep in mind this list may not be up to date. So others might also be needed.
     * assembly_guiutils.dll
     * assembly_valheim.dll
-* Unstripped Unity engine assemblies that match the unity version used by Valheim. These can be found in different places, but I pulled them from [BepInExPack_Valheim on Thunderstore](https://valheim.thunderstore.io/package/denikson/BepInExPack_Valheim/) (you may need to search if this link gets broken). This pack also incldues the BepInEx assemblies listed above.
+* Unstripped Unity engine assemblies that match the unity version used by Valheim. These can be found in different places, but I pulled them from [BepInExPack_Valheim on Thunderstore](https://valheim.thunderstore.io/package/denikson/BepInExPack_Valheim/) (you may need to search if this link gets broken). This pack also includes the BepInEx assemblies listed above.
 
 Once the `lib` directory is populated, you should be able to open `ValheimMods.sln` in Visual Studio 2019 and build the solution.
 
 ## How to Package for Release
 
-The process for packaging up a build for release is not incldued in this repo. However, some of the supporting files are included. Within each project's root directory is a directory called `package` which contains these files.
+The process for packaging up a build for release is not included in this repo. However, some of the supporting files are included. Within each project's root directory is a directory called `package` which contains these files.
 
 The mod version needs to be updated in multiple places prior to building and packaging.
 
