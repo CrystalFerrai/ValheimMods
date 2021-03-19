@@ -1,0 +1,9 @@
+*.bat
+/.vs/**
+/art/**
+/lib/**
+**/*.user
+/*/bin/**
+/*/obj/**
+/*/package/*.dll
+/*/package/*.zip

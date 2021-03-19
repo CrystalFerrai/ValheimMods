@@ -1,0 +1,31 @@
+﻿{
+    "name": "Sated",
+    "version_number": "1.1.1",
+    "description": "Health and stamina gained from food stays with you for more of the food's duration.",
+    "dependencies": [
+        "denikson-BepInExPack_Valheim-5.4.701"
+    ],
+    "website_url": "",
+
+    "ManifestVersion": 2,
+    "AuthorName": "Crystal",
+    "Name": "Sated",
+    "DisplayName": "Sated",
+    "Version": "1.1.1",
+    "Licence": "",
+    "WebsiteURL": "",
+    "Description": "Health and stamina gained from food stays with you for more of the food's duration.",
+    "GameVersion": "",
+    "Dependencies": [
+        "denikson-BepInExPack_Valheim-5.4.701"
+    ],
+    "OptionalDependencies": [],
+    "Incompatibilities": [],
+    "NetworkMode": "client",
+    "PackageType": "mod",
+    "InstallMode": "managed",
+    "Loaders": [
+        "bepinex"
+    ],
+    "ExtraData": {}
+}

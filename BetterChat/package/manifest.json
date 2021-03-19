@@ -1,0 +1,31 @@
+﻿{
+    "name": "BetterChat",
+    "version_number": "1.4.0",
+    "description": "Shows the chat window when a message is received and other chat features.",
+    "dependencies": [
+        "denikson-BepInExPack_Valheim-5.4.701"
+    ],
+    "website_url": "",
+
+    "ManifestVersion": 2,
+    "AuthorName": "Crystal",
+    "Name": "BetterChat",
+    "DisplayName": "BetterChat",
+    "Version": "1.4.0",
+    "Licence": "",
+    "WebsiteURL": "",
+    "Description": "Shows the chat window when a message is received and other chat features.",
+    "GameVersion": "",
+    "Dependencies": [
+        "denikson-BepInExPack_Valheim-5.4.701"
+    ],
+    "OptionalDependencies": [],
+    "Incompatibilities": [],
+    "NetworkMode": "client",
+    "PackageType": "mod",
+    "InstallMode": "managed",
+    "Loaders": [
+        "bepinex"
+    ],
+    "ExtraData": {}
+}
