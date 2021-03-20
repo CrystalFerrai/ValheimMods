@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeathPenalty", "DeathPenalt
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sated", "Sated\Sated.csproj", "{06B242D5-3A1A-407A-A9D1-A816C4750099}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pathfinder", "Pathfinder\Pathfinder.csproj", "{DEB680B1-786F-4E93-8793-25E19B570FEF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{06B242D5-3A1A-407A-A9D1-A816C4750099}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{06B242D5-3A1A-407A-A9D1-A816C4750099}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{06B242D5-3A1A-407A-A9D1-A816C4750099}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DEB680B1-786F-4E93-8793-25E19B570FEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DEB680B1-786F-4E93-8793-25E19B570FEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DEB680B1-786F-4E93-8793-25E19B570FEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DEB680B1-786F-4E93-8793-25E19B570FEF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
