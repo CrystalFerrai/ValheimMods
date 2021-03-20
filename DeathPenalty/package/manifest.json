@@ -5,7 +5,7 @@
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.701"
     ],
-    "website_url": "",
+    "website_url": "https://github.com/CrystalFerrai/ValheimMods",
 
     "ManifestVersion": 2,
     "AuthorName": "Crystal",
@@ -13,7 +13,7 @@
     "DisplayName": "DeathPenalty",
     "Version": "1.0.1",
     "Licence": "",
-    "WebsiteURL": "",
+    "WebsiteURL": "https://github.com/CrystalFerrai/ValheimMods",
     "Description": "Allows tweaking death related values such as skill loss amount.",
     "GameVersion": "",
     "Dependencies": [

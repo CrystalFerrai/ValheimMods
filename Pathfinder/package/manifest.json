@@ -5,7 +5,7 @@
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.701"
     ],
-    "website_url": "",
+    "website_url": "https://github.com/CrystalFerrai/ValheimMods",
 
     "ManifestVersion": 2,
     "AuthorName": "Crystal",
@@ -13,7 +13,7 @@
     "DisplayName": "Pathfinder",
     "Version": "1.0.0",
     "Licence": "",
-    "WebsiteURL": "",
+    "WebsiteURL": "https://github.com/CrystalFerrai/ValheimMods",
     "Description": "Customizable dynamic map discovery radius based on various visibility factors.",
     "GameVersion": "",
     "Dependencies": [
