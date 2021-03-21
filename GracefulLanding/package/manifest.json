@@ -1,0 +1,31 @@
+﻿{
+    "name": "GracefulLanding",
+    "version_number": "1.0.0",
+    "description": "Reduced fall damage, configurable.",
+    "dependencies": [
+        "denikson-BepInExPack_Valheim-5.4.701"
+    ],
+    "website_url": "https://github.com/CrystalFerrai/ValheimMods",
+
+    "ManifestVersion": 2,
+    "AuthorName": "Crystal",
+    "Name": "GracefulLanding",
+    "DisplayName": "GracefulLanding",
+    "Version": "1.0.0",
+    "Licence": "",
+    "WebsiteURL": "https://github.com/CrystalFerrai/ValheimMods",
+    "Description": "Reduced fall damage, configurable.",
+    "GameVersion": "",
+    "Dependencies": [
+        "denikson-BepInExPack_Valheim-5.4.701"
+    ],
+    "OptionalDependencies": [],
+    "Incompatibilities": [],
+    "NetworkMode": "client",
+    "PackageType": "mod",
+    "InstallMode": "managed",
+    "Loaders": [
+        "bepinex"
+    ],
+    "ExtraData": {}
+}

@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sated", "Sated\Sated.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pathfinder", "Pathfinder\Pathfinder.csproj", "{DEB680B1-786F-4E93-8793-25E19B570FEF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GracefulLanding", "GracefulLanding\GracefulLanding.csproj", "{59E3A8B0-42D8-4F95-B9E2-E61BBE7F58F4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{DEB680B1-786F-4E93-8793-25E19B570FEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DEB680B1-786F-4E93-8793-25E19B570FEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DEB680B1-786F-4E93-8793-25E19B570FEF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59E3A8B0-42D8-4F95-B9E2-E61BBE7F58F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59E3A8B0-42D8-4F95-B9E2-E61BBE7F58F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59E3A8B0-42D8-4F95-B9E2-E61BBE7F58F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59E3A8B0-42D8-4F95-B9E2-E61BBE7F58F4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
