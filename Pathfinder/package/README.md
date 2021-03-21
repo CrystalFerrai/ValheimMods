@@ -19,6 +19,10 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+1.0.1
+
+* Fixed bug where entering a dungeon would reveal a large map radius due to dungeons being way up in the sky.
+
 1.0.0
 
 * Initial release

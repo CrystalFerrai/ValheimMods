@@ -23,7 +23,7 @@ using UnityEngine;
 
 namespace Pathfinder
 {
-    [BepInPlugin("dev.crystal.pathfinder", "Pathfinder", "1.0.0.0")]
+    [BepInPlugin("dev.crystal.pathfinder", "Pathfinder", "1.0.1.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class PathfinderPlugin : BaseUnityPlugin
@@ -136,11 +136,18 @@ namespace Pathfinder
                     }
                 }
 
-                // Sea level = 30, tallest mountains (not including the rare super mountains), seem to be around 220
+                if (player.InInterior())
+                {
+                    // In a dungeon. Dungeons are way up high and we dont want to reveal a huge section of the map when entering one.
+                    // We actually want to reduce the radius siunce it doesnt make sense to be able to explore the map while in a dungeon
+                    return LandExploreRadius.Value * 0.5f;
+                }
+
+                // Sea level = 30, tallest mountains (not including the rare super mountains) seem to be around 220. Stop adding altitude bonus after 400
                 return Mathf.Max(
                     Mathf.Clamp
                     (
-                        LandExploreRadius.Value + (player.transform.position.y - ZoneSystem.instance.m_waterLevel) / 100.0f * sAltitudeBonus + (EnvMan.instance.IsDaylight() ? sDaylightLandBonus : 0.0f),
+                        LandExploreRadius.Value + (Mathf.Min(player.transform.position.y, 400.0f) - ZoneSystem.instance.m_waterLevel) / 100.0f * sAltitudeBonus + (EnvMan.instance.IsDaylight() ? sDaylightLandBonus : 0.0f),
                         LandExploreRadius.Value,
                         2000.0f
                     ) - GetForestPenalty(player),
