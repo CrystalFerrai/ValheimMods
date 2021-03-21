@@ -1,0 +1,31 @@
+﻿{
+    "name": "ProperPortals",
+    "version_number": "1.0.0",
+    "description": "Carry anything through portals and shorter portal load screens.",
+    "dependencies": [
+        "denikson-BepInExPack_Valheim-5.4.701"
+    ],
+    "website_url": "https://github.com/CrystalFerrai/ValheimMods",
+
+    "ManifestVersion": 2,
+    "AuthorName": "Crystal",
+    "Name": "ProperPortals",
+    "DisplayName": "ProperPortals",
+    "Version": "1.0.0",
+    "Licence": "",
+    "WebsiteURL": "https://github.com/CrystalFerrai/ValheimMods",
+    "Description": "Carry anything through portals and shorter portal load screens.",
+    "GameVersion": "",
+    "Dependencies": [
+        "denikson-BepInExPack_Valheim-5.4.701"
+    ],
+    "OptionalDependencies": [],
+    "Incompatibilities": [],
+    "NetworkMode": "client",
+    "PackageType": "mod",
+    "InstallMode": "managed",
+    "Loaders": [
+        "bepinex"
+    ],
+    "ExtraData": {}
+}
