@@ -11,6 +11,15 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+1.0.2
+
+* Changing the mod config live (via something like BepInEx Configuration Manager) is now supported.
+* ToolUseDelay config option now defaults to 0.25 seconds instead of 0 (game default is 0.5).
+
+1.0.1
+
+* Version 1.0.0 was not uploaded properly.
+
 1.0.0
 
 * Initial release

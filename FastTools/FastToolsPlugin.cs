@@ -17,32 +17,54 @@ using BepInEx.Configuration;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using UnityEngine;
 
 namespace FastTools
 {
-    [BepInPlugin("dev.crystal.fasttools", "Fast Tools", "1.0.0.0")]
+    [BepInPlugin("dev.crystal.fasttools", "Fast Tools", "1.0.2.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class FastToolsPlugin : BaseUnityPlugin
     {
+        private static readonly List<Player> sPlayers;
+
         public static ConfigEntry<float> ToolUseDelay;
+
+        static FastToolsPlugin()
+        {
+            sPlayers = new List<Player>();
+        }
 
         private void Awake()
         {
-            ToolUseDelay = Config.Bind("Tools", nameof(ToolUseDelay), 0.0f, "The delay time for placement tools, in seconds. Game default is 0.25.");
+            ToolUseDelay = Config.Bind("Tools", nameof(ToolUseDelay), 0.25f, "The delay time for placement tools, in seconds. Game default is 0.5.");
+            ToolUseDelay.SettingChanged += ToolUseDelay_SettingChanged;
 
-            Harmony.CreateAndPatchAll(typeof(Player_Awake_Patch));
+            Harmony.CreateAndPatchAll(typeof(Player_Patches));
         }
 
-        [HarmonyPatch(typeof(Player), "Awake")]
-        private static class Player_Awake_Patch
+        private void ToolUseDelay_SettingChanged(object sender, EventArgs e)
         {
-            private static void Postfix(Player __instance)
+            foreach (Player player in sPlayers)
+            {
+                player.m_toolUseDelay = ToolUseDelay.Value;
+            }
+        }
+
+        [HarmonyPatch(typeof(Player))]
+        private static class Player_Patches
+        {
+            [HarmonyPatch("Awake"), HarmonyPostfix]
+            private static void Awake_Postfix(Player __instance)
             {
                 __instance.m_toolUseDelay = ToolUseDelay.Value;
+                sPlayers.Add(__instance);
+            }
+
+            [HarmonyPatch("OnDestroy"), HarmonyPrefix]
+            private static void OnDestroy_Prefix(Player __instance)
+            {
+                sPlayers.Remove(__instance);
             }
         }
     }
