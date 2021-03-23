@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GracefulLanding", "Graceful
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProperPortals", "ProperPortals\ProperPortals.csproj", "{21B0FA01-FC7D-40F1-A2A5-D5C0881C5E3D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FastTools", "FastTools\FastTools.csproj", "{F56F1A49-D0AB-40C0-A18F-7787796B5B83}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{21B0FA01-FC7D-40F1-A2A5-D5C0881C5E3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{21B0FA01-FC7D-40F1-A2A5-D5C0881C5E3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{21B0FA01-FC7D-40F1-A2A5-D5C0881C5E3D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F56F1A49-D0AB-40C0-A18F-7787796B5B83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F56F1A49-D0AB-40C0-A18F-7787796B5B83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F56F1A49-D0AB-40C0-A18F-7787796B5B83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F56F1A49-D0AB-40C0-A18F-7787796B5B83}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
