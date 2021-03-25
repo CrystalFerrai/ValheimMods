@@ -20,14 +20,17 @@ using System.Collections.Generic;
 
 namespace FastTools
 {
-    [BepInPlugin("dev.crystal.fasttools", "Fast Tools", "1.0.3.0")]
+    [BepInPlugin(ModId, "Fast Tools", "1.0.3.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class FastToolsPlugin : BaseUnityPlugin
     {
-        private static readonly List<Player> sPlayers;
+        public const string ModId = "dev.crystal.fasttools";
 
         public static ConfigEntry<float> ToolUseDelay;
+
+        private static Harmony sPlayerHarmony;
+        private static readonly List<Player> sPlayers;
 
         static FastToolsPlugin()
         {
@@ -37,13 +40,21 @@ namespace FastTools
         private void Awake()
         {
             ToolUseDelay = Config.Bind("Tools", nameof(ToolUseDelay), 0.25f, "The delay time for placement tools, in seconds. Allowed range 0-10. Game default is 0.5.");
-            ClampConfig();
             ToolUseDelay.SettingChanged += ToolUseDelay_SettingChanged;
 
-            Harmony.CreateAndPatchAll(typeof(Player_Patches));
+            ClampConfig();
+
+            sPlayerHarmony = new Harmony(ModId + "_Player");
+            sPlayerHarmony.PatchAll(typeof(Player_Patches));
         }
 
-        private void ClampConfig()
+        private void OnDestroy()
+        {
+            sPlayerHarmony.UnpatchSelf();
+            sPlayers.Clear();
+        }
+
+        private static void ClampConfig()
         {
             if (ToolUseDelay.Value < 0.0f) ToolUseDelay.Value = 0.0f;
             // There is no feedback when delay is active aside from tools simply not working, so don't allow really long delays.

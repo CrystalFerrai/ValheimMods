@@ -15,62 +15,144 @@
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
+using System.Collections.Generic;
 
 namespace DeathPenalty
 {
-    [BepInPlugin("dev.crystal.deathpenalty", "Death Penalty", "1.0.1.0")]
+    [BepInPlugin(ModId, "Death Penalty", "1.0.2.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class DeathPenaltyPlugin : BaseUnityPlugin
     {
+        public const string ModId = "dev.crystal.deathpenalty";
+
         public static ConfigEntry<float> SkillLossPercent;
         public static ConfigEntry<float> MercyEffectDuration;
         public static ConfigEntry<float> SafetyEffectDuration;
 
+        private static Harmony sSkillsHarmony;
+        private static Harmony sPlayerHarmony;
+        private static Harmony sTombStoneHarmony;
+
+        private static readonly List<Player> sPlayers;
+        private static readonly List<TombStone> sTombStones;
+
+        static DeathPenaltyPlugin()
+        {
+            sPlayers = new List<Player>();
+            sTombStones = new List<TombStone>();
+        }
+
         private void Awake()
         {
             SkillLossPercent = Config.Bind("Death", nameof(SkillLossPercent), 5.0f, "The percent loss suffered to all skills when the player dies. Range 0-100. 0 disables skill loss. 50 reduces all skills by half. 100 resets all skills to 0. Resulting loss is effectively rounded by the game up to the next full level. Game default is 5.");
+            SkillLossPercent.SettingChanged += SkillLossPercent_SettingChanged;
+
+            MercyEffectDuration = Config.Bind("Death", nameof(MercyEffectDuration), 600.0f, "The duration, in seconds, of the \"No Skill Loss\" status effect that is granted on death which prevents further loss of skills via subsequent deaths. Game default is 600.");
+            MercyEffectDuration.SettingChanged += MercyEffectDuration_SettingChanged;
+
+            SafetyEffectDuration = Config.Bind("Death", nameof(SafetyEffectDuration), 50.0f, "The duration, in seconds, of the \"Corpse Run\" status effect that is granted upon looting a tombstone which boosts regen and other stats. Game default is 50.");
+            SafetyEffectDuration.SettingChanged += SafetyEffectDuration_SettingChanged;
+
+            ClampConfig();
+
+            sSkillsHarmony = new Harmony(ModId + "_Skills");
+            sPlayerHarmony = new Harmony(ModId + "_Player");
+            sTombStoneHarmony = new Harmony(ModId + "_TombStone");
+
+            sSkillsHarmony.PatchAll(typeof(Skills_Patches));
+            sPlayerHarmony.PatchAll(typeof(Player_Patches));
+            sTombStoneHarmony.PatchAll(typeof(TombStone_Patches));
+        }
+
+        private void OnDestroy()
+        {
+            sSkillsHarmony.UnpatchSelf();
+            sPlayerHarmony.UnpatchSelf();
+            sTombStoneHarmony.UnpatchSelf();
+        }
+
+        private void SkillLossPercent_SettingChanged(object sender, System.EventArgs e)
+        {
+            ClampConfig();
+            foreach (Player player in sPlayers)
+            {
+                player.GetSkills().m_DeathLowerFactor = SkillLossPercent.Value * 0.01f;
+            }
+        }
+
+        private void MercyEffectDuration_SettingChanged(object sender, System.EventArgs e)
+        {
+            ClampConfig();
+            foreach (Player player in sPlayers)
+            {
+                player.m_hardDeathCooldown = MercyEffectDuration.Value;
+            }
+        }
+
+        private void SafetyEffectDuration_SettingChanged(object sender, System.EventArgs e)
+        {
+            ClampConfig();
+            foreach (TombStone tombstone in sTombStones)
+            {
+                tombstone.m_lootStatusEffect.m_ttl = SafetyEffectDuration.Value;
+            }
+        }
+
+        private static void ClampConfig()
+        {
             if (SkillLossPercent.Value < 0.0f) SkillLossPercent.Value = 0.0f;
             if (SkillLossPercent.Value > 100.0f) SkillLossPercent.Value = 100.0f;
 
-            MercyEffectDuration = Config.Bind("Death", nameof(MercyEffectDuration), 600.0f, "The duration, in seconds, of the \"No Skill Loss\" status effect that is granted on death which prevents further loss of skills via subsequent deaths. Game default is 600.");
             if (MercyEffectDuration.Value < 0.0f) MercyEffectDuration.Value = 0.0f;
             if (float.IsPositiveInfinity(MercyEffectDuration.Value)) MercyEffectDuration.Value = float.MaxValue;
 
-            SafetyEffectDuration = Config.Bind("Death", nameof(SafetyEffectDuration), 50.0f, "The duration, in seconds, of the \"Corpse Run\" status effect that is granted upon looting a tombstone which boosts regen and other stats. Game default is 50.");
             if (SafetyEffectDuration.Value < 0.0f) SafetyEffectDuration.Value = 0.0f;
             if (float.IsPositiveInfinity(SafetyEffectDuration.Value)) SafetyEffectDuration.Value = float.MaxValue;
-
-            Harmony.CreateAndPatchAll(typeof(Skills_Awake_Patch));
-            Harmony.CreateAndPatchAll(typeof(Player_Awake_Patch));
-            Harmony.CreateAndPatchAll(typeof(Tombstone_Awake_Patch));
         }
 
-        [HarmonyPatch(typeof(Skills), "Awake")]
-        private static class Skills_Awake_Patch
+        [HarmonyPatch(typeof(Skills))]
+        private static class Skills_Patches
         {
-            private static void Postfix(Skills __instance)
+            [HarmonyPatch("Awake"), HarmonyPostfix]
+            private static void Awake_Postfix(Skills __instance)
             {
                 __instance.m_DeathLowerFactor = SkillLossPercent.Value * 0.01f;
             }
         }
 
-        [HarmonyPatch(typeof(Player), "Awake")]
-        private static class Player_Awake_Patch
+        [HarmonyPatch(typeof(Player))]
+        private static class Player_Patches
         {
-            private static void Postfix(Player __instance)
+            [HarmonyPatch("Awake"), HarmonyPostfix]
+            private static void Awake_Postfix(Player __instance)
             {
                 __instance.m_hardDeathCooldown = MercyEffectDuration.Value;
+                sPlayers.Add(__instance);
+            }
+
+            [HarmonyPatch("OnDestroy"), HarmonyPrefix]
+            private static void OnDestroy_Prefix(Player __instance)
+            {
+                sPlayers.Remove(__instance);
             }
         }
 
-        [HarmonyPatch(typeof(TombStone), "Awake")]
-        private static class Tombstone_Awake_Patch
+        [HarmonyPatch(typeof(TombStone))]
+        private static class TombStone_Patches
         {
-            private static void Postfix(TombStone __instance)
+            [HarmonyPatch("Awake"), HarmonyPostfix]
+            private static void Awake_Postfix(TombStone __instance)
             {
                 // m_lootStatusEffect is a buffed up version of SE_Stats
                 __instance.m_lootStatusEffect.m_ttl = SafetyEffectDuration.Value;
+                sTombStones.Add(__instance);
+            }
+
+            [HarmonyPatch("UpdateDespawn"), HarmonyPostfix]
+            private static void UpdateDespawn_Postfix(TombStone __instance)
+            {
+                sTombStones.Remove(__instance);
             }
         }
     }

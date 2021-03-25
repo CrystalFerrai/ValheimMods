@@ -21,6 +21,10 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+1.4.1
+
+* Changing the mod config live (via something like BepInEx Configuration Manager) is now supported.
+
 1.4.0
 
 * Pressing the slash key (/) will now open chat and start typing (can be disabled).

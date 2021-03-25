@@ -15,6 +15,7 @@
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -22,14 +23,21 @@ using UnityEngine;
 
 namespace Sated
 {
-    [BepInPlugin("dev.crystal.sated", "Sated", "1.1.1.0")]
+    [BepInPlugin(ModId, "Sated", "1.1.2.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class SatedPlugin : BaseUnityPlugin
     {
+        public const string ModId = "dev.crystal.sated";
+
         public static ConfigEntry<bool> ShowFoodTimerBars;
         public static ConfigEntry<float> HealthCurveExponent;
         public static ConfigEntry<float> StaminaCurveExponent;
+
+        private static Harmony sPlayerHarmony;
+        private static Harmony sHudHarmony;
+        private static Harmony sHudHealthHarmony;
+        private static Harmony sHudFoodHarmony;
 
         private static readonly FieldInfo sPlayerFoodsField;
         private static readonly GameObject sProgressBarPrefab;
@@ -47,32 +55,72 @@ namespace Sated
         private void Awake()
         {
             ShowFoodTimerBars = Config.Bind("Food", nameof(ShowFoodTimerBars), true, "Whether to show timer bars below food icons on the HUD.");
+            ShowFoodTimerBars.SettingChanged += ShowFoodTimerBars_SettingChanged;
 
             HealthCurveExponent = Config.Bind("Food", nameof(HealthCurveExponent), 8.0f, "The value of the exponent 'e' used in the food curve formula 'y = 1 - x^e' for calculating added health. Valid range 0.1 - 100. Higher values make you full longer, but also drop off more suddenly. A value of 1 indicates a linear decline (vanilla behavior). Values less than 1 invert the curve, causing a faster initial decline which gradually slows down.");
-            if (HealthCurveExponent.Value < 0.1f) HealthCurveExponent.Value = 0.1f;
-            if (HealthCurveExponent.Value > 100.0f) HealthCurveExponent.Value = 100.0f;
+            HealthCurveExponent.SettingChanged += CurveExponent_SettingChanged;
 
             StaminaCurveExponent = Config.Bind("Food", nameof(StaminaCurveExponent), 8.0f, "The value of the exponent 'e' used in the food curve formula 'y = 1 - x^e' for calculating added stamina. Valid range 0.1 - 100. Higher values make you full longer, but also drop off more suddenly. A value of 1 indicates a linear decline (vanilla behavior). Values less than 1 invert the curve, causing a faster initial decline which gradually slows down.");
-            if (StaminaCurveExponent.Value < 0.1f) StaminaCurveExponent.Value = 0.1f;
-            if (StaminaCurveExponent.Value > 100.0f) StaminaCurveExponent.Value = 100.0f;
+            StaminaCurveExponent.SettingChanged += CurveExponent_SettingChanged;
 
+            ClampConfig();
+
+            sPlayerHarmony = new Harmony(ModId + "_Player");
+            sHudHarmony = new Harmony(ModId + "_Hud");
+            sHudHealthHarmony = new Harmony(ModId + "_HudHealth");
+            sHudFoodHarmony = new Harmony(ModId + "_HudFood");
+
+            sPlayerHarmony.PatchAll(typeof(Player_Patches));
+            sHudHarmony.PatchAll(typeof(Hud_Patches));
+            sHudHealthHarmony.PatchAll(typeof(Hud_Health_Patch));
             if (ShowFoodTimerBars.Value)
             {
-                Harmony.CreateAndPatchAll(typeof(Hud_Awake_Patch));
-                Harmony.CreateAndPatchAll(typeof(Hud_OnDestroy_Patch));
-                Harmony.CreateAndPatchAll(typeof(Hud_UpdateFoodTimerBar_Patch));
-            }
-            if (HealthCurveExponent.Value != 1.0f || StaminaCurveExponent.Value != 1.0f)
-            {
-                Harmony.CreateAndPatchAll(typeof(Player_GetTotalFoodValue_Patch));
-                Harmony.CreateAndPatchAll(typeof(Hud_UpdateFoodHealthBar_Patch));
+                sHudFoodHarmony.PatchAll(typeof(Hud_Food_Patch));
             }
         }
 
-        [HarmonyPatch(typeof(Player), "GetTotalFoodValue")]
-        private static class Player_GetTotalFoodValue_Patch
+        private void OnDestroy()
         {
-            private static bool Prefix(Player __instance, out float hp, out float stamina)
+            sPlayerHarmony.UnpatchSelf();
+            sHudHealthHarmony.UnpatchSelf();
+            sHudFoodHarmony.UnpatchSelf();
+        }
+
+        private static void ClampConfig()
+        {
+            if (HealthCurveExponent.Value < 0.1f) HealthCurveExponent.Value = 0.1f;
+            if (HealthCurveExponent.Value > 100.0f) HealthCurveExponent.Value = 100.0f;
+
+            if (StaminaCurveExponent.Value < 0.1f) StaminaCurveExponent.Value = 0.1f;
+            if (StaminaCurveExponent.Value > 100.0f) StaminaCurveExponent.Value = 100.0f;
+        }
+
+        private void CurveExponent_SettingChanged(object sender, EventArgs e)
+        {
+            ClampConfig();
+            sHudHealthHarmony.UnpatchSelf();
+            sHudHealthHarmony.PatchAll(typeof(Hud_Health_Patch));
+        }
+
+        private void ShowFoodTimerBars_SettingChanged(object sender, EventArgs e)
+        {
+            if (ShowFoodTimerBars.Value)
+            {
+                ShowFoodBars(true);
+                sHudFoodHarmony.PatchAll(typeof(Hud_Food_Patch));
+            }
+            else
+            {
+                sHudFoodHarmony.UnpatchSelf();
+                ShowFoodBars(false);
+            }
+        }
+
+        [HarmonyPatch(typeof(Player))]
+        private static class Player_Patches
+        {
+            [HarmonyPatch("GetTotalFoodValue"), HarmonyPrefix]
+            private static bool GetTotalFoodValue_Prefix(Player __instance, out float hp, out float stamina)
             {
                 var a = new[] { 0f, 7 };
                 hp = 25.0f;
@@ -87,46 +135,30 @@ namespace Sated
             }
         }
 
-        [HarmonyPatch(typeof(Hud), "Awake")]
-        private static class Hud_Awake_Patch
+        [HarmonyPatch(typeof(Hud))]
+        private static class Hud_Patches
         {
-            private static void Postfix(Hud __instance)
+            [HarmonyPatch("Awake"), HarmonyPostfix]
+            private static void Awake_Postfix(Hud __instance)
             {
-                sFoodProgressBars = new GuiBar[__instance.m_foodIcons.Length];
-
-                for (int i = 0; i < __instance.m_foodIcons.Length; ++i)
+                if (ShowFoodTimerBars.Value)
                 {
-                    float offset = 6 * i + 4;
-                    RectTransform icon = __instance.m_foodIcons[i].GetComponentInParent<RectTransform>();
-                    RectTransform slot = icon.parent.gameObject.GetComponentInParent<RectTransform>();
-                    slot.position = new Vector3(slot.position.x, slot.position.y + offset, slot.position.z);
-
-                    GameObject barObject = Instantiate(sProgressBarPrefab);
-                    RectTransform bar = barObject.GetComponent<RectTransform>();
-                    bar.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 32.0f);
-                    bar.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 4.0f);
-                    ((RectTransform)bar.GetChild(0)).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 4.0f);
-                    bar.SetParent(slot, false);
-                    bar.position = new Vector3(slot.position.x - 16.0f, slot.position.y - 16.0f, slot.position.z);
-
-                    sFoodProgressBars[i] = barObject.GetComponent<GuiBar>();
+                    ShowFoodBars(true);
                 }
             }
-        }
 
-        [HarmonyPatch(typeof(Hud), "OnDestroy")]
-        private static class Hud_OnDestroy_Patch
-        {
-            private static void Prefix(Hud __instance)
+            [HarmonyPatch("OnDestroy"), HarmonyPrefix]
+            private static void OnDestroy_Prefix(Hud __instance)
             {
                 sFoodProgressBars = null;
             }
         }
 
-        [HarmonyPatch(typeof(Hud), "UpdateFood")]
-        private static class Hud_UpdateFoodHealthBar_Patch
+        [HarmonyPatch(typeof(Hud))]
+        private static class Hud_Health_Patch
         {
-            private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+            [HarmonyPatch("UpdateFood"), HarmonyTranspiler]
+            private static IEnumerable<CodeInstruction> UpdateFood_Transpiler(IEnumerable<CodeInstruction> instructions)
             {
                 bool done = false;
                 CodeInstruction previous = null;
@@ -152,7 +184,7 @@ namespace Sated
                         yield return new CodeInstruction(OpCodes.Ldfld, typeof(ItemDrop.ItemData.SharedData).GetField(nameof(ItemDrop.ItemData.SharedData.m_food)));
                         yield return new CodeInstruction(OpCodes.Div);
                         yield return new CodeInstruction(OpCodes.Sub);
-                        yield return new CodeInstruction(OpCodes.Ldc_R4, HealthCurveExponent.Value); // Exponent value only read once, not live
+                        yield return new CodeInstruction(OpCodes.Ldc_R4, HealthCurveExponent.Value);
                         yield return new CodeInstruction(OpCodes.Call, typeof(Mathf).GetMethod(nameof(Mathf.Pow)));
                         yield return new CodeInstruction(OpCodes.Sub);
                         yield return previous.Clone();
@@ -184,10 +216,11 @@ namespace Sated
             }
         }
 
-        [HarmonyPatch(typeof(Hud), "UpdateFood")]
-        private static class Hud_UpdateFoodTimerBar_Patch
+        [HarmonyPatch(typeof(Hud))]
+        private static class Hud_Food_Patch
         {
-            private static void Postfix(Hud __instance, Player player)
+            [HarmonyPatch("UpdateFood"), HarmonyPostfix]
+            private static void UpdateFood_Postfix(Hud __instance, Player player)
             {
                 List<Player.Food> foods = player.GetFoods();
                 for (int i = __instance.m_foodIcons.Length - 1; i >= 0; --i)
@@ -203,6 +236,55 @@ namespace Sated
                     sFoodProgressBars[i].SetMaxValue(foods[i].m_item.m_shared.m_food);
                     sFoodProgressBars[i].SetValue(foods[i].m_health);
                 }
+            }
+        }
+
+        // Don't call this unless you are sure the 'show' bool has flipped since the last call, else the food slots will offset farther
+        private static void ShowFoodBars(bool show)
+        {
+            Hud hud = Hud.instance;
+            if (hud == null)
+            {
+                sFoodProgressBars = null;
+                return;
+            }
+
+            if (show)
+            {
+                sFoodProgressBars = new GuiBar[hud.m_foodIcons.Length];
+            }
+
+            for (int i = 0; i < hud.m_foodIcons.Length; ++i)
+            {
+                // Scale may be different whe creating the UI than it is when altering it later, so use the live scale factor
+                float scale = hud.m_foodIcons[i].canvas.scaleFactor;
+                float space = (6 * i + 4) * scale;
+                RectTransform icon = hud.m_foodIcons[i].GetComponentInParent<RectTransform>();
+                RectTransform slot = icon.parent.gameObject.GetComponentInParent<RectTransform>();
+                slot.position = new Vector3(slot.position.x, slot.position.y + (show ? space : -space), slot.position.z);
+
+                if (show)
+                {
+                    float barOffset = 16.0f * scale;
+                    GameObject barObject = Instantiate(sProgressBarPrefab);
+                    RectTransform bar = barObject.GetComponent<RectTransform>();
+                    bar.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 32.0f);
+                    bar.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 4.0f);
+                    ((RectTransform)bar.GetChild(0)).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 4.0f);
+                    bar.SetParent(slot, false);
+                    bar.position = new Vector3(slot.position.x - barOffset, slot.position.y - barOffset, slot.position.z);
+
+                    sFoodProgressBars[i] = barObject.GetComponent<GuiBar>();
+                }
+                else
+                {
+                    Destroy(sFoodProgressBars[i].gameObject);
+                }
+            }
+
+            if (!show)
+            {
+                sFoodProgressBars = null;
             }
         }
 

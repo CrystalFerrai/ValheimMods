@@ -1,6 +1,6 @@
 ﻿{
     "name": "BetterChat",
-    "version_number": "1.4.0",
+    "version_number": "1.4.1",
     "description": "Shows the chat window when a message is received and other chat features.",
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.701"
@@ -11,7 +11,7 @@
     "AuthorName": "Crystal",
     "Name": "BetterChat",
     "DisplayName": "BetterChat",
-    "Version": "1.4.0",
+    "Version": "1.4.1",
     "Licence": "",
     "WebsiteURL": "https://github.com/CrystalFerrai/ValheimMods",
     "Description": "Shows the chat window when a message is received and other chat features.",

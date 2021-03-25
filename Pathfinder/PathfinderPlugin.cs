@@ -23,11 +23,13 @@ using UnityEngine;
 
 namespace Pathfinder
 {
-    [BepInPlugin("dev.crystal.pathfinder", "Pathfinder", "1.0.1.0")]
+    [BepInPlugin(ModId, "Pathfinder", "1.0.2.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class PathfinderPlugin : BaseUnityPlugin
     {
+        public const string ModId = "dev.crystal.pathfinder";
+
         public static ConfigEntry<float> LandExploreRadius;
         public static ConfigEntry<float> SeaExploreRadius;
         public static ConfigEntry<float> AltitudeRadiusBonus;
@@ -39,25 +41,55 @@ namespace Pathfinder
         private static float sDaylightSeaBonus;
         private static float sForestPenalty;
 
+        private static Harmony sMinimapHarmony;
+
         private void Awake()
         {
             LandExploreRadius = Config.Bind("Base", nameof(LandExploreRadius), 200.0f, "The radius around the player to uncover while travelling on land near sea level. Higher values may cause performance issues. Max allowed is 2000. Game default is 100.");
+            LandExploreRadius.SettingChanged += Config_SettingChanged;
+
+            SeaExploreRadius = Config.Bind("Base", nameof(SeaExploreRadius), 300.0f, "The radius around the player to uncover while travelling on a boat. Higher values may cause performance issues. Max allowed is 2000. Game default is 100.");
+            SeaExploreRadius.SettingChanged += Config_SettingChanged;
+
+            AltitudeRadiusBonus = Config.Bind("Multipliers", nameof(AltitudeRadiusBonus), 0.5f, "Bonus multiplier to apply to land exploration radius based on altitude. For every 100 units above sea level (smooth scale), add this value multiplied by LandExploreRadius to the total. For example, with a radius of 200 and a multiplier of 0.5, radius is 200 at sea level, 250 at 50 altitude, 300 at 100 altitude, 400 at 200 altitude, etc. For reference, a typical mountain peak is around 170 altitude. This will not increase total radius beyond 2000. Accepted range 0-10. Set to 0 to disable.");
+            AltitudeRadiusBonus.SettingChanged += Config_SettingChanged;
+
+            DaylightRadiusBonus = Config.Bind("Multipliers", nameof(DaylightRadiusBonus), 0.2f, "Bonus multiplier to apply to land exploration radius when it is daylight (meaning day time and not in a permanent night biome). This value is multiplied by the base exploration radius (land or sea) and added to the total. This will not increase total radius beyond 2000. Accepted range 0-10. Set to 0 to disable.");
+            DaylightRadiusBonus.SettingChanged += Config_SettingChanged;
+
+            ForestRadiusPenalty = Config.Bind("Multipliers", nameof(ForestRadiusPenalty), 0.1f, "Penalty to apply to land exploration radius when in a forest (black forest, mistlands, forested parts of meadows and plains). This value is multiplied by the base exploration radius (land or sea) and subtraced from the total. Accepted range 0-1. Set to 0 to disable.");
+            ForestRadiusPenalty.SettingChanged += Config_SettingChanged;
+
+            ClampConfig();
+
+            sMinimapHarmony = new Harmony(ModId + "_Minimap");
+            sMinimapHarmony.PatchAll(typeof(Minimap_UpdateExplore_Patch));
+        }
+
+        private void Config_SettingChanged(object sender, System.EventArgs e)
+        {
+            ClampConfig();
+        }
+
+        private void OnDestroy()
+        {
+            sMinimapHarmony.UnpatchSelf();
+        }
+
+        private static void ClampConfig()
+        {
             if (LandExploreRadius.Value < 0.0f) LandExploreRadius.Value = 0.0f;
             if (LandExploreRadius.Value > 2000.0f) LandExploreRadius.Value = 2000.0f;
 
-            SeaExploreRadius = Config.Bind("Base", nameof(SeaExploreRadius), 300.0f, "The radius around the player to uncover while travelling on a boat. Higher values may cause performance issues. Max allowed is 2000. Game default is 100.");
             if (SeaExploreRadius.Value < 0.0f) SeaExploreRadius.Value = 0.0f;
             if (SeaExploreRadius.Value > 2000.0f) SeaExploreRadius.Value = 2000.0f;
 
-            AltitudeRadiusBonus = Config.Bind("Multipliers", nameof(AltitudeRadiusBonus), 0.5f, "Bonus multiplier to apply to land exploration radius based on altitude. For every 100 units above sea level (smooth scale), add this value multiplied by LandExploreRadius to the total. For example, with a radius of 200 and a multiplier of 0.5, radius is 200 at sea level, 250 at 50 altitude, 300 at 100 altitude, 400 at 200 altitude, etc. For reference, a typical mountain peak is around 170 altitude. This will not increase total radius beyond 2000. Accepted range 0-10. Set to 0 to disable.");
             if (AltitudeRadiusBonus.Value < 0.0f) AltitudeRadiusBonus.Value = 0.0f;
             if (AltitudeRadiusBonus.Value > 10.0f) AltitudeRadiusBonus.Value = 10.0f;
 
-            DaylightRadiusBonus = Config.Bind("Multipliers", nameof(DaylightRadiusBonus), 0.2f, "Bonus multiplier to apply to land exploration radius when it is daylight (meaning day time and not in a permanent night biome). This value is multiplied by the base exploration radius (land or sea) and added to the total. This will not increase total radius beyond 2000. Accepted range 0-10. Set to 0 to disable.");
             if (DaylightRadiusBonus.Value < 0.0f) DaylightRadiusBonus.Value = 0.0f;
             if (DaylightRadiusBonus.Value > 10.0f) DaylightRadiusBonus.Value = 10.0f;
 
-            ForestRadiusPenalty = Config.Bind("Multipliers", nameof(ForestRadiusPenalty), 0.1f, "Penalty to apply to land exploration radius when in a forest (black forest, mistlands, forested parts of meadows and plains). This value is multiplied by the base exploration radius (land or sea) and subtraced from the total. Accepted range 0-1. Set to 0 to disable.");
             if (ForestRadiusPenalty.Value < 0.0f) ForestRadiusPenalty.Value = 0.0f;
             if (ForestRadiusPenalty.Value > 1.0f) ForestRadiusPenalty.Value = 1.0f;
 
@@ -65,11 +97,9 @@ namespace Pathfinder
             sDaylightLandBonus = LandExploreRadius.Value * DaylightRadiusBonus.Value;
             sDaylightSeaBonus = SeaExploreRadius.Value * DaylightRadiusBonus.Value;
             sForestPenalty = LandExploreRadius.Value * ForestRadiusPenalty.Value;
-
-            Harmony.CreateAndPatchAll(typeof(Minimap_UpdateExplore_Patch));
         }
 
-        [HarmonyPatch(typeof(Minimap), "UpdateExplore")]
+        [HarmonyPatch(typeof(Minimap))]
         private static class Minimap_UpdateExplore_Patch
         {
             private enum TranspilerState
@@ -79,7 +109,8 @@ namespace Pathfinder
                 Finishing
             }
 
-            private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+            [HarmonyPatch("UpdateExplore"), HarmonyTranspiler]
+            private static IEnumerable<CodeInstruction> UpdateExplore_Transpiler(IEnumerable<CodeInstruction> instructions)
             {
                 TranspilerState state = TranspilerState.Searching;
 
