@@ -14,6 +14,10 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+1.0.2
+
+* Changed MinPortalTime default value from 0 to 1 because anything less than 1 looks bad in game due to the 1 second fade out.
+
 1.0.1
 
 * Changing the mod config live (via something like BepInEx Configuration Manager) is now supported.

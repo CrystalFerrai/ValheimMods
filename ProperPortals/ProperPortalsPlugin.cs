@@ -21,7 +21,7 @@ using System.Reflection.Emit;
 
 namespace ProperPortals
 {
-    [BepInPlugin(ModId, "Proper Portals", "1.0.1.0")]
+    [BepInPlugin(ModId, "Proper Portals", "1.0.2.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class ProperPortalsPlugin : BaseUnityPlugin
@@ -39,7 +39,7 @@ namespace ProperPortals
             CarryAnything = Config.Bind("Portal", nameof(CarryAnything), true, "Whether to allow using portals while carrying portal restricted items such as metals. Game default is false.");
             CarryAnything.SettingChanged += CarryAnything_SettingChanged;
 
-            MinPortalTime = Config.Bind("Portal", nameof(MinPortalTime), 0.0f, "The minimum time to wait for a teleport to complete, in seconds, including an initial 1 second fade out. It can take longer if the target location needs to be loaded. Increase this if you have the issue of dropping in before loading completes. Game default is 8.");
+            MinPortalTime = Config.Bind("Portal", nameof(MinPortalTime), 1.0f, "The minimum time to wait for a teleport to complete, in seconds, including an initial 1 second fade out. It can take longer if the target location needs to be loaded. Increase this if you have the issue of dropping in before loading completes. Game default is 8.");
             MinPortalTime.SettingChanged += MinPortalTime_SettingChanged;
 
             ClampConfig();
