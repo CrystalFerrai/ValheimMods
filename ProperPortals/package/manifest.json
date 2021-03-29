@@ -1,7 +1,7 @@
 ﻿{
     "name": "ProperPortals",
-    "version_number": "1.0.2",
-    "description": "Carry anything through portals and shorter portal load screens.",
+    "version_number": "1.1.0",
+    "description": "Carry anything through portals and shorter teleport load screens.",
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.701"
     ],
@@ -11,10 +11,10 @@
     "AuthorName": "Crystal",
     "Name": "ProperPortals",
     "DisplayName": "ProperPortals",
-    "Version": "1.0.2",
+    "Version": "1.1.0",
     "Licence": "",
     "WebsiteURL": "https://github.com/CrystalFerrai/ValheimMods",
-    "Description": "Carry anything through portals and shorter portal load screens.",
+    "Description": "Carry anything through portals and shorter teleport load screens.",
     "GameVersion": "",
     "Dependencies": [
         "denikson-BepInExPack_Valheim-5.4.701"
