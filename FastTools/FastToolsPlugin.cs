@@ -43,7 +43,7 @@ namespace FastTools
             PlaceDelay = Config.Bind("Tools", nameof(PlaceDelay), 0.25f, "The delay time for placing items, in seconds. Allowed range 0-10. Game default is 0.4.");
             PlaceDelay.SettingChanged += Delay_SettingChanged;
 
-            RemoveDelay = Config.Bind("Tools", nameof(RemoveDelay), 0.25f, "The delay time for removing items, in seconds. Allowed range 0-10. Game default is 0.25.");
+            RemoveDelay = Config.Bind("Tools", nameof(RemoveDelay), 0.15f, "The delay time for removing items, in seconds. Allowed range 0-10. Game default is 0.25.");
             RemoveDelay.SettingChanged += Delay_SettingChanged;
 
             ClampConfig();
@@ -75,7 +75,7 @@ namespace FastTools
             foreach (Player player in sPlayers)
             {
                 player.m_placeDelay = PlaceDelay.Value;
-                player.m_removeDelay = PlaceDelay.Value;
+                player.m_removeDelay = RemoveDelay.Value;
             }
         }
 
@@ -85,9 +85,8 @@ namespace FastTools
             [HarmonyPatch("Awake"), HarmonyPostfix]
             private static void Awake_Postfix(Player __instance)
             {
-                UnityEngine.Debug.Log($"[FastTools] place={__instance.m_placeDelay}, remove={__instance.m_removeDelay}");
                 __instance.m_placeDelay = PlaceDelay.Value;
-                __instance.m_removeDelay = PlaceDelay.Value;
+                __instance.m_removeDelay = RemoveDelay.Value;
                 sPlayers.Add(__instance);
             }
 
