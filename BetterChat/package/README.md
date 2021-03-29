@@ -17,7 +17,7 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 **Manual Install**
 
 1. Install [BepInExPack Valheim](https://valheim.thunderstore.io/package/denikson/BepInExPack_Valheim/)
-2. Download latest ``BetterChat.dll`` by clicking "Manual Download". Extract the dll from the zip file to into ``[GameDirectory]\Bepinex\plugins``. (You only need the dll.)
+2. Download latest ``BetterChat.dll`` by clicking "Manual Download". Extract the dll from the zip file into ``[GameDirectory]\Bepinex\plugins``. (You only need the dll.)
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
