@@ -7,10 +7,15 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 
 **Manual Install**
 1. Install [BepInExPack Valheim](https://valheim.thunderstore.io/package/denikson/BepInExPack_Valheim/)
-2. Download latest ``FastHammer.dll`` by clicking "Manual Download". Extract the dll from the zip file to into ``[GameDirectory]\Bepinex\plugins``. (You only need the dll.)
+2. Download latest ``FastTools.dll`` by clicking "Manual Download". Extract the dll from the zip file to into ``[GameDirectory]\Bepinex\plugins``. (You only need the dll.)
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+1.1.0
+
+* Accounted for changes in game patch.
+* Place and remove delays are now separately configurable values.
+
 1.0.3
 
 * Added a min and max to ToolUseDelay.

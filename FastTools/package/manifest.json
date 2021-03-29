@@ -1,6 +1,6 @@
 ﻿{
     "name": "FastTools",
-    "version_number": "1.0.3",
+    "version_number": "1.1.0",
     "description": "Reduced usage delay for build hammer and other placement tools.",
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.701"
@@ -11,7 +11,7 @@
     "AuthorName": "Crystal",
     "Name": "FastTools",
     "DisplayName": "FastTools",
-    "Version": "1.0.3",
+    "Version": "1.1.0",
     "Licence": "",
     "WebsiteURL": "https://github.com/CrystalFerrai/ValheimMods",
     "Description": "Reduced usage delay for build hammer and other placement tools.",

@@ -20,14 +20,15 @@ using System.Collections.Generic;
 
 namespace FastTools
 {
-    [BepInPlugin(ModId, "Fast Tools", "1.0.3.0")]
+    [BepInPlugin(ModId, "Fast Tools", "1.1.0.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class FastToolsPlugin : BaseUnityPlugin
     {
         public const string ModId = "dev.crystal.fasttools";
 
-        public static ConfigEntry<float> ToolUseDelay;
+        public static ConfigEntry<float> PlaceDelay;
+        public static ConfigEntry<float> RemoveDelay;
 
         private static Harmony sPlayerHarmony;
         private static readonly List<Player> sPlayers;
@@ -39,8 +40,11 @@ namespace FastTools
 
         private void Awake()
         {
-            ToolUseDelay = Config.Bind("Tools", nameof(ToolUseDelay), 0.25f, "The delay time for placement tools, in seconds. Allowed range 0-10. Game default is 0.5.");
-            ToolUseDelay.SettingChanged += ToolUseDelay_SettingChanged;
+            PlaceDelay = Config.Bind("Tools", nameof(PlaceDelay), 0.25f, "The delay time for placing items, in seconds. Allowed range 0-10. Game default is 0.4.");
+            PlaceDelay.SettingChanged += Delay_SettingChanged;
+
+            RemoveDelay = Config.Bind("Tools", nameof(RemoveDelay), 0.25f, "The delay time for removing items, in seconds. Allowed range 0-10. Game default is 0.25.");
+            RemoveDelay.SettingChanged += Delay_SettingChanged;
 
             ClampConfig();
 
@@ -56,17 +60,22 @@ namespace FastTools
 
         private static void ClampConfig()
         {
-            if (ToolUseDelay.Value < 0.0f) ToolUseDelay.Value = 0.0f;
             // There is no feedback when delay is active aside from tools simply not working, so don't allow really long delays.
-            if (ToolUseDelay.Value > 10.0f) ToolUseDelay.Value = 10.0f;
+
+            if (PlaceDelay.Value < 0.0f) PlaceDelay.Value = 0.0f;
+            if (PlaceDelay.Value > 10.0f) PlaceDelay.Value = 10.0f;
+
+            if (RemoveDelay.Value < 0.0f) RemoveDelay.Value = 0.0f;
+            if (RemoveDelay.Value > 10.0f) RemoveDelay.Value = 10.0f;
         }
 
-        private void ToolUseDelay_SettingChanged(object sender, EventArgs e)
+        private void Delay_SettingChanged(object sender, EventArgs e)
         {
             ClampConfig();
             foreach (Player player in sPlayers)
             {
-                player.m_toolUseDelay = ToolUseDelay.Value;
+                player.m_placeDelay = PlaceDelay.Value;
+                player.m_removeDelay = PlaceDelay.Value;
             }
         }
 
@@ -76,7 +85,9 @@ namespace FastTools
             [HarmonyPatch("Awake"), HarmonyPostfix]
             private static void Awake_Postfix(Player __instance)
             {
-                __instance.m_toolUseDelay = ToolUseDelay.Value;
+                UnityEngine.Debug.Log($"[FastTools] place={__instance.m_placeDelay}, remove={__instance.m_removeDelay}");
+                __instance.m_placeDelay = PlaceDelay.Value;
+                __instance.m_removeDelay = PlaceDelay.Value;
                 sPlayers.Add(__instance);
             }
 
