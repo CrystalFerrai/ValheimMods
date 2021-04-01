@@ -14,7 +14,7 @@
 
 // Uncomment this to show debugging information on the in-game Hud
 // Warning: Do not release mod with this uncommented
-//#define DEBUG_SHOW_OVERLAY
+#define DEBUG_SHOW_OVERLAY
 
 using BepInEx;
 using BepInEx.Configuration;
@@ -33,7 +33,7 @@ using System.Text;
 
 namespace Pathfinder
 {
-    [BepInPlugin(ModId, "Pathfinder", "2.0.1.0")]
+    [BepInPlugin(ModId, "Pathfinder", "2.0.2.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class PathfinderPlugin : BaseUnityPlugin
@@ -288,17 +288,19 @@ namespace Pathfinder
 
             private static float GetLocationModifier(Player player, float altitude)
             {
-                // Based roughly on logic found in MiniMap.GetMaskColor
+                // Forest thresholds based on logic found in MiniMap.GetMaskColor
+
+                float forestPenalty = ForestRadiusPenalty.Value + altitude * AltitudeRadiusBonus.Value * ForestRadiusPenalty.Value;
                 switch (player.GetCurrentBiome())
                 {
                     case Heightmap.Biome.BlackForest:
                         // Small extra penalty to account for high daylight values in black forest
-                        return -ForestRadiusPenalty.Value - 0.25f * DaylightRadiusScale.Value - 0.5f * altitude * AltitudeRadiusBonus.Value;
+                        return -forestPenalty - 0.25f * DaylightRadiusScale.Value;
                     case Heightmap.Biome.Meadows:
-                        return WorldGenerator.InForest(player.transform.position) ? -ForestRadiusPenalty.Value - 0.5f * altitude * AltitudeRadiusBonus.Value : 0.0f;
+                        return WorldGenerator.InForest(player.transform.position) ? -forestPenalty : 0.0f;
                     case Heightmap.Biome.Plains:
                         // Small extra bonus to account for low daylight values in plains
-                        return (WorldGenerator.GetForestFactor(player.transform.position) < 0.8f ? -ForestRadiusPenalty.Value - 0.5f * altitude * AltitudeRadiusBonus.Value : 0.0f) + 0.1f * DaylightRadiusScale.Value;
+                        return (WorldGenerator.GetForestFactor(player.transform.position) < 0.8f ? -forestPenalty : 0.0f) + 0.1f * DaylightRadiusScale.Value;
                     default:
                         return 0.0f;
                 }
