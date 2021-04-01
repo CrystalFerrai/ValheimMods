@@ -14,7 +14,7 @@
 
 // Uncomment this to show debugging information on the in-game Hud
 // Warning: Do not release mod with this uncommented
-#define DEBUG_SHOW_OVERLAY
+//#define DEBUG_SHOW_OVERLAY
 
 using BepInEx;
 using BepInEx.Configuration;
@@ -33,7 +33,7 @@ using System.Text;
 
 namespace Pathfinder
 {
-    [BepInPlugin(ModId, "Pathfinder", "2.0.2.0")]
+    [BepInPlugin(ModId, "Pathfinder", "2.0.3.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class PathfinderPlugin : BaseUnityPlugin

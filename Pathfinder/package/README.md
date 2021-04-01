@@ -20,6 +20,10 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+2.0.3
+
+* Accidentally built 2.0.2 with debug info. This removes that.
+
 2.0.2
 
 * Small fix for 2.0.1 change to ensure forest penalty multiplier is accounted for when decreasing altitude bonus.
