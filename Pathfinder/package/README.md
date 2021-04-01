@@ -5,7 +5,7 @@
 * Radius increases gradually based on altitude.
 * Radius increases or decreases based on current amount of daylight.
 * Radius can be decreased by weather effects such as fog, rain or snow.
-* Radius decreased by 30% of while in a forested area.
+* Radius decreased by 30% while in a forested area.
 
 Values listed above are defaults. All of them are configurable. Run the game once with the mod enabled to generate the config. See config for details on what each option does.
 
