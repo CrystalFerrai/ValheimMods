@@ -33,7 +33,7 @@ using System.Text;
 
 namespace Pathfinder
 {
-    [BepInPlugin(ModId, "Pathfinder", "2.0.0.0")]
+    [BepInPlugin(ModId, "Pathfinder", "2.0.1.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class PathfinderPlugin : BaseUnityPlugin
@@ -242,10 +242,11 @@ namespace Pathfinder
 
                 // Sea level = 30, tallest mountains (not including the rare super mountains) seem to be around 220. Stop adding altitude bonus after 400
                 float altitude = Mathf.Clamp(player.transform.position.y - ZoneSystem.instance.m_waterLevel, 0.0f, 400.0f);
-                multiplier += altitude / 100.0f * Mathf.Max(0.05f, 1.0f - particles) * AltitudeRadiusBonus.Value;
+                float adjustedAltitude = altitude / 100.0f * Mathf.Max(0.05f, 1.0f - particles);
+                multiplier += adjustedAltitude * AltitudeRadiusBonus.Value;
 
                 // Make adjustments based on biome
-                multiplier += GetLocationModifier(player);
+                multiplier += GetLocationModifier(player, adjustedAltitude);
 
                 if (multiplier > 5.0f) multiplier = 5.0f;
                 if (multiplier < 0.2f) multiplier = 0.2f;
@@ -285,19 +286,19 @@ namespace Pathfinder
                 return Mathf.Sqrt(color.r * color.r + color.g * color.g + color.b * color.b);
             }
 
-            private static float GetLocationModifier(Player player)
+            private static float GetLocationModifier(Player player, float altitude)
             {
                 // Based roughly on logic found in MiniMap.GetMaskColor
                 switch (player.GetCurrentBiome())
                 {
                     case Heightmap.Biome.BlackForest:
                         // Small extra penalty to account for high daylight values in black forest
-                        return -ForestRadiusPenalty.Value - 0.25f * DaylightRadiusScale.Value;
+                        return -ForestRadiusPenalty.Value - 0.25f * DaylightRadiusScale.Value - 0.5f * altitude * AltitudeRadiusBonus.Value;
                     case Heightmap.Biome.Meadows:
-                        return WorldGenerator.InForest(player.transform.position) ? -ForestRadiusPenalty.Value : 0.0f;
+                        return WorldGenerator.InForest(player.transform.position) ? -ForestRadiusPenalty.Value - 0.5f * altitude * AltitudeRadiusBonus.Value : 0.0f;
                     case Heightmap.Biome.Plains:
                         // Small extra bonus to account for low daylight values in plains
-                        return (WorldGenerator.GetForestFactor(player.transform.position) < 0.8f ? -ForestRadiusPenalty.Value : 0.0f) + 0.1f * DaylightRadiusScale.Value;
+                        return (WorldGenerator.GetForestFactor(player.transform.position) < 0.8f ? -ForestRadiusPenalty.Value - 0.5f * altitude * AltitudeRadiusBonus.Value : 0.0f) + 0.1f * DaylightRadiusScale.Value;
                     default:
                         return 0.0f;
                 }
