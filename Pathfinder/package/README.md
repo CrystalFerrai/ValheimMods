@@ -1,14 +1,15 @@
 ﻿Increases the base map discovery range around the player as well as dynamically adjusts the range based on various visibility factors.
 
-* The base discovery radius is doubled compared to vanilla.
-* Discovery radius while on a boat is tripled compared to vanilla.
+* The discovery radius is generally increased compared to vanilla.
+* Discovery radius is further increased while on a boat.
 * Radius increases gradually based on altitude.
-* Radius increased by 20% of base during daylight.
-* Radius decreased by 10% of base while in a forested area.
+* Radius increases or decreases based on current amount of daylight.
+* Radius can be decreased by weather effects such as fog, rain or snow.
+* Radius decreased by 30% of while in a forested area.
 
 Values listed above are defaults. All of them are configurable. Run the game once with the mod enabled to generate the config. See config for details on what each option does.
 
-Plan to add weather based range modifiers in the future.
+It is generally recommended to only adjust the radius values in the "Base" category of the config. Default values in the "Multipliers" category have been extensively tested and tweaked to try to approximate actual visibility changes, and changing them can significantly impact exploration radius in sometimes unexpected ways.
 
 ## Installation
 This mod is designed to install and run via [r2modman](https://thunderstore.io/package/ebkr/r2modman/). You can optionally install it manually following the steps below.
@@ -19,6 +20,14 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+2.0.0
+
+* Complete overhaul of radius calculation.
+    * Weather now affects the radius
+    * Daylight amount now affects the radius
+* Some config options have been added, removed, or had their default values changed. For the best experience, it is recommended that you delete your config from before 2.0.0 and allow the game to generate a new one.
+* It is now possible to display the currently calculated exploration radius on the Hud to help with tweaking config values.
+
 1.0.2
 
 * Changing the mod config live (via something like BepInEx Configuration Manager) is now supported.
