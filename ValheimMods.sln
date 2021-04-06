@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProperPortals", "ProperPort
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FastTools", "FastTools\FastTools.csproj", "{F56F1A49-D0AB-40C0-A18F-7787796B5B83}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigDeeper", "DigDeeper\DigDeeper.csproj", "{257C1ABB-2713-468A-8321-84C583805FAA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{F56F1A49-D0AB-40C0-A18F-7787796B5B83}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F56F1A49-D0AB-40C0-A18F-7787796B5B83}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F56F1A49-D0AB-40C0-A18F-7787796B5B83}.Release|Any CPU.Build.0 = Release|Any CPU
+		{257C1ABB-2713-468A-8321-84C583805FAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{257C1ABB-2713-468A-8321-84C583805FAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{257C1ABB-2713-468A-8321-84C583805FAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{257C1ABB-2713-468A-8321-84C583805FAA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
