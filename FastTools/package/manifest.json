@@ -3,7 +3,7 @@
     "version_number": "1.1.0",
     "description": "Reduced usage delay for build hammer and other placement tools.",
     "dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.701"
+        "denikson-BepInExPack_Valheim-5.4.901"
     ],
     "website_url": "https://github.com/CrystalFerrai/ValheimMods",
 
@@ -17,7 +17,7 @@
     "Description": "Reduced usage delay for build hammer and other placement tools.",
     "GameVersion": "",
     "Dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.701"
+        "denikson-BepInExPack_Valheim-5.4.901"
     ],
     "OptionalDependencies": [],
     "Incompatibilities": [],

@@ -3,7 +3,7 @@
     "version_number": "1.0.2",
     "description": "Allows tweaking death related values such as skill loss amount.",
     "dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.701"
+        "denikson-BepInExPack_Valheim-5.4.901"
     ],
     "website_url": "https://github.com/CrystalFerrai/ValheimMods",
 
@@ -17,7 +17,7 @@
     "Description": "Allows tweaking death related values such as skill loss amount.",
     "GameVersion": "",
     "Dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.701"
+        "denikson-BepInExPack_Valheim-5.4.901"
     ],
     "OptionalDependencies": [],
     "Incompatibilities": [],

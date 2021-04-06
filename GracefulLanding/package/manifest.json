@@ -3,7 +3,7 @@
     "version_number": "1.0.1",
     "description": "Reduced fall damage, configurable.",
     "dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.701"
+        "denikson-BepInExPack_Valheim-5.4.901"
     ],
     "website_url": "https://github.com/CrystalFerrai/ValheimMods",
 
@@ -17,7 +17,7 @@
     "Description": "Reduced fall damage, configurable.",
     "GameVersion": "",
     "Dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.701"
+        "denikson-BepInExPack_Valheim-5.4.901"
     ],
     "OptionalDependencies": [],
     "Incompatibilities": [],

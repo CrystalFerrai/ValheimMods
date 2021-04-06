@@ -12,7 +12,7 @@ For easier development, all mods are part of the same repo and share the same Vi
 
 Before the solution will build, you will need to get some third party DLLs and place them in a `lib` directory at the root of the repo (next to `ValheimMods.sln`). This is where all of the `.csproj` point to for external assembly references. The following should be included in the `lib` directory:
 
-* [BepInEx](https://github.com/BepInEx/BepInEx/releases) library. Confirmed working version is 5.4.701, but other 5.x versions likely will also work. These files specifically need to be included:
+* [BepInEx](https://github.com/BepInEx/BepInEx/releases) library. Confirmed working version is 5.4.901, but other 5.4.x versions likely will also work. These files specifically need to be included:
     * 0Harmony.dll
     * BepinEx.dll
     * BepinEx.Harmony.dll

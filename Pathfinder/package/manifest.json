@@ -3,7 +3,7 @@
     "version_number": "2.0.3",
     "description": "Customizable dynamic map discovery radius based on various visibility factors.",
     "dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.701"
+        "denikson-BepInExPack_Valheim-5.4.901"
     ],
     "website_url": "https://github.com/CrystalFerrai/ValheimMods",
 
@@ -17,7 +17,7 @@
     "Description": "Customizable dynamic map discovery radius based on various visibility factors.",
     "GameVersion": "",
     "Dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.701"
+        "denikson-BepInExPack_Valheim-5.4.901"
     ],
     "OptionalDependencies": [],
     "Incompatibilities": [],

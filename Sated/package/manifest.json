@@ -3,7 +3,7 @@
     "version_number": "1.1.2",
     "description": "Health and stamina gained from food stays with you for more of the food's duration.",
     "dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.701"
+        "denikson-BepInExPack_Valheim-5.4.901"
     ],
     "website_url": "https://github.com/CrystalFerrai/ValheimMods",
 
@@ -17,7 +17,7 @@
     "Description": "Health and stamina gained from food stays with you for more of the food's duration.",
     "GameVersion": "",
     "Dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.701"
+        "denikson-BepInExPack_Valheim-5.4.901"
     ],
     "OptionalDependencies": [],
     "Incompatibilities": [],
