@@ -1,7 +1,8 @@
 ﻿This mod adjusts some things I don't like about portals.
 
 * Anything can be carried through portals.
-* The loading screen for portals is shortened.
+* The loading screen for teleporting is shortened when possible.
+* Slightly decreased the distance from a portal a player needs to be to make it light up and make noise.
 
 The various features can be toggled/tuned. Run the game once with the mod enabled to generate the config. See config for details on what each option does.
 
@@ -14,6 +15,10 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+1.2.0
+
+* Decrease portal activation range and add a setting to configure it.
+
 1.1.0
 
 * Shorter screen fade time prior to teleport, configurable.

@@ -18,10 +18,11 @@ using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
+using UnityEngine;
 
 namespace ProperPortals
 {
-    [BepInPlugin(ModId, "Proper Portals", "1.1.0.0")]
+    [BepInPlugin(ModId, "Proper Portals", "1.2.0.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class ProperPortalsPlugin : BaseUnityPlugin
@@ -31,10 +32,20 @@ namespace ProperPortals
         public static ConfigEntry<bool> CarryAnything;
         public static ConfigEntry<float> FadeTime;
         public static ConfigEntry<float> MinPortalTime;
+        public static ConfigEntry<float> ActivationRange;
 
         private static Harmony sInventoryHarmony;
         private static Harmony sHudHarmony;
         private static Harmony sPlayerHarmony;
+        private static Harmony sTeleportWorldHarmony;
+        private static Harmony sZDOManHarmony;
+
+        private static Dictionary<ZDOID, TeleportWorld> sPortals;
+
+        static ProperPortalsPlugin()
+        {
+            sPortals = new Dictionary<ZDOID, TeleportWorld>();
+        }
 
         private void Awake()
         {
@@ -47,11 +58,16 @@ namespace ProperPortals
             MinPortalTime = Config.Bind("Portal", nameof(MinPortalTime), 0.0f, "The minimum time to wait for a teleport to complete, in seconds. It can take longer if the target location needs to be loaded. Increase this if you have the issue of dropping in before loading completes. Game default is 8.");
             MinPortalTime.SettingChanged += PortalTime_SettingChanged;
 
+            ActivationRange = Config.Bind("Portal", nameof(ActivationRange), 2.0f, "The distance at which a portal will start glowing and making noise when a player approaches it. Maximum accepted value is 10. Setting to 0 prevents portals from glowing or making noise at all. Game default is 3.");
+            ActivationRange.SettingChanged += ActivationRange_SettingChanged;
+
             ClampConfig();
 
             sInventoryHarmony = new Harmony(ModId + "_Inventory");
             sHudHarmony = new Harmony(ModId + "_Hud");
             sPlayerHarmony = new Harmony(ModId + "_Player");
+            sTeleportWorldHarmony = new Harmony(ModId + "_TeleportWorld");
+            sZDOManHarmony = new Harmony(ModId + "_ZDOMan");
 
             if (CarryAnything.Value)
             {
@@ -59,6 +75,8 @@ namespace ProperPortals
             }
             sHudHarmony.PatchAll(typeof(Hud_Patches));
             sPlayerHarmony.PatchAll(typeof(Player_Patches));
+            sTeleportWorldHarmony.PatchAll(typeof(TeleportWorld_Patches));
+            sZDOManHarmony.PatchAll(typeof(ZDOMan_Patches));
         }
 
         private void OnDestroy()
@@ -66,6 +84,10 @@ namespace ProperPortals
             sInventoryHarmony.UnpatchSelf();
             sHudHarmony.UnpatchSelf();
             sPlayerHarmony.UnpatchSelf();
+            sTeleportWorldHarmony.UnpatchSelf();
+            sZDOManHarmony.UnpatchSelf();
+
+            sPortals.Clear();
         }
 
         private static void ClampConfig()
@@ -75,6 +97,9 @@ namespace ProperPortals
 
             if (MinPortalTime.Value < 0.0f) MinPortalTime.Value = 0.0f;
             if (MinPortalTime.Value > 60.0) MinPortalTime.Value = 60.0f;
+
+            if (ActivationRange.Value < 0.0f) ActivationRange.Value = 0.0f;
+            if (ActivationRange.Value > 10.0) ActivationRange.Value = 10.0f;
         }
 
         private void CarryAnything_SettingChanged(object sender, EventArgs e)
@@ -94,6 +119,15 @@ namespace ProperPortals
             ClampConfig();
             sPlayerHarmony.UnpatchSelf();
             sPlayerHarmony.PatchAll(typeof(Player_Patches));
+        }
+
+        private void ActivationRange_SettingChanged(object sender, EventArgs e)
+        {
+            ClampConfig();
+            foreach (TeleportWorld portal in sPortals.Values)
+            {
+                UpdateActivationRange(portal);
+            }
         }
 
         [HarmonyPatch(typeof(Inventory))]
@@ -152,6 +186,55 @@ namespace ProperPortals
                     }
                     yield return instruction;
                 }
+            }
+        }
+
+        [HarmonyPatch(typeof(TeleportWorld))]
+        private static class TeleportWorld_Patches
+        {
+            [HarmonyPatch("Awake"), HarmonyPostfix]
+            private static void Awake_Postfix(TeleportWorld __instance)
+            {
+                // If enabled == false, this is probably a build placement ghost rather than an actual portal. It will not have a ZDO.
+                if (__instance.enabled)
+                {
+                    UpdateActivationRange(__instance);
+
+                    // Every time a portal is loaded (like by a player loading the area it is in), a new instance is created.
+                    // However, the same portal will always have the same ZDOID. So, we can just replace the instance.
+                    sPortals[__instance.GetComponent<ZNetView>().GetZDO().m_uid] = __instance;
+                }
+            }
+
+            // Note: It is not possible to patch TeleportWorld.OnDestroyed because it is not defined.
+        }
+
+        [HarmonyPatch(typeof(ZDOMan))]
+        private static class ZDOMan_Patches
+        {
+            [HarmonyPatch("HandleDestroyedZDO"), HarmonyPrefix]
+            private static void HandleDestroyedZDO_Prefix(ZDOMan __instance, ZDOID uid)
+            {
+                // This will happen when a portal is actually destroyed, not when it is simply unloaded. In this case,
+                // remove the entry from our dictionary because it is never coming back.
+                // Note: Every ZDO getting destroyed will call this function. We only care about ZDOs we are tracking.
+                sPortals.Remove(uid);
+            }
+        }
+
+        private static void UpdateActivationRange(TeleportWorld portal)
+        {
+            // This if check is to see if the portal instance is actually loaded. If it isn't then we don't care. Next time
+            // it is laoded, a new instance will be created.
+            if (portal)
+            {
+                portal.m_activationRange = ActivationRange.Value;
+
+                // Activation is triggered when a player is within a radius of the proximity root. The root needs to be moved as
+                // the range changes so that the defined circle is in front of the portal object with its edge meeting the portal.
+                // Note: Because the check uses a circle, the activation zone gets weirder as the range gets larger.
+                Transform root = portal.m_proximityRoot;
+                root.localPosition = new Vector3(root.localPosition.x, root.localPosition.y, ActivationRange.Value * 0.5f + 0.25f);
             }
         }
     }
