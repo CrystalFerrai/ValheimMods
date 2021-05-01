@@ -1,4 +1,4 @@
-﻿Increased the depth you can dig into the ground by 50%. The amount is configurable.
+﻿Increased the depth you can dig into the ground by 150%. The amount is configurable.
 
 Also allow you to configure the height you can raise terrain.
 
@@ -16,6 +16,7 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 1.1.0
 
 * Updated to work with the game's new terrain modification system released in 0.150.3.
+* Increased default dig depth from 12 to 20. This should be deep enough to allow fully digging under any copper nodes.
 
 1.0.0
 
