@@ -21,7 +21,7 @@ using System.Reflection.Emit;
 
 namespace DigDeeper
 {
-    [BepInPlugin(ModId, "Dig Deeper", "1.0.0.0")]
+    [BepInPlugin(ModId, "Dig Deeper", "1.1.0.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class DigDeeperPlugin : BaseUnityPlugin
@@ -32,10 +32,11 @@ namespace DigDeeper
         public static ConfigEntry<float> MaximumHeight;
 
         private static Harmony sHeightmapHarmony;
+        private static Harmony sTerrainCompHarmony;
 
         private void Awake()
         {
-            MaximumDepth = Config.Bind("Digging", nameof(MaximumDepth), 12.0f, "The maximum depth you can dig below the terrain surface. Range 0-128. Game default is 8.");
+            MaximumDepth = Config.Bind("Digging", nameof(MaximumDepth), 20.0f, "The maximum depth you can dig below the terrain surface. Range 0-128. Game default is 8.");
             MaximumDepth.SettingChanged += Config_SettingChanged;
 
             MaximumHeight = Config.Bind("Digging", nameof(MaximumHeight), 8.0f, "The maximum height you can raise the terrain. Range 0-128. Game default is 8.");
@@ -45,6 +46,9 @@ namespace DigDeeper
 
             sHeightmapHarmony = new Harmony(ModId + "_Heightmap");
             sHeightmapHarmony.PatchAll(typeof(Heightmap_Patches));
+
+            sTerrainCompHarmony = new Harmony(ModId + "_TerrainComp");
+            sTerrainCompHarmony.PatchAll(typeof(TerrainComp_Patches));
         }
 
         private void OnDestroy()
@@ -67,8 +71,12 @@ namespace DigDeeper
 
             sHeightmapHarmony.UnpatchSelf();
             sHeightmapHarmony.PatchAll(typeof(Heightmap_Patches));
+
+            sTerrainCompHarmony.UnpatchSelf();
+            sTerrainCompHarmony.PatchAll(typeof(TerrainComp_Patches));
         }
 
+        // NOTE: This patch is for the old terrain system and can probably be removed soon.
         [HarmonyPatch(typeof(Heightmap))]
         private static class Heightmap_Patches
         {
@@ -115,6 +123,96 @@ namespace DigDeeper
                             state = TranspilerState.Searching;
                             break;
                     }
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(TerrainComp))]
+        private static class TerrainComp_Patches
+        {
+            private enum TranspilerState
+            {
+                Searching,
+                Replacing
+            }
+
+            [HarmonyPatch(nameof(TerrainComp.ApplyToHeightmap)), HarmonyTranspiler]
+            private static IEnumerable<CodeInstruction> ApplyToHeightmap_Transpiler(IEnumerable<CodeInstruction> instructions)
+            {
+                TranspilerState state = TranspilerState.Searching;
+
+                CodeInstruction valueInstruction = null;
+
+                foreach (CodeInstruction instruction in instructions)
+                {
+                    switch (state)
+                    {
+                        case TranspilerState.Searching:
+                            if (instruction.opcode == OpCodes.Ldc_R4 && (float)instruction.operand == 8.0f)
+                            {
+                                valueInstruction = instruction;
+                                state = TranspilerState.Replacing;
+                            }
+                            else
+                            {
+                                yield return instruction;
+                            }
+                            break;
+                        case TranspilerState.Replacing:
+                            if (instruction.opcode == OpCodes.Sub)
+                            {
+                                valueInstruction.operand = MaximumDepth.Value;
+                            }
+                            else if (instruction.opcode == OpCodes.Add)
+                            {
+                                valueInstruction.operand = MaximumHeight.Value;
+                            }
+                            yield return valueInstruction;
+                            yield return instruction;
+                            valueInstruction = null;
+                            state = TranspilerState.Searching;
+                            break;
+                    }
+                }
+            }
+
+            [HarmonyPatch("LevelTerrain"), HarmonyTranspiler]
+            private static IEnumerable<CodeInstruction> LevelTerrain_Transpiler(IEnumerable<CodeInstruction> instructions)
+            {
+                foreach (CodeInstruction instruction in instructions)
+                {
+                    if (instruction.opcode == OpCodes.Ldc_R4)
+                    {
+                        if ((float)instruction.operand == 8.0f)
+                        {
+                            instruction.operand = MaximumHeight.Value;
+                        }
+                        else if ((float)instruction.operand == -8.0f)
+                        {
+                            instruction.operand = -MaximumDepth.Value;
+                        }
+                    }
+                    yield return instruction;
+                }
+            }
+
+            [HarmonyPatch("RaiseTerrain"), HarmonyTranspiler]
+            private static IEnumerable<CodeInstruction> RaiseTerrain_Transpiler(IEnumerable<CodeInstruction> instructions)
+            {
+                foreach (CodeInstruction instruction in instructions)
+                {
+                    if (instruction.opcode == OpCodes.Ldc_R4)
+                    {
+                        if ((float)instruction.operand == 8.0f)
+                        {
+                            instruction.operand = MaximumHeight.Value;
+                        }
+                        else if ((float)instruction.operand == -8.0f)
+                        {
+                            instruction.operand = -MaximumDepth.Value;
+                        }
+                    }
+                    yield return instruction;
                 }
             }
         }
