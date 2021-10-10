@@ -12,6 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Disabled because it messes up the UI after Hearth and Home update.
+// Food timer bars need to be reworked, but not a priority because the
+// UI now shows the timer as text.
+//#define FEATURE_FOOD_BARS
+
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
@@ -23,19 +28,23 @@ using UnityEngine;
 
 namespace Sated
 {
-    [BepInPlugin(ModId, "Sated", "1.1.2.0")]
+    [BepInPlugin(ModId, "Sated", "1.1.3.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class SatedPlugin : BaseUnityPlugin
     {
         public const string ModId = "dev.crystal.sated";
 
+#if FEATURE_FOOD_BARS
         public static ConfigEntry<bool> ShowFoodTimerBars;
+#endif
         public static ConfigEntry<float> HealthCurveExponent;
         public static ConfigEntry<float> StaminaCurveExponent;
 
         private static Harmony sPlayerHarmony;
+#if FEATURE_FOOD_BARS
         private static Harmony sHudHarmony;
+#endif
         private static Harmony sHudHealthHarmony;
         private static Harmony sHudFoodHarmony;
 
@@ -48,14 +57,18 @@ namespace Sated
         {
             sPlayerFoodsField = typeof(Player).GetField("m_foods", BindingFlags.Instance | BindingFlags.NonPublic);
 
+#if FEATURE_FOOD_BARS
             AssetBundle progresBarAssetBundle = LoadAssetBundle("progress_bar");
             sProgressBarPrefab = progresBarAssetBundle.LoadAsset<GameObject>("Assets/ProgressBar/ProgressBarElement.prefab");
+#endif
         }
 
         private void Awake()
         {
+#if FEATURE_FOOD_BARS
             ShowFoodTimerBars = Config.Bind("Food", nameof(ShowFoodTimerBars), true, "Whether to show timer bars below food icons on the HUD.");
             ShowFoodTimerBars.SettingChanged += ShowFoodTimerBars_SettingChanged;
+#endif
 
             HealthCurveExponent = Config.Bind("Food", nameof(HealthCurveExponent), 8.0f, "The value of the exponent 'e' used in the food curve formula 'y = 1 - x^e' for calculating added health. Valid range 0.1 - 100. Higher values make you full longer, but also drop off more suddenly. A value of 1 indicates a linear decline (vanilla behavior). Values less than 1 invert the curve, causing a faster initial decline which gradually slows down.");
             HealthCurveExponent.SettingChanged += CurveExponent_SettingChanged;
@@ -66,17 +79,23 @@ namespace Sated
             ClampConfig();
 
             sPlayerHarmony = new Harmony(ModId + "_Player");
+#if FEATURE_FOOD_BARS
             sHudHarmony = new Harmony(ModId + "_Hud");
+#endif
             sHudHealthHarmony = new Harmony(ModId + "_HudHealth");
             sHudFoodHarmony = new Harmony(ModId + "_HudFood");
 
             sPlayerHarmony.PatchAll(typeof(Player_Patches));
+#if FEATURE_FOOD_BARS
             sHudHarmony.PatchAll(typeof(Hud_Patches));
+#endif
             sHudHealthHarmony.PatchAll(typeof(Hud_Health_Patch));
+#if FEATURE_FOOD_BARS
             if (ShowFoodTimerBars.Value)
             {
                 sHudFoodHarmony.PatchAll(typeof(Hud_Food_Patch));
             }
+#endif
         }
 
         private void OnDestroy()
@@ -102,6 +121,7 @@ namespace Sated
             sHudHealthHarmony.PatchAll(typeof(Hud_Health_Patch));
         }
 
+#if FEATURE_FOOD_BARS
         private void ShowFoodTimerBars_SettingChanged(object sender, EventArgs e)
         {
             if (ShowFoodTimerBars.Value)
@@ -115,6 +135,7 @@ namespace Sated
                 ShowFoodBars(false);
             }
         }
+#endif
 
         [HarmonyPatch(typeof(Player))]
         private static class Player_Patches
@@ -135,6 +156,7 @@ namespace Sated
             }
         }
 
+#if FEATURE_FOOD_BARS
         [HarmonyPatch(typeof(Hud))]
         private static class Hud_Patches
         {
@@ -153,6 +175,7 @@ namespace Sated
                 sFoodProgressBars = null;
             }
         }
+#endif
 
         [HarmonyPatch(typeof(Hud))]
         private static class Hud_Health_Patch
@@ -216,6 +239,7 @@ namespace Sated
             }
         }
 
+#if FEATURE_FOOD_BARS
         [HarmonyPatch(typeof(Hud))]
         private static class Hud_Food_Patch
         {
@@ -287,6 +311,7 @@ namespace Sated
                 sFoodProgressBars = null;
             }
         }
+#endif
 
         private static AssetBundle LoadAssetBundle(string name)
         {

@@ -1,7 +1,5 @@
 ﻿Health and stamina from food follows the curve ``y = 1 - x^8`` (exponent configurable) instead of dropping off linearly. This means that 50% of the way through the food, you are still getting nearly 100% of the benefit and 75% of the way through you are still getting about 90% of the benefit. Values drop sharply as you near the end. This does not increase the overall duration of food, only makes more of the duration useful.
 
-Additional timer bars have been added below food icons on the HUD to show time remaining on each food item individually. This can be disabled in the config.
-
 Run the game once with the mod enabled to generate the config. See config for details on what each option does.
 
 Tip: To visualize the food curve and see how different exponents look, enter the above formula into a graphing calculator such as [this one](https://www.desmos.com/calculator) and change the ``8`` to whatever number you want to see.
@@ -15,6 +13,11 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+1.1.3
+
+* Removed the food timer bar feature because it breaks the UI after the latest game update.
+* Updated BepInEx version
+
 1.1.2
 
 * Changing the mod config live (via something like BepInEx Configuration Manager) is now supported.

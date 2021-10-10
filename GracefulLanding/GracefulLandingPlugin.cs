@@ -21,7 +21,7 @@ using System.Reflection.Emit;
 
 namespace GracefulLanding
 {
-    [BepInPlugin(ModId, "Graceful Landing", "1.0.1.0")]
+    [BepInPlugin(ModId, "Graceful Landing", "1.0.2.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class GracefulLandingPlugin : BaseUnityPlugin

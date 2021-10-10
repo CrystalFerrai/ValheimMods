@@ -3,9 +3,9 @@
 * Show the chat window when a message is received, or have it always visible.
 * Configure how long the window shows when a new message is received.
 * Remove the force caps from shouts and force lower case from whispers.
-* Pressing the slash key (/) will open the chat window and start a message.
+* Pressing the slash key (``/``) will open the chat window and start a message.
 * Option to not see map pings when players shout.
-* Switch so that the chat default is shout and /s is talk.
+* Switch so that the chat default is shout (use ``/say`` to not shout).
 * Configure talk and whisper distances.
 * Able to interact with UI that is behind the chat window (click-through).
 
@@ -21,6 +21,11 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+1.4.2
+
+* Updated for compatibility with game update
+* Updated BepInEx version
+
 1.4.1
 
 * Changing the mod config live (via something like BepInEx Configuration Manager) is now supported.

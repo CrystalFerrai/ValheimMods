@@ -19,7 +19,7 @@ using System.Collections.Generic;
 
 namespace DeathPenalty
 {
-    [BepInPlugin(ModId, "Death Penalty", "1.0.2.0")]
+    [BepInPlugin(ModId, "Death Penalty", "1.0.3.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class DeathPenaltyPlugin : BaseUnityPlugin

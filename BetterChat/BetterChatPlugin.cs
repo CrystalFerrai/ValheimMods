@@ -24,7 +24,7 @@ using UnityEngine.UI;
 
 namespace BetterChat
 {
-    [BepInPlugin(ModId, "Better Chat", "1.4.1.0")]
+    [BepInPlugin(ModId, "Better Chat", "1.4.2.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class BetterChatPlugin : BaseUnityPlugin
@@ -125,6 +125,15 @@ namespace BetterChat
             {
                 sChatSlashHarmony.PatchAll(typeof(Chat_Slash_Patches));
             }
+
+            //System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Terminal).TypeHandle);
+            //FieldInfo commandsField = typeof(Terminal).GetField("commands", BindingFlags.NonPublic | BindingFlags.Static);
+            //Dictionary<string, Terminal.ConsoleCommand> commands = (Dictionary<string, Terminal.ConsoleCommand>)commandsField.GetValue(null);
+            //Debug.Log($"{commands.Count} Commands:");
+            //foreach (var pair in commands)
+            //{
+            //    Debug.Log($"{pair.Key}: {pair.Value.Description}");
+            //}
         }
 
         private void OnDestroy()
@@ -421,33 +430,14 @@ namespace BetterChat
             [HarmonyPatch("InputText"), HarmonyTranspiler]
             private static IEnumerable<CodeInstruction> InputText_Transpiler(IEnumerable<CodeInstruction> instructions)
             {
-                // Using a list to make looking ahead simpler
-                List<CodeInstruction> modified = new List<CodeInstruction>(instructions);
-
-                for (int i = 0; i < modified.Count - 1; ++i)
+                foreach (CodeInstruction instruction in instructions)
                 {
-                    if (modified[i + 1].opcode == OpCodes.Stloc_1)
+                    if (instruction.opcode == OpCodes.Ldstr && instruction.operand.Equals("say "))
                     {
-                        if (modified[i].opcode == OpCodes.Ldc_I4_1)
-                        {
-                            // Replace
-                            //   Talker.Type type = Talker.Type.Normal
-                            // With
-                            //   Talker.Type type = Talker.Type.Shout
-                            modified[i].opcode = OpCodes.Ldc_I4_2;
-                        }
-                        else if (modified[i].opcode == OpCodes.Ldc_I4_2)
-                        {
-                            // Replace
-                            //   type = Talker.Type.Shout
-                            // With
-                            //   type = Talker.Type.Normal
-                            modified[i].opcode = OpCodes.Ldc_I4_1;
-                        }
+                        instruction.operand = "s ";
                     }
+                    yield return instruction;
                 }
-
-                return modified;
             }
         }
 

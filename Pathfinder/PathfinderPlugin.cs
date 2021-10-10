@@ -33,7 +33,7 @@ using System.Text;
 
 namespace Pathfinder
 {
-    [BepInPlugin(ModId, "Pathfinder", "2.0.3.0")]
+    [BepInPlugin(ModId, "Pathfinder", "2.0.4.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class PathfinderPlugin : BaseUnityPlugin
@@ -207,7 +207,7 @@ namespace Pathfinder
                 // A longship is about 20 units long. 19 is about as far as you could possibly get from a pilot and still be on the boat.
                 List<Player> players = new List<Player>();
                 Player.GetPlayersInRange(player.transform.position, 21.0f, players);
-                if (players.Any(p => p.GetShipControl() != null))
+                if (players.Any(p => p.IsAttachedToShip()))
                 {
                     baseRadius = SeaExploreRadius.Value;
                 }
