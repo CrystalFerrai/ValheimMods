@@ -125,15 +125,6 @@ namespace BetterChat
             {
                 sChatSlashHarmony.PatchAll(typeof(Chat_Slash_Patches));
             }
-
-            //System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Terminal).TypeHandle);
-            //FieldInfo commandsField = typeof(Terminal).GetField("commands", BindingFlags.NonPublic | BindingFlags.Static);
-            //Dictionary<string, Terminal.ConsoleCommand> commands = (Dictionary<string, Terminal.ConsoleCommand>)commandsField.GetValue(null);
-            //Debug.Log($"{commands.Count} Commands:");
-            //foreach (var pair in commands)
-            //{
-            //    Debug.Log($"{pair.Key}: {pair.Value.Description}");
-            //}
         }
 
         private void OnDestroy()
