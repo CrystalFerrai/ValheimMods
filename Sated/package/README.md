@@ -1,8 +1,8 @@
-﻿Health and stamina from food follows the curve ``y = 1 - x^8`` (exponent configurable) instead of dropping off linearly. This means that 50% of the way through the food, you are still getting nearly 100% of the benefit and 75% of the way through you are still getting about 90% of the benefit. Values drop sharply as you near the end. This does not increase the overall duration of food, only makes more of the duration useful.
+﻿Health and stamina from food follows the curve ``y=1-x^8`` instead of the vanilla curve ``y=(1-x)^0.3``. This means that 50% of the way through the food, you are still getting nearly 100% of the benefit (vs 81%) and 75% of the way through you are still getting about 90% of the benefit (vs 65%). Values drop sharply as you near the end. This does not increase the overall duration of food, only makes more of the duration useful.
 
 Run the game once with the mod enabled to generate the config. See config for details on what each option does.
 
-Tip: To visualize the food curve and see how different exponents look, enter the above formula into a graphing calculator such as [this one](https://www.desmos.com/calculator) and change the ``8`` to whatever number you want to see.
+Tip: The exponent of the curve is configurable. To visualize the food curve and see how different exponents look, enter the above formula into a graphing calculator such as [this one](https://www.desmos.com/calculator) and change the ``8`` to whatever number you want to see.
 
 ## Installation
 This mod is designed to install and run via [r2modman](https://thunderstore.io/package/ebkr/r2modman/). You can optionally install it manually following the steps below.
@@ -13,6 +13,10 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+1.1.5
+
+* Fixed the time input to the curve function resulting in a proper drop off near the end. (This stopped working at some point due to a change to the vanilla formula.)
+
 1.1.4
 
 * Fixed some errors in total health and stamina calculations.

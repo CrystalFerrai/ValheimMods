@@ -28,7 +28,7 @@ using UnityEngine;
 
 namespace Sated
 {
-    [BepInPlugin(ModId, "Sated", "1.1.4.0")]
+    [BepInPlugin(ModId, "Sated", "1.1.5.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class SatedPlugin : BaseUnityPlugin
@@ -69,10 +69,10 @@ namespace Sated
             ShowFoodTimerBars.SettingChanged += ShowFoodTimerBars_SettingChanged;
 #endif
 
-            HealthCurveExponent = Config.Bind("Food", nameof(HealthCurveExponent), 8.0f, "The value of the exponent 'e' used in the food curve formula 'y = 1 - x^e' for calculating added health. Valid range 0.1 - 100. Higher values make you full longer, but also drop off more suddenly. A value of 1 indicates a linear decline (vanilla behavior). Values less than 1 invert the curve, causing a faster initial decline which gradually slows down.");
+            HealthCurveExponent = Config.Bind("Food", nameof(HealthCurveExponent), 8.0f, "The value of the exponent 'e' used in the food curve formula 'y = 1 - x^e' for calculating added health. Valid range 0.1 - 100. Higher values make you full longer, but also drop off more suddenly. A value of 1 indicates a linear decline. Values less than 1 invert the curve, causing a faster initial decline which gradually slows down.");
             HealthCurveExponent.SettingChanged += CurveExponent_SettingChanged;
 
-            StaminaCurveExponent = Config.Bind("Food", nameof(StaminaCurveExponent), 8.0f, "The value of the exponent 'e' used in the food curve formula 'y = 1 - x^e' for calculating added stamina. Valid range 0.1 - 100. Higher values make you full longer, but also drop off more suddenly. A value of 1 indicates a linear decline (vanilla behavior). Values less than 1 invert the curve, causing a faster initial decline which gradually slows down.");
+            StaminaCurveExponent = Config.Bind("Food", nameof(StaminaCurveExponent), 8.0f, "The value of the exponent 'e' used in the food curve formula 'y = 1 - x^e' for calculating added stamina. Valid range 0.1 - 100. Higher values make you full longer, but also drop off more suddenly. A value of 1 indicates a linear decline. Values less than 1 invert the curve, causing a faster initial decline which gradually slows down.");
             StaminaCurveExponent.SettingChanged += CurveExponent_SettingChanged;
 
             ClampConfig();
@@ -142,8 +142,9 @@ namespace Sated
                 foreach (Player.Food food in (List<Player.Food>)sPlayerFoodsField.GetValue(__instance))
                 {
                     // y = 1 - x^8
-                    hp += (1.0f - Mathf.Pow(1.0f - food.m_health / food.m_item.m_shared.m_food, HealthCurveExponent.Value)) * food.m_item.m_shared.m_food;
-                    stamina += (1.0f - Mathf.Pow(1.0f - food.m_stamina / food.m_item.m_shared.m_foodStamina, StaminaCurveExponent.Value)) * food.m_item.m_shared.m_foodStamina;
+                    float time = 1.0f - food.m_time / food.m_item.m_shared.m_foodBurnTime;
+                    hp += (1.0f - Mathf.Pow(time, HealthCurveExponent.Value)) * food.m_item.m_shared.m_food;
+                    stamina += (1.0f - Mathf.Pow(time, StaminaCurveExponent.Value)) * food.m_item.m_shared.m_foodStamina;
                 }
                 return false;
             }
