@@ -20,6 +20,10 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+2.0.5
+
+* The radius value displayed on screen (if that option is enabled) is now correct when in a dungeon.
+
 2.0.4
 
 * Updated for compatibility with game update

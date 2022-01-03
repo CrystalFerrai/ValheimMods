@@ -13,6 +13,10 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+1.1.4
+
+* Fixed some errors in total health and stamina calculations.
+
 1.1.3
 
 * Removed the food timer bar feature because it breaks the UI after the latest game update.

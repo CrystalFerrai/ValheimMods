@@ -28,7 +28,7 @@ using UnityEngine;
 
 namespace Sated
 {
-    [BepInPlugin(ModId, "Sated", "1.1.3.0")]
+    [BepInPlugin(ModId, "Sated", "1.1.4.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class SatedPlugin : BaseUnityPlugin

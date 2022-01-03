@@ -1,6 +1,6 @@
 ﻿{
     "name": "Sated",
-    "version_number": "1.1.3",
+    "version_number": "1.1.4",
     "description": "Health and stamina gained from food stays with you for more of the food's duration.",
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.1600"
@@ -11,7 +11,7 @@
     "AuthorName": "Crystal",
     "Name": "Sated",
     "DisplayName": "Sated",
-    "Version": "1.1.3",
+    "Version": "1.1.4",
     "Licence": "",
     "WebsiteURL": "https://github.com/CrystalFerrai/ValheimMods",
     "Description": "Health and stamina gained from food stays with you for more of the food's duration.",
