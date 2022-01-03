@@ -193,11 +193,17 @@ namespace Pathfinder
 
             private static float GetExploreRadius(Player player)
             {
+                float result;
+
                 if (player.InInterior())
                 {
                     // In a dungeon. Dungeons are way up high and we dont want to reveal a huge section of the map when entering one.
                     // We actually want to reduce the radius since it doesnt make sense to be able to explore the map while in a dungeon
-                    return Mathf.Max(LandExploreRadius.Value * 0.2f, 10.0f);
+                    result = Mathf.Max(LandExploreRadius.Value * 0.2f, 10.0f);
+
+                    sHudText.text = $"Pathfinder: radius={result:0.0}";
+
+                    return result;
                 }
 
                 float baseRadius;
@@ -273,7 +279,7 @@ namespace Pathfinder
                 }
 #endif
 
-                float result = Mathf.Clamp(baseRadius * multiplier, 20.0f, 2000.0f);
+                result = Mathf.Clamp(baseRadius * multiplier, 20.0f, 2000.0f);
 
                 sHudText.text = $"Pathfinder: radius={result:0.0}";
 

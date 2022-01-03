@@ -44,14 +44,13 @@ namespace Sated
         private static Harmony sPlayerHarmony;
 #if FEATURE_FOOD_BARS
         private static Harmony sHudHarmony;
-#endif
-        private static Harmony sHudHealthHarmony;
         private static Harmony sHudFoodHarmony;
 
-        private static readonly FieldInfo sPlayerFoodsField;
         private static readonly GameObject sProgressBarPrefab;
-
         private static GuiBar[] sFoodProgressBars;
+#endif
+
+        private static readonly FieldInfo sPlayerFoodsField;
 
         static SatedPlugin()
         {
@@ -79,18 +78,13 @@ namespace Sated
             ClampConfig();
 
             sPlayerHarmony = new Harmony(ModId + "_Player");
+            sPlayerHarmony.PatchAll(typeof(Player_Patches));
+
 #if FEATURE_FOOD_BARS
             sHudHarmony = new Harmony(ModId + "_Hud");
-#endif
-            sHudHealthHarmony = new Harmony(ModId + "_HudHealth");
-            sHudFoodHarmony = new Harmony(ModId + "_HudFood");
-
-            sPlayerHarmony.PatchAll(typeof(Player_Patches));
-#if FEATURE_FOOD_BARS
             sHudHarmony.PatchAll(typeof(Hud_Patches));
-#endif
-            sHudHealthHarmony.PatchAll(typeof(Hud_Health_Patch));
-#if FEATURE_FOOD_BARS
+            
+            sHudFoodHarmony = new Harmony(ModId + "_HudFood");
             if (ShowFoodTimerBars.Value)
             {
                 sHudFoodHarmony.PatchAll(typeof(Hud_Food_Patch));
@@ -101,8 +95,10 @@ namespace Sated
         private void OnDestroy()
         {
             sPlayerHarmony.UnpatchSelf();
-            sHudHealthHarmony.UnpatchSelf();
+#if FEATURE_FOOD_BARS
+            sHudHarmony.UnpatchSelf();
             sHudFoodHarmony.UnpatchSelf();
+#endif
         }
 
         private static void ClampConfig()
@@ -117,8 +113,6 @@ namespace Sated
         private void CurveExponent_SettingChanged(object sender, EventArgs e)
         {
             ClampConfig();
-            sHudHealthHarmony.UnpatchSelf();
-            sHudHealthHarmony.PatchAll(typeof(Hud_Health_Patch));
         }
 
 #if FEATURE_FOOD_BARS
@@ -143,14 +137,13 @@ namespace Sated
             [HarmonyPatch("GetTotalFoodValue"), HarmonyPrefix]
             private static bool GetTotalFoodValue_Prefix(Player __instance, out float hp, out float stamina)
             {
-                var a = new[] { 0f, 7 };
-                hp = 25.0f;
-                stamina = 75.0f;
+                hp = __instance.m_baseHP;
+                stamina = __instance.m_baseStamina;
                 foreach (Player.Food food in (List<Player.Food>)sPlayerFoodsField.GetValue(__instance))
                 {
                     // y = 1 - x^8
                     hp += (1.0f - Mathf.Pow(1.0f - food.m_health / food.m_item.m_shared.m_food, HealthCurveExponent.Value)) * food.m_item.m_shared.m_food;
-                    stamina += (1.0f - Mathf.Pow(1.0f - food.m_stamina / food.m_item.m_shared.m_foodStamina, StaminaCurveExponent.Value)) * food.m_item.m_shared.m_food;
+                    stamina += (1.0f - Mathf.Pow(1.0f - food.m_stamina / food.m_item.m_shared.m_foodStamina, StaminaCurveExponent.Value)) * food.m_item.m_shared.m_foodStamina;
                 }
                 return false;
             }
@@ -176,68 +169,6 @@ namespace Sated
             }
         }
 #endif
-
-        [HarmonyPatch(typeof(Hud))]
-        private static class Hud_Health_Patch
-        {
-            [HarmonyPatch("UpdateFood"), HarmonyTranspiler]
-            private static IEnumerable<CodeInstruction> UpdateFood_Transpiler(IEnumerable<CodeInstruction> instructions)
-            {
-                bool done = false;
-                CodeInstruction previous = null;
-
-                foreach (CodeInstruction instruction in instructions)
-                {
-                    if (done)
-                    {
-                        yield return instruction;
-                        continue;
-                    }
-
-                    if (instruction.opcode == OpCodes.Ldfld && ((FieldInfo)instruction.operand).Name == nameof(Player.Food.m_health) && previous != null)
-                    {
-                        // (1.0f - Mathf.Pow(1.0f - food.m_health / food.m_item.m_shared.m_food, CurveExponent.Value)) * food.m_item.m_shared.m_food
-                        yield return new CodeInstruction(OpCodes.Ldc_R4, 1.0f);
-                        yield return new CodeInstruction(OpCodes.Ldc_R4, 1.0f);
-                        yield return previous;
-                        yield return instruction;
-                        yield return previous.Clone();
-                        yield return new CodeInstruction(OpCodes.Ldfld, typeof(Player.Food).GetField(nameof(Player.Food.m_item)));
-                        yield return new CodeInstruction(OpCodes.Ldfld, typeof(ItemDrop.ItemData).GetField(nameof(ItemDrop.ItemData.m_shared)));
-                        yield return new CodeInstruction(OpCodes.Ldfld, typeof(ItemDrop.ItemData.SharedData).GetField(nameof(ItemDrop.ItemData.SharedData.m_food)));
-                        yield return new CodeInstruction(OpCodes.Div);
-                        yield return new CodeInstruction(OpCodes.Sub);
-                        yield return new CodeInstruction(OpCodes.Ldc_R4, HealthCurveExponent.Value);
-                        yield return new CodeInstruction(OpCodes.Call, typeof(Mathf).GetMethod(nameof(Mathf.Pow)));
-                        yield return new CodeInstruction(OpCodes.Sub);
-                        yield return previous.Clone();
-                        yield return new CodeInstruction(OpCodes.Ldfld, typeof(Player.Food).GetField(nameof(Player.Food.m_item)));
-                        yield return new CodeInstruction(OpCodes.Ldfld, typeof(ItemDrop.ItemData).GetField(nameof(ItemDrop.ItemData.m_shared)));
-                        yield return new CodeInstruction(OpCodes.Ldfld, typeof(ItemDrop.ItemData.SharedData).GetField(nameof(ItemDrop.ItemData.SharedData.m_food)));
-                        yield return new CodeInstruction(OpCodes.Mul);
-
-                        done = true;
-                    }
-                    else
-                    {
-                        if (previous != null)
-                        {
-                            yield return previous;
-                            previous = null;
-                        }
-
-                        if (instruction.opcode == OpCodes.Ldloc_S)
-                        {
-                            previous = instruction;
-                        }
-                        else
-                        {
-                            yield return instruction;
-                        }
-                    }
-                }
-            }
-        }
 
 #if FEATURE_FOOD_BARS
         [HarmonyPatch(typeof(Hud))]
