@@ -1,4 +1,4 @@
-﻿Increased the depth you can dig into the ground by 150%. The amount is configurable.
+Increased the depth you can dig into the ground by 150%. The amount is configurable.
 
 Also allow you to configure the height you can raise terrain.
 
@@ -13,6 +13,10 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+1.1.2
+
+* Updated BepInEx version
+
 1.1.1
 
 * Updated BepInEx version

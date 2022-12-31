@@ -24,7 +24,7 @@ using UnityEngine.UI;
 
 namespace BetterChat
 {
-    [BepInPlugin(ModId, "Better Chat", "1.4.2.0")]
+	[BepInPlugin(ModId, "Better Chat", "1.4.3.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class BetterChatPlugin : BaseUnityPlugin
@@ -39,6 +39,7 @@ namespace BetterChat
         public static ConfigEntry<bool> ShowShoutPings;
         public static ConfigEntry<float> TalkDistance;
         public static ConfigEntry<float> WhisperDistance;
+        public static ConfigEntry<float> ShoutDistance;
 
         private static Harmony sChatAwakeHarmony;
         private static Harmony sPlayerHarmony;
@@ -76,7 +77,7 @@ namespace BetterChat
             SlashOpensChat = Config.Bind("Chat", nameof(SlashOpensChat), true, "If True, pressing the slash key (/) will open the chat window and start a message.");
             SlashOpensChat.SettingChanged += SlashOpensChat_SettingChanged;
 
-            DefaultShout = Config.Bind("Chat", nameof(DefaultShout), false, "If True, text entered will shout by default - type /s for talk. If False, chat will be talk by default - type /s for shout.");
+            DefaultShout = Config.Bind("Chat", nameof(DefaultShout), false, "If True, text entered will shout by default - type /say for talk. If False, chat will be talk by default - type /s for shout.");
             DefaultShout.SettingChanged += DefaultShout_SettingChanged;
 
             ShowShoutPings = Config.Bind("Chat", nameof(ShowShoutPings), true, "If True, pings will show on your map when players shout (game default). If False, the pings will not show. (Other players can still see your shout pings.)");
@@ -87,6 +88,9 @@ namespace BetterChat
 
             WhisperDistance = Config.Bind("Chat", nameof(WhisperDistance), 4.0f, "The maximum distance from a player at which you will receive their whispered chat messages. Game default is 4. Acceptable range is 1-20");
             WhisperDistance.SettingChanged += Distance_SettingChanged;
+
+            ShoutDistance = Config.Bind("Chat", nameof(ShoutDistance), 70.0f, "The maximum distance from a player at which you will receive their shout chat messages. Game default is 70. Acceptable range is 1-1000");
+            ShoutDistance.SettingChanged += Distance_SettingChanged;
 
             ClampConfig();
 
@@ -111,7 +115,8 @@ namespace BetterChat
             }
             if (!ForceCase.Value)
             {
-                sChatMixedCaseHarmony.PatchAll(typeof(Chat_MixedCase_Patch));
+                sChatMixedCaseHarmony.PatchAll(typeof(Chat_MixedCase_Terminal_Patch));
+                sChatMixedCaseHarmony.PatchAll(typeof(Chat_MixedCase_Chat_Patch));
             }
             if (DefaultShout.Value)
             {
@@ -151,6 +156,9 @@ namespace BetterChat
 
             if (WhisperDistance.Value < 1.0f) WhisperDistance.Value = 1.0f;
             if (WhisperDistance.Value > 20.0f) WhisperDistance.Value = 20.0f;
+
+            if (ShoutDistance.Value < 1.0f) ShoutDistance.Value = 1.0f;
+            if (ShoutDistance.Value > 1000.0f) ShoutDistance.Value = 1000.0f;
         }
 
         private void AlwaysVisible_SettingChanged(object sender, EventArgs e)
@@ -185,7 +193,8 @@ namespace BetterChat
             }
             else
             {
-                sChatMixedCaseHarmony.PatchAll(typeof(Chat_MixedCase_Patch));
+                sChatMixedCaseHarmony.PatchAll(typeof(Chat_MixedCase_Terminal_Patch));
+                sChatMixedCaseHarmony.PatchAll(typeof(Chat_MixedCase_Chat_Patch));
             }
         }
 
@@ -233,6 +242,7 @@ namespace BetterChat
             {
                 talker.m_visperDistance = WhisperDistance.Value;
                 talker.m_normalDistance = TalkDistance.Value;
+                talker.m_shoutDistance = ShoutDistance.Value;
             }
         }
 
@@ -263,6 +273,7 @@ namespace BetterChat
                 Talker talker = __instance.GetComponent<Talker>();
                 talker.m_visperDistance = WhisperDistance.Value;
                 talker.m_normalDistance = TalkDistance.Value;
+                talker.m_shoutDistance = ShoutDistance.Value;
                 sTalkers.Add(talker);
             }
 
@@ -399,15 +410,19 @@ namespace BetterChat
             }
         }
 
-        [HarmonyPatch(typeof(Chat))]
-        private static class Chat_MixedCase_Patch
+        [HarmonyPatch(typeof(Terminal))]
+        private static class Chat_MixedCase_Terminal_Patch
         {
-            [HarmonyPatch("AddString", new[] { typeof(string), typeof(string), typeof(Talker.Type) }), HarmonyTranspiler]
+            [HarmonyPatch("AddString", new[] { typeof(string), typeof(string), typeof(Talker.Type), typeof(bool) }), HarmonyTranspiler]
             private static IEnumerable<CodeInstruction> AddString_Transpiler(IEnumerable<CodeInstruction> instructions)
             {
                 return StripForcedCase(instructions);
             }
+        }
 
+        [HarmonyPatch(typeof(Chat))]
+        private static class Chat_MixedCase_Chat_Patch
+        {
             [HarmonyPatch("AddInworldText"), HarmonyTranspiler]
             private static IEnumerable<CodeInstruction> AddInworldText_Transpiler(IEnumerable<CodeInstruction> instructions)
             {

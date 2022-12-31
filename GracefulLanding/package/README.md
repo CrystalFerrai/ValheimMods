@@ -1,4 +1,4 @@
-﻿Reduces fall damage.
+Reduces fall damage.
 
 This is a very simple mod that replaces a few fall damage related values with configurable values. By default, you can fall twice as far before taking any damage and four times as far before taking max damage.
 
@@ -13,6 +13,10 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+1.0.3
+
+* Updated BepInEx version
+
 1.0.2
 
 * Updated BepInEx version

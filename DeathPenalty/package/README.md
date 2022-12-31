@@ -1,4 +1,4 @@
-﻿Allows tweaking various death related values. You can make death softer or harder as desired by editing the config.
+Allows tweaking various death related values. You can make death softer or harder as desired by editing the config.
 
 * Tune the death penalty skill loss percentage.
 * Modify the duration of the "No Skill Loss" buff.
@@ -15,6 +15,10 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+1.0.4
+
+* Updated BepInEx version
+
 1.0.3
 
 * Updated BepInEx version

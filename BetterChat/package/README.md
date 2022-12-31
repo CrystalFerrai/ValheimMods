@@ -1,4 +1,4 @@
-﻿Adds configurable features to the chat system.
+Adds configurable features to the chat system.
 
 * Show the chat window when a message is received, or have it always visible.
 * Configure how long the window shows when a new message is received.
@@ -21,6 +21,11 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+1.4.3
+
+* Updated for game compatibility
+* Updated BepInEx version
+
 1.4.2
 
 * Updated for compatibility with game update

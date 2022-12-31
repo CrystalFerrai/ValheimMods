@@ -1,4 +1,4 @@
-﻿Increases the base map discovery range around the player as well as dynamically adjusts the range based on various visibility factors.
+Increases the base map discovery range around the player as well as dynamically adjusts the range based on various visibility factors.
 
 * The discovery radius is generally increased compared to vanilla.
 * Discovery radius is further increased while on a boat.
@@ -20,6 +20,10 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+2.0.6
+
+* Updated BepInEx version
+
 2.0.5
 
 * The radius value displayed on screen (if that option is enabled) is now correct when in a dungeon.
