@@ -28,7 +28,7 @@ using UnityEngine;
 
 namespace Sated
 {
-    [BepInPlugin(ModId, "Sated", "1.1.6.0")]
+    [BepInPlugin(ModId, "Sated", "1.1.7.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class SatedPlugin : BaseUnityPlugin
@@ -40,6 +40,7 @@ namespace Sated
 #endif
         public static ConfigEntry<float> HealthCurveExponent;
         public static ConfigEntry<float> StaminaCurveExponent;
+        public static ConfigEntry<float> EitrCurveExponent;
 
         private static Harmony sPlayerHarmony;
 #if FEATURE_FOOD_BARS
@@ -75,6 +76,9 @@ namespace Sated
             StaminaCurveExponent = Config.Bind("Food", nameof(StaminaCurveExponent), 8.0f, "The value of the exponent 'e' used in the food curve formula 'y = 1 - x^e' for calculating added stamina. Valid range 0.1 - 100. Higher values make you full longer, but also drop off more suddenly. A value of 1 indicates a linear decline. Values less than 1 invert the curve, causing a faster initial decline which gradually slows down.");
             StaminaCurveExponent.SettingChanged += CurveExponent_SettingChanged;
 
+            EitrCurveExponent = Config.Bind("Food", nameof(EitrCurveExponent), 8.0f, "The value of the exponent 'e' used in the food curve formula 'y = 1 - x^e' for calculating added eitr. Valid range 0.1 - 100. Higher values make you full longer, but also drop off more suddenly. A value of 1 indicates a linear decline. Values less than 1 invert the curve, causing a faster initial decline which gradually slows down.");
+            EitrCurveExponent.SettingChanged += CurveExponent_SettingChanged;
+
             ClampConfig();
 
             sPlayerHarmony = new Harmony(ModId + "_Player");
@@ -108,6 +112,9 @@ namespace Sated
 
             if (StaminaCurveExponent.Value < 0.1f) StaminaCurveExponent.Value = 0.1f;
             if (StaminaCurveExponent.Value > 100.0f) StaminaCurveExponent.Value = 100.0f;
+
+            if (EitrCurveExponent.Value < 0.1f) EitrCurveExponent.Value = 0.1f;
+            if (EitrCurveExponent.Value > 100.0f) EitrCurveExponent.Value = 100.0f;
         }
 
         private void CurveExponent_SettingChanged(object sender, EventArgs e)
@@ -135,16 +142,18 @@ namespace Sated
         private static class Player_Patches
         {
             [HarmonyPatch("GetTotalFoodValue"), HarmonyPrefix]
-            private static bool GetTotalFoodValue_Prefix(Player __instance, out float hp, out float stamina)
+            private static bool GetTotalFoodValue_Prefix(Player __instance, out float hp, out float stamina, out float eitr)
             {
                 hp = __instance.m_baseHP;
                 stamina = __instance.m_baseStamina;
+                eitr = 0.0f;
                 foreach (Player.Food food in (List<Player.Food>)sPlayerFoodsField.GetValue(__instance))
                 {
                     // y = 1 - x^8
                     float time = 1.0f - food.m_time / food.m_item.m_shared.m_foodBurnTime;
                     hp += (1.0f - Mathf.Pow(time, HealthCurveExponent.Value)) * food.m_item.m_shared.m_food;
                     stamina += (1.0f - Mathf.Pow(time, StaminaCurveExponent.Value)) * food.m_item.m_shared.m_foodStamina;
+                    eitr += (1.0f - Mathf.Pow(time, EitrCurveExponent.Value)) * food.m_item.m_shared.m_foodEitr;
                 }
                 return false;
             }
