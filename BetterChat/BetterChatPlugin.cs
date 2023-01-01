@@ -24,7 +24,7 @@ using UnityEngine.UI;
 
 namespace BetterChat
 {
-	[BepInPlugin(ModId, "Better Chat", "1.4.3.0")]
+	[BepInPlugin(ModId, "Better Chat", "1.4.4.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class BetterChatPlugin : BaseUnityPlugin
@@ -39,7 +39,6 @@ namespace BetterChat
         public static ConfigEntry<bool> ShowShoutPings;
         public static ConfigEntry<float> TalkDistance;
         public static ConfigEntry<float> WhisperDistance;
-        public static ConfigEntry<float> ShoutDistance;
 
         private static Harmony sChatAwakeHarmony;
         private static Harmony sPlayerHarmony;
@@ -88,9 +87,6 @@ namespace BetterChat
 
             WhisperDistance = Config.Bind("Chat", nameof(WhisperDistance), 4.0f, "The maximum distance from a player at which you will receive their whispered chat messages. Game default is 4. Acceptable range is 1-20");
             WhisperDistance.SettingChanged += Distance_SettingChanged;
-
-            ShoutDistance = Config.Bind("Chat", nameof(ShoutDistance), 70.0f, "The maximum distance from a player at which you will receive their shout chat messages. Game default is 70. Acceptable range is 1-1000");
-            ShoutDistance.SettingChanged += Distance_SettingChanged;
 
             ClampConfig();
 
@@ -156,9 +152,6 @@ namespace BetterChat
 
             if (WhisperDistance.Value < 1.0f) WhisperDistance.Value = 1.0f;
             if (WhisperDistance.Value > 20.0f) WhisperDistance.Value = 20.0f;
-
-            if (ShoutDistance.Value < 1.0f) ShoutDistance.Value = 1.0f;
-            if (ShoutDistance.Value > 1000.0f) ShoutDistance.Value = 1000.0f;
         }
 
         private void AlwaysVisible_SettingChanged(object sender, EventArgs e)
@@ -240,10 +233,14 @@ namespace BetterChat
 
             foreach (Talker talker in sTalkers)
             {
-                talker.m_visperDistance = WhisperDistance.Value;
-                talker.m_normalDistance = TalkDistance.Value;
-                talker.m_shoutDistance = ShoutDistance.Value;
+                ApplyChatDistances(talker);
             }
+        }
+
+        private static void ApplyChatDistances(Talker talker)
+        {
+            talker.m_visperDistance = WhisperDistance.Value;
+            talker.m_normalDistance = TalkDistance.Value;
         }
 
         [HarmonyPatch(typeof(Chat))]
@@ -271,9 +268,7 @@ namespace BetterChat
             private static void Awake_Postfix(Player __instance)
             {
                 Talker talker = __instance.GetComponent<Talker>();
-                talker.m_visperDistance = WhisperDistance.Value;
-                talker.m_normalDistance = TalkDistance.Value;
-                talker.m_shoutDistance = ShoutDistance.Value;
+                ApplyChatDistances(talker);
                 sTalkers.Add(talker);
             }
 

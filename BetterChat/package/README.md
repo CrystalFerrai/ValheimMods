@@ -21,6 +21,10 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+1.4.4
+
+* Removed erroneously added shout distance setting which didn't actually do anything
+
 1.4.3
 
 * Updated for game compatibility
