@@ -28,7 +28,7 @@ using UnityEngine;
 
 namespace Sated
 {
-    [BepInPlugin(ModId, "Sated", "1.1.7.0")]
+    [BepInPlugin(ModId, "Sated", "1.1.8.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class SatedPlugin : BaseUnityPlugin
@@ -141,21 +141,113 @@ namespace Sated
         [HarmonyPatch(typeof(Player))]
         private static class Player_Patches
         {
-            [HarmonyPatch("GetTotalFoodValue"), HarmonyPrefix]
-            private static bool GetTotalFoodValue_Prefix(Player __instance, out float hp, out float stamina, out float eitr)
+            private enum TranspilerState
             {
-                hp = __instance.m_baseHP;
-                stamina = __instance.m_baseStamina;
-                eitr = 0.0f;
-                foreach (Player.Food food in (List<Player.Food>)sPlayerFoodsField.GetValue(__instance))
-                {
-                    // y = 1 - x^8
-                    float time = 1.0f - food.m_time / food.m_item.m_shared.m_foodBurnTime;
-                    hp += (1.0f - Mathf.Pow(time, HealthCurveExponent.Value)) * food.m_item.m_shared.m_food;
-                    stamina += (1.0f - Mathf.Pow(time, StaminaCurveExponent.Value)) * food.m_item.m_shared.m_foodStamina;
-                    eitr += (1.0f - Mathf.Pow(time, EitrCurveExponent.Value)) * food.m_item.m_shared.m_foodEitr;
-                }
-                return false;
+                Searching,
+                Checking1,
+                Checking2,
+                ReplacingHp,
+                ReplacingStamina,
+                ReplacingEitr,
+                Finishing
+            }
+
+            [HarmonyPatch("GetTotalFoodValue"), HarmonyTranspiler]
+            private static IEnumerable<CodeInstruction> GetTotalFoodValue_Transpiler(IEnumerable<CodeInstruction> instructions)
+            {
+                TranspilerState state = TranspilerState.Searching;
+
+                foreach (CodeInstruction instruction in instructions)
+				{
+					switch (state)
+					{
+						case TranspilerState.Searching:
+                            if (instruction.opcode == OpCodes.Ldloca_S)
+							{
+                                state = TranspilerState.Checking1;
+							}
+                            yield return instruction;
+							break;
+                        case TranspilerState.Checking1:
+                            if (instruction.opcode == OpCodes.Call)
+                            {
+                                state = TranspilerState.Checking2;
+                            }
+                            else
+							{
+                                state = TranspilerState.Searching;
+							}
+                            yield return instruction;
+                            break;
+                        case TranspilerState.Checking2:
+                            if (instruction.opcode == OpCodes.Stloc_1)
+							{
+                                state = TranspilerState.ReplacingHp;
+							}
+                            else
+							{
+                                state = TranspilerState.Searching;
+							}
+                            yield return instruction;
+                            break;
+                        case TranspilerState.ReplacingHp:
+                            if (instruction.opcode == OpCodes.Ldfld)
+							{
+                                yield return new CodeInstruction(OpCodes.Call, typeof(Player_Patches).GetMethod(nameof(GetHp), BindingFlags.NonPublic | BindingFlags.Static));
+                                state = TranspilerState.ReplacingStamina;
+							}
+                            else
+							{
+                                yield return instruction;
+							}
+							break;
+                        case TranspilerState.ReplacingStamina:
+                            if (instruction.opcode == OpCodes.Ldfld)
+                            {
+                                yield return new CodeInstruction(OpCodes.Call, typeof(Player_Patches).GetMethod(nameof(GetStamina), BindingFlags.NonPublic | BindingFlags.Static));
+                                state = TranspilerState.ReplacingEitr;
+                            }
+                            else
+                            {
+                                yield return instruction;
+                            }
+                            break;
+                        case TranspilerState.ReplacingEitr:
+                            if (instruction.opcode == OpCodes.Ldfld)
+                            {
+                                yield return new CodeInstruction(OpCodes.Call, typeof(Player_Patches).GetMethod(nameof(GetEitr), BindingFlags.NonPublic | BindingFlags.Static));
+                                state = TranspilerState.Finishing;
+                            }
+                            else
+                            {
+                                yield return instruction;
+                            }
+                            break;
+                        case TranspilerState.Finishing:
+                            yield return instruction;
+							break;
+					}
+				}
+            }
+
+            private static float GetHp(Player.Food food)
+			{
+                return (1.0f - Mathf.Pow(GetTime(food), HealthCurveExponent.Value)) * food.m_item.m_shared.m_food;
+            }
+
+            private static float GetStamina(Player.Food food)
+            {
+                return (1.0f - Mathf.Pow(GetTime(food), StaminaCurveExponent.Value)) * food.m_item.m_shared.m_foodStamina;
+            }
+
+            private static float GetEitr(Player.Food food)
+            {
+                return (1.0f - Mathf.Pow(GetTime(food), EitrCurveExponent.Value)) * food.m_item.m_shared.m_foodEitr;
+            }
+
+            private static float GetTime(Player.Food food)
+			{
+                return 1.0f - food.m_time / food.m_item.m_shared.m_foodBurnTime;
             }
         }
 

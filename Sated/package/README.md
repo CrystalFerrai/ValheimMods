@@ -13,6 +13,10 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+1.1.8
+
+* Modified patching method for compatibility with Azumatt's MagicEitrBase mod.
+
 1.1.7
 
 * Fixed an issue preventing food from providing Eitr.
