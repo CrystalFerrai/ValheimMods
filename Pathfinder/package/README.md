@@ -20,6 +20,10 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+2.0.7
+
+* Added an option to display exploration radius calculation variables on the screen (in case you want to know why the radius is what it is at a given moment).
+
 2.0.6
 
 * Updated BepInEx version

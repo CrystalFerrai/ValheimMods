@@ -33,7 +33,7 @@ using System.Text;
 
 namespace Pathfinder
 {
-    [BepInPlugin(ModId, "Pathfinder", "2.0.6.0")]
+    [BepInPlugin(ModId, "Pathfinder", "2.0.7.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class PathfinderPlugin : BaseUnityPlugin
@@ -47,11 +47,13 @@ namespace Pathfinder
         public static ConfigEntry<float> DaylightRadiusScale;
         public static ConfigEntry<float> WeatherRadiusScale;
         public static ConfigEntry<bool> DisplayCurrentRadiusValue;
+        public static ConfigEntry<bool> DisplayVariables;
 
         private static Harmony sMinimapHarmony;
         private static Harmony sHudHarmony;
 
-        private static Text sHudText;
+        private static Text sRadiusHudText;
+        private static Text sVariablesHudText;
 
 #if DEBUG_SHOW_OVERLAY
         private static Harmony sDebugHarmony;
@@ -80,7 +82,10 @@ namespace Pathfinder
             WeatherRadiusScale.SettingChanged += Config_SettingChanged;
 
             DisplayCurrentRadiusValue = Config.Bind("Miscellaneous", nameof(DisplayCurrentRadiusValue), false, "Enabling this will display the currently computed exploration radius in the bottom left of the in-game Hud. Useful if you are trying to tweak config values and want to see the result.");
-            DisplayCurrentRadiusValue.SettingChanged += DisplayCurrentRadiusValue_SettingChanged;
+            DisplayCurrentRadiusValue.SettingChanged += DisplayRadiusValue_SettingChanged;
+
+            DisplayVariables = Config.Bind("Miscellaneous", nameof(DisplayVariables), false, "Enabling this will display on the Hud the values of various variables that go into calculating the exploration radius. Mostly useful for debugging and tweaking the config.");
+            DisplayVariables.SettingChanged += DisplayVariablesValue_SettingChanged;
 
             ClampConfig();
 
@@ -102,9 +107,22 @@ namespace Pathfinder
             ClampConfig();
         }
 
-        private void DisplayCurrentRadiusValue_SettingChanged(object sender, EventArgs e)
+        private void DisplayRadiusValue_SettingChanged(object sender, EventArgs e)
         {
-            sHudText.gameObject.SetActive(DisplayCurrentRadiusValue.Value);
+            sRadiusHudText.gameObject.SetActive(DisplayCurrentRadiusValue.Value);
+            if (!DisplayCurrentRadiusValue.Value)
+            {
+                sRadiusHudText.text = string.Empty;
+			}
+        }
+
+        private void DisplayVariablesValue_SettingChanged(object sender, EventArgs e)
+        {
+            sVariablesHudText.gameObject.SetActive(DisplayVariables.Value);
+            if (!DisplayVariables.Value)
+            {
+                sVariablesHudText.text = string.Empty;
+            }
         }
 
         private void OnDestroy()
@@ -201,7 +219,7 @@ namespace Pathfinder
                     // We actually want to reduce the radius since it doesnt make sense to be able to explore the map while in a dungeon
                     result = Mathf.Max(LandExploreRadius.Value * 0.2f, 10.0f);
 
-                    sHudText.text = $"Pathfinder: radius={result:0.0}";
+                    sRadiusHudText.text = $"Pathfinder: radius={result:0.0}";
 
                     return result;
                 }
@@ -252,7 +270,8 @@ namespace Pathfinder
                 multiplier += adjustedAltitude * AltitudeRadiusBonus.Value;
 
                 // Make adjustments based on biome
-                multiplier += GetLocationModifier(player, adjustedAltitude);
+                float location = GetLocationModifier(player, adjustedAltitude);
+                multiplier += location;
 
                 if (multiplier > 5.0f) multiplier = 5.0f;
                 if (multiplier < 0.2f) multiplier = 0.2f;
@@ -281,7 +300,16 @@ namespace Pathfinder
 
                 result = Mathf.Clamp(baseRadius * multiplier, 20.0f, 2000.0f);
 
-                sHudText.text = $"Pathfinder: radius={result:0.0}";
+                if (DisplayVariables.Value)
+                {
+                    const string fmt = "+0.000;-0.000;0.000";
+                    sVariablesHudText.text = $"Pathfinder Variables\nRadius: {result:0.0}\nBase: {baseRadius:0.#}\nMultiplier: {multiplier:0.000}\n\nLight: {((light - 1.0f) * DaylightRadiusScale.Value).ToString(fmt)}\nWeather: {(-fog * WeatherRadiusScale.Value).ToString(fmt)}\nAltitude: {(adjustedAltitude * AltitudeRadiusBonus.Value).ToString(fmt)}\nLocation: {location.ToString(fmt)}";
+                }
+
+                if (DisplayCurrentRadiusValue.Value)
+				{
+                    sRadiusHudText.text = $"Pathfinder: radius={result:0.0}";
+                }
 
                 return result;
             }
@@ -319,28 +347,55 @@ namespace Pathfinder
             [HarmonyPatch("Awake"), Harmony, HarmonyPostfix]
             private static void Awake_Postfix(Hud __instance)
             {
-                GameObject debugTextObject = new GameObject("DebugText");
-                debugTextObject.AddComponent<CanvasRenderer>();
-                debugTextObject.transform.localPosition = Vector3.zero;
+                {
+                    GameObject textObject = new GameObject("Pathfinder_RadiusText");
+                    textObject.AddComponent<CanvasRenderer>();
+                    textObject.transform.localPosition = Vector3.zero;
 
-                RectTransform transform = debugTextObject.AddComponent<RectTransform>();
-                transform.SetParent(__instance.m_rootObject.transform);
-                transform.pivot = transform.anchorMin = transform.anchorMax = new Vector2(0.0f, 0.0f);
-                transform.offsetMin = new Vector2(10.0f, 5.0f);
-                transform.offsetMax = new Vector2(210.0f, 25.0f);
+                    RectTransform transform = textObject.AddComponent<RectTransform>();
+                    transform.SetParent(__instance.m_rootObject.transform);
+                    transform.pivot = transform.anchorMin = transform.anchorMax = new Vector2(0.0f, 0.0f);
+                    transform.offsetMin = new Vector2(10.0f, 5.0f);
+                    transform.offsetMax = new Vector2(210.0f, 165.0f);
 
-                sHudText = debugTextObject.AddComponent<Text>();
-                sHudText.raycastTarget = false;
-                sHudText.font = Font.CreateDynamicFontFromOSFont(new[] { "Segoe UI", "Helvetica", "Arial" }, 12);
-                sHudText.fontStyle = FontStyle.Bold;
-                sHudText.color = Color.white;
-                sHudText.fontSize = 12;
-                sHudText.alignment = TextAnchor.LowerLeft;
+                    sRadiusHudText = textObject.AddComponent<Text>();
+                    sRadiusHudText.raycastTarget = false;
+                    sRadiusHudText.font = Font.CreateDynamicFontFromOSFont(new[] { "Segoe UI", "Helvetica", "Arial" }, 12);
+                    sRadiusHudText.fontStyle = FontStyle.Bold;
+                    sRadiusHudText.color = Color.white;
+                    sRadiusHudText.fontSize = 12;
+                    sRadiusHudText.alignment = TextAnchor.LowerLeft;
 
-                Outline debugTextOutline = debugTextObject.AddComponent<Outline>();
-                debugTextOutline.effectColor = Color.black;
+                    Outline textOutline = textObject.AddComponent<Outline>();
+                    textOutline.effectColor = Color.black;
 
-                debugTextObject.SetActive(DisplayCurrentRadiusValue.Value);
+                    textObject.SetActive(DisplayCurrentRadiusValue.Value);
+                }
+
+                {
+                    GameObject textObject = new GameObject("Pathfinder_VariableText");
+                    textObject.AddComponent<CanvasRenderer>();
+                    textObject.transform.localPosition = Vector3.zero;
+
+                    RectTransform transform = textObject.AddComponent<RectTransform>();
+                    transform.SetParent(__instance.m_rootObject.transform);
+                    transform.pivot = transform.anchorMin = transform.anchorMax = new Vector2(0.0f, 0.0f);
+                    transform.offsetMin = new Vector2(240.0f, 5.0f);
+                    transform.offsetMax = new Vector2(440.0f, 165.0f);
+
+                    sVariablesHudText = textObject.AddComponent<Text>();
+                    sVariablesHudText.raycastTarget = false;
+                    sVariablesHudText.font = Font.CreateDynamicFontFromOSFont(new[] { "Segoe UI", "Helvetica", "Arial" }, 12);
+                    sVariablesHudText.fontStyle = FontStyle.Bold;
+                    sVariablesHudText.color = Color.white;
+                    sVariablesHudText.fontSize = 12;
+                    sVariablesHudText.alignment = TextAnchor.LowerLeft;
+
+                    Outline textOutline = textObject.AddComponent<Outline>();
+                    textOutline.effectColor = Color.black;
+
+                    textObject.SetActive(DisplayVariables.Value);
+                }
             }
         }
 
