@@ -1,4 +1,4 @@
-﻿{
+{
     "name": "CrystalPack",
     "version_number": "1.0.0",
     "description": "Collection of all of Crystal's Valheim Mods",
@@ -24,7 +24,14 @@
     "Description": "Collection of all of Crystal's Valheim Mods",
     "GameVersion": "",
     "Dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.1901"
+        "Crystal-BetterChat-1.4.3",
+        "Crystal-DeathPenalty-1.0.4",
+        "Crystal-DigDeeper-1.1.2",
+        "Crystal-FastTools-1.1.2",
+        "Crystal-GracefulLanding-1.0.3",
+        "Crystal-Pathfinder-2.0.6",
+        "Crystal-ProperPortals-1.2.2",
+        "Crystal-Sated-1.1.6"
     ],
     "OptionalDependencies": [],
     "Incompatibilities": [],
