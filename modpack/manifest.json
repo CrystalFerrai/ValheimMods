@@ -1,16 +1,17 @@
 {
     "name": "CrystalPack",
-    "version_number": "1.0.0",
+    "version_number": "1.1.0",
     "description": "Collection of all of Crystal's Valheim Mods",
     "dependencies": [
-        "Crystal-BetterChat-1.4.3",
+        "Crystal-BetterChat-1.4.4",
         "Crystal-DeathPenalty-1.0.4",
         "Crystal-DigDeeper-1.1.2",
         "Crystal-FastTools-1.1.2",
         "Crystal-GracefulLanding-1.0.3",
-        "Crystal-Pathfinder-2.0.6",
+        "Crystal-Magni-1.0.0",
+        "Crystal-Pathfinder-2.0.7",
         "Crystal-ProperPortals-1.2.2",
-        "Crystal-Sated-1.1.6"
+        "Crystal-Sated-1.1.8"
     ],
     "website_url": "https://github.com/CrystalFerrai/ValheimMods",
 
@@ -18,20 +19,21 @@
     "AuthorName": "Crystal",
     "Name": "CrystalPack",
     "DisplayName": "Crystal Pack",
-    "Version": "1.0.0",
+    "Version": "1.1.0",
     "Licence": "",
     "WebsiteURL": "https://github.com/CrystalFerrai/ValheimMods",
     "Description": "Collection of all of Crystal's Valheim Mods",
     "GameVersion": "",
     "Dependencies": [
-        "Crystal-BetterChat-1.4.3",
+        "Crystal-BetterChat-1.4.4",
         "Crystal-DeathPenalty-1.0.4",
         "Crystal-DigDeeper-1.1.2",
         "Crystal-FastTools-1.1.2",
         "Crystal-GracefulLanding-1.0.3",
-        "Crystal-Pathfinder-2.0.6",
+        "Crystal-Magni-1.0.0",
+        "Crystal-Pathfinder-2.0.7",
         "Crystal-ProperPortals-1.2.2",
-        "Crystal-Sated-1.1.6"
+        "Crystal-Sated-1.1.8"
     ],
     "OptionalDependencies": [],
     "Incompatibilities": [],
