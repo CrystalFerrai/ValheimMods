@@ -1,4 +1,4 @@
-﻿// Copyright 2021 Crystal Ferrai
+﻿// Copyright 2023 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,11 +15,14 @@
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
+using System;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Reflection.Emit;
 
 namespace DeathPenalty
 {
-    [BepInPlugin(ModId, "Death Penalty", "1.0.4.0")]
+    [BepInPlugin(ModId, "Death Penalty", "1.1.0.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class DeathPenaltyPlugin : BaseUnityPlugin
@@ -27,10 +30,12 @@ namespace DeathPenalty
         public const string ModId = "dev.crystal.deathpenalty";
 
         public static ConfigEntry<float> SkillLossPercent;
+        public static ConfigEntry<bool> ResetLevelProgress;
         public static ConfigEntry<float> MercyEffectDuration;
         public static ConfigEntry<float> SafetyEffectDuration;
 
-        private static Harmony sSkillsHarmony;
+        private static Harmony sSkillsLevelHarmony;
+        private static Harmony sSkillsAccumulatorHarmony;
         private static Harmony sPlayerHarmony;
         private static Harmony sTombStoneHarmony;
 
@@ -45,8 +50,11 @@ namespace DeathPenalty
 
         private void Awake()
         {
-            SkillLossPercent = Config.Bind("Death", nameof(SkillLossPercent), 5.0f, "The percent loss suffered to all skills when the player dies. Range 0-100. 0 disables skill loss. 50 reduces all skills by half. 100 resets all skills to 0. Resulting loss is effectively rounded by the game up to the next full level. Game default is 5.");
+            SkillLossPercent = Config.Bind("Death", nameof(SkillLossPercent), 5.0f, "The percent loss suffered to the level of all skills when the player dies. Range 0-100. 0 disables skill loss. 50 reduces all skills by half. 100 resets all skills to 0. Game default is 5.");
             SkillLossPercent.SettingChanged += SkillLossPercent_SettingChanged;
+
+            ResetLevelProgress = Config.Bind("Death", nameof(ResetLevelProgress), true, "Whether to reset progress towards the next level for all skills when the player dies. This is independent of the loss of skill levels. Game default is true.");
+            ResetLevelProgress.SettingChanged += ResetLevelProgress_SettingChanged;
 
             MercyEffectDuration = Config.Bind("Death", nameof(MercyEffectDuration), 600.0f, "The duration, in seconds, of the \"No Skill Loss\" status effect that is granted on death which prevents further loss of skills via subsequent deaths. Game default is 600.");
             MercyEffectDuration.SettingChanged += MercyEffectDuration_SettingChanged;
@@ -56,23 +64,30 @@ namespace DeathPenalty
 
             ClampConfig();
 
-            sSkillsHarmony = new Harmony(ModId + "_Skills");
+            sSkillsLevelHarmony = new Harmony(ModId + "_Skills_Level");
+            sSkillsAccumulatorHarmony = new Harmony(ModId + "_Skills_Accumulator");
             sPlayerHarmony = new Harmony(ModId + "_Player");
             sTombStoneHarmony = new Harmony(ModId + "_TombStone");
 
-            sSkillsHarmony.PatchAll(typeof(Skills_Patches));
+            sSkillsLevelHarmony.PatchAll(typeof(Skills_Level_Patches));
             sPlayerHarmony.PatchAll(typeof(Player_Patches));
             sTombStoneHarmony.PatchAll(typeof(TombStone_Patches));
+
+            if (!ResetLevelProgress.Value)
+			{
+                sSkillsAccumulatorHarmony.PatchAll(typeof(Skills_Accumulator_Patches));
+            }
         }
 
         private void OnDestroy()
         {
-            sSkillsHarmony.UnpatchSelf();
+            sSkillsLevelHarmony.UnpatchSelf();
+            sSkillsAccumulatorHarmony.UnpatchSelf();
             sPlayerHarmony.UnpatchSelf();
             sTombStoneHarmony.UnpatchSelf();
         }
 
-        private void SkillLossPercent_SettingChanged(object sender, System.EventArgs e)
+        private void SkillLossPercent_SettingChanged(object sender, EventArgs e)
         {
             ClampConfig();
             foreach (Player player in sPlayers)
@@ -81,7 +96,19 @@ namespace DeathPenalty
             }
         }
 
-        private void MercyEffectDuration_SettingChanged(object sender, System.EventArgs e)
+        private void ResetLevelProgress_SettingChanged(object sender, EventArgs e)
+        {
+            if (ResetLevelProgress.Value)
+			{
+                sSkillsAccumulatorHarmony.UnpatchSelf();
+			}
+            else
+            {
+                sSkillsAccumulatorHarmony.PatchAll(typeof(Skills_Accumulator_Patches));
+            }
+        }
+
+        private void MercyEffectDuration_SettingChanged(object sender, EventArgs e)
         {
             ClampConfig();
             foreach (Player player in sPlayers)
@@ -90,7 +117,7 @@ namespace DeathPenalty
             }
         }
 
-        private void SafetyEffectDuration_SettingChanged(object sender, System.EventArgs e)
+        private void SafetyEffectDuration_SettingChanged(object sender, EventArgs e)
         {
             ClampConfig();
             foreach (TombStone tombstone in sTombStones)
@@ -112,12 +139,66 @@ namespace DeathPenalty
         }
 
         [HarmonyPatch(typeof(Skills))]
-        private static class Skills_Patches
+        private static class Skills_Level_Patches
         {
             [HarmonyPatch("Awake"), HarmonyPostfix]
             private static void Awake_Postfix(Skills __instance)
             {
                 __instance.m_DeathLowerFactor = SkillLossPercent.Value * 0.01f;
+            }
+        }
+
+        [HarmonyPatch(typeof(Skills))]
+        private static class Skills_Accumulator_Patches
+        {
+            private enum TranspilerState
+            {
+                Searching,
+                Updating,
+                Finishing
+            }
+
+            [HarmonyPatch("LowerAllSkills"), HarmonyTranspiler]
+            private static IEnumerable<CodeInstruction> LowerAllSkills_Transpiler(IEnumerable<CodeInstruction> instructions)
+            {
+                TranspilerState state = TranspilerState.Searching;
+
+                CodeInstruction previousInstruction = null;
+
+                foreach (CodeInstruction instruction in instructions)
+				{
+					switch (state)
+					{
+						case TranspilerState.Searching:
+                            if (instruction.opcode == OpCodes.Ldc_R4 && (float)instruction.operand == 0.0f)
+                            {
+                                previousInstruction = instruction;
+                                state = TranspilerState.Updating;
+                            }
+                            else
+							{
+                                yield return instruction;
+							}
+							break;
+						case TranspilerState.Updating:
+                            if (instruction.opcode == OpCodes.Stfld && ((FieldInfo)instruction.operand).Name == nameof(Skills.Skill.m_accumulator))
+							{
+                                // Omit the instructions which set m_accumulator to 0
+                                state = TranspilerState.Finishing;
+							}
+                            else
+							{
+                                yield return previousInstruction;
+                                yield return instruction;
+                                state = TranspilerState.Searching;
+							}
+                            previousInstruction = null;
+                            break;
+						case TranspilerState.Finishing:
+                            yield return instruction;
+							break;
+					}
+				}
             }
         }
 

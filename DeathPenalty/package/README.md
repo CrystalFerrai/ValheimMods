@@ -1,6 +1,7 @@
 Allows tweaking various death related values. You can make death softer or harder as desired by editing the config.
 
-* Tune the death penalty skill loss percentage.
+* Tune the death penalty skill level loss percentage.
+* Toggle whether skill progress towards the next level is reset.
 * Modify the duration of the "No Skill Loss" buff.
 * Modify the duration of the "Corpse Run" buff.
 
@@ -15,6 +16,10 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+1.1.0
+
+* Added option to disable losing progress towards next level.
+
 1.0.4
 
 * Updated BepInEx version
