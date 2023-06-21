@@ -21,7 +21,7 @@ Before the solution will build, you will need to get some third party DLLs and p
     * assembly_valheim.dll
 * Unstripped Unity engine assemblies that match the unity version used by Valheim. These can be found in different places, but I pulled them from [BepInExPack_Valheim on Thunderstore](https://valheim.thunderstore.io/package/denikson/BepInExPack_Valheim/) (you may need to search if this link gets broken). This pack also includes the BepInEx assemblies listed above.
 
-Once the `lib` directory is populated, you should be able to open `ValheimMods.sln` in Visual Studio 2019 and build the solution.
+Once the `lib` directory is populated, you should be able to open `ValheimMods.sln` in Visual Studio 2022 and build the solution.
 
 ## How to Package for Release
 
