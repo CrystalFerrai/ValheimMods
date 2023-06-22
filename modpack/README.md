@@ -4,7 +4,7 @@ Collection of Valheim mods created by Crystal.
 1.3.0
 
 * Added: Comfortable
-* Updated: DeathPenalty, Sated
+* Updated: DeathPenalty, Pathfinder
 
 1.2.0
 
