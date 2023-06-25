@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Farmland", "Farmland\Farmla
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Comfortable", "Comfortable\Comfortable.csproj", "{A9D5F180-5FFB-4854-9A5E-81940E3B5666}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildSpace", "BuildSpace\BuildSpace.csproj", "{10565550-7931-4506-A65F-96055766B7E5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +77,10 @@ Global
 		{A9D5F180-5FFB-4854-9A5E-81940E3B5666}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A9D5F180-5FFB-4854-9A5E-81940E3B5666}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A9D5F180-5FFB-4854-9A5E-81940E3B5666}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10565550-7931-4506-A65F-96055766B7E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10565550-7931-4506-A65F-96055766B7E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10565550-7931-4506-A65F-96055766B7E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10565550-7931-4506-A65F-96055766B7E5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

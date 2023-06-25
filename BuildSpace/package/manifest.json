@@ -1,0 +1,31 @@
+﻿{
+    "name": "BuildSpace",
+    "version_number": "1.0.0",
+    "description": "Adjust the build radius around crafting stations.",
+    "dependencies": [
+        "denikson-BepInExPack_Valheim-5.4.1901"
+    ],
+    "website_url": "https://github.com/CrystalFerrai/ValheimMods",
+
+    "ManifestVersion": 2,
+    "AuthorName": "Crystal",
+    "Name": "BuildSpace",
+    "DisplayName": "BuildSpace",
+    "Version": "1.0.0",
+    "Licence": "",
+    "WebsiteURL": "https://github.com/CrystalFerrai/ValheimMods",
+    "Description": "Adjust the build radius around crafting stations.",
+    "GameVersion": "",
+    "Dependencies": [
+        "denikson-BepInExPack_Valheim-5.4.1901"
+    ],
+    "OptionalDependencies": [],
+    "Incompatibilities": [],
+    "NetworkMode": "client",
+    "PackageType": "mod",
+    "InstallMode": "managed",
+    "Loaders": [
+        "bepinex"
+    ],
+    "ExtraData": {}
+}
