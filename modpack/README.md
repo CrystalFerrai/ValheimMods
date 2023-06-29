@@ -1,6 +1,10 @@
 Collection of Valheim mods created by Crystal.
 
 ## Changelog
+1.4.1
+
+* Updated: BuildSpace
+
 1.4.0
 
 * Added: BuildSpace
