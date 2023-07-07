@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Comfortable", "Comfortable\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildSpace", "BuildSpace\BuildSpace.csproj", "{10565550-7931-4506-A65F-96055766B7E5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClearTheAir", "ClearTheAir\ClearTheAir.csproj", "{B3201FCE-DC8E-457B-8ADC-C625DBF2FED6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +83,10 @@ Global
 		{10565550-7931-4506-A65F-96055766B7E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{10565550-7931-4506-A65F-96055766B7E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{10565550-7931-4506-A65F-96055766B7E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3201FCE-DC8E-457B-8ADC-C625DBF2FED6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3201FCE-DC8E-457B-8ADC-C625DBF2FED6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3201FCE-DC8E-457B-8ADC-C625DBF2FED6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3201FCE-DC8E-457B-8ADC-C625DBF2FED6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
