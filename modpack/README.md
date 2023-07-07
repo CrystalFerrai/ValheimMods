@@ -1,6 +1,10 @@
 Collection of Valheim mods created by Crystal.
 
 ## Changelog
+1.5.0
+
+* Added: ClearTheAir
+
 1.4.1
 
 * Updated: BuildSpace

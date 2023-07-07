@@ -1,10 +1,11 @@
 {
     "name": "CrystalPack",
-    "version_number": "1.4.1",
+    "version_number": "1.5.0",
     "description": "Collection of all of Crystal's Valheim Mods",
     "dependencies": [
         "Crystal-BetterChat-1.4.4",
         "Crystal-BuildSpace-1.0.1",
+        "Crystal-ClearTheAir-1.0.0",
         "Crystal-Comfortable-1.0.0",
         "Crystal-DeathPenalty-1.1.0",
         "Crystal-DigDeeper-1.1.2",
@@ -22,7 +23,7 @@
     "AuthorName": "Crystal",
     "Name": "CrystalPack",
     "DisplayName": "Crystal Pack",
-    "Version": "1.4.1",
+    "Version": "1.5.0",
     "Licence": "",
     "WebsiteURL": "https://github.com/CrystalFerrai/ValheimMods",
     "Description": "Collection of all of Crystal's Valheim Mods",
@@ -30,6 +31,7 @@
     "Dependencies": [
         "Crystal-BetterChat-1.4.4",
         "Crystal-BuildSpace-1.0.1",
+        "Crystal-ClearTheAir-1.0.0",
         "Crystal-Comfortable-1.0.0",
         "Crystal-DeathPenalty-1.1.0",
         "Crystal-DigDeeper-1.1.2",
