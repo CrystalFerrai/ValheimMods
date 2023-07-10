@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClearTheAir", "ClearTheAir\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SeaLevel", "SeaLevel\SeaLevel.csproj", "{2063D0CC-453C-4BA1-81F9-D701F7E07059}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Underwater", "Underwater\Underwater.csproj", "{3CDAB7B7-951C-4013-8B57-7931E76589D4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -93,6 +95,10 @@ Global
 		{2063D0CC-453C-4BA1-81F9-D701F7E07059}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2063D0CC-453C-4BA1-81F9-D701F7E07059}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2063D0CC-453C-4BA1-81F9-D701F7E07059}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3CDAB7B7-951C-4013-8B57-7931E76589D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3CDAB7B7-951C-4013-8B57-7931E76589D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3CDAB7B7-951C-4013-8B57-7931E76589D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3CDAB7B7-951C-4013-8B57-7931E76589D4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
