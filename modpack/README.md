@@ -1,6 +1,10 @@
 Collection of Valheim mods created by Crystal.
 
 ## Changelog
+1.6.0
+
+* Added: Underwater
+
 1.5.0
 
 * Added: ClearTheAir
