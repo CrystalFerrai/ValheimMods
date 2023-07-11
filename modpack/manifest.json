@@ -1,6 +1,6 @@
 {
     "name": "CrystalPack",
-    "version_number": "1.6.0",
+    "version_number": "1.6.1",
     "description": "Collection of all of Crystal's Valheim Mods",
     "dependencies": [
         "Crystal-BetterChat-1.4.4",
@@ -16,7 +16,7 @@
         "Crystal-Pathfinder-2.0.8",
         "Crystal-ProperPortals-1.2.2",
         "Crystal-Sated-1.1.8",
-        "Crystal-Underwater-1.0.0"
+        "Crystal-Underwater-1.0.1"
     ],
     "website_url": "https://github.com/CrystalFerrai/ValheimMods",
 
@@ -24,7 +24,7 @@
     "AuthorName": "Crystal",
     "Name": "CrystalPack",
     "DisplayName": "Crystal Pack",
-    "Version": "1.6.0",
+    "Version": "1.6.1",
     "Licence": "",
     "WebsiteURL": "https://github.com/CrystalFerrai/ValheimMods",
     "Description": "Collection of all of Crystal's Valheim Mods",
@@ -43,7 +43,7 @@
         "Crystal-Pathfinder-2.0.8",
         "Crystal-ProperPortals-1.2.2",
         "Crystal-Sated-1.1.8",
-        "Crystal-Underwater-1.0.0"
+        "Crystal-Underwater-1.0.1"
     ],
     "OptionalDependencies": [],
     "Incompatibilities": [],
