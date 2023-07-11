@@ -15,6 +15,7 @@
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -22,15 +23,18 @@ using UnityEngine;
 
 namespace Underwater
 {
-	[BepInPlugin(ModId, "Underwater", "1.0.0.0")]
+	[BepInPlugin(ModId, "Underwater", "1.0.1.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class UnderwaterPlugin : BaseUnityPlugin
     {
         public const string ModId = "dev.crystal.underwater";
 
-        public static ConfigEntry<bool> PlayerIgnoreWater;
+        private const string ToggleSwimName = "ToggleSwim";
+
+        public static ConfigEntry<bool> PlayerSwims;
         public static ConfigEntry<bool> CameraIgnoreWater;
+        public static ConfigEntry<KeyCode> ToggleSwimKey;
 
         private static Harmony sCharacterHarmony;
         private static Harmony sGameCameraHarmony;
@@ -48,11 +52,14 @@ namespace Underwater
 
         private void Awake()
         {
-            PlayerIgnoreWater = Config.Bind("Underwater", nameof(PlayerIgnoreWater), false, "Whether players should ignore water, walking along the terrain beneath it. Can also be toggled by pressing Backspace. Game default false.");
-			PlayerIgnoreWater.SettingChanged += IgnoreWater_SettingChanged;
+            PlayerSwims = Config.Bind("Underwater", nameof(PlayerSwims), true, "Whether players should swim or ignore water, walking along the terrain beneath it. Can also be toggled by pressing Backspace. Game default true.");
+			PlayerSwims.SettingChanged += IgnoreWater_SettingChanged;
 
-            CameraIgnoreWater = Config.Bind("Underwater", nameof(CameraIgnoreWater), false, "Whether the camera should ignore water, allowing it to move beneath the surface. This setting is implied true if PlayerIgnoreWater is true. Game default false.");
+            CameraIgnoreWater = Config.Bind("Underwater", nameof(CameraIgnoreWater), false, "Whether the camera should ignore water, allowing it to move beneath the surface. This setting is implied true if PlayerSwims is false. Game default false.");
             CameraIgnoreWater.SettingChanged += IgnoreWater_SettingChanged;
+
+            ToggleSwimKey = Config.Bind("Underwater", nameof(ToggleSwimKey), KeyCode.Backspace, "Binds a shortcut key for toggling the PlayerSwims option.");
+			ToggleSwimKey.SettingChanged += ToggleSwimKey_SettingChanged;
 
             sCharacterHarmony = new Harmony(ModId + "_Character");
             sGameCameraHarmony = new Harmony(ModId + "_GameCamera");
@@ -63,7 +70,7 @@ namespace Underwater
             sZInputHarmony.PatchAll(typeof(ZInput_Patches));
             sPlayerControllerHarmony.PatchAll(typeof(PlayerController_Patches));
 
-            if (PlayerIgnoreWater.Value || CameraIgnoreWater.Value)
+            if (PlayerSwims.Value || CameraIgnoreWater.Value)
             {
                 sGameCameraHarmony.PatchAll(typeof(GameCamera_Patches));
             }
@@ -77,9 +84,9 @@ namespace Underwater
             sPlayerControllerHarmony.UnpatchSelf();
         }
 
-        private void IgnoreWater_SettingChanged(object sender, System.EventArgs e)
+        private void IgnoreWater_SettingChanged(object sender, EventArgs e)
         {
-            if (PlayerIgnoreWater.Value || CameraIgnoreWater.Value)
+            if (PlayerSwims.Value || CameraIgnoreWater.Value)
             {
                 sGameCameraHarmony.PatchAll(typeof(GameCamera_Patches));
             }
@@ -89,6 +96,13 @@ namespace Underwater
             }
         }
 
+        private void ToggleSwimKey_SettingChanged(object sender, EventArgs e)
+        {
+            if (ZInput.instance == null) return;
+
+            ZInput.instance.Setbutton(ToggleSwimName, ToggleSwimKey.Value);
+        }
+
         [HarmonyPatch(typeof(Character))]
         private static class Character_Patches
         {
@@ -96,7 +110,7 @@ namespace Underwater
             private static bool InLiquidDepth_Prefix(Character __instance, ref float __result)
             {
                 __result = 0.0f;
-                return !__instance.IsPlayer() || !PlayerIgnoreWater.Value;
+                return !__instance.IsPlayer() || PlayerSwims.Value;
             }
         }
 
@@ -203,12 +217,12 @@ namespace Underwater
             {
                 if ((bool)sTakeInputMethod.Invoke(__instance, null))
 				{
-                    if (ZInput.GetButtonDown("ToggleSwim"))
+                    if (ZInput.GetButtonDown(ToggleSwimName))
 					{
-                        PlayerIgnoreWater.Value = !PlayerIgnoreWater.Value;
+                        PlayerSwims.Value = !PlayerSwims.Value;
 
                         Player player = (Player)sCharacterField.GetValue(__instance);
-                        player.Message(MessageHud.MessageType.TopLeft, PlayerIgnoreWater.Value ? "Swimming Off" : "Swimming On");
+                        player.Message(MessageHud.MessageType.TopLeft, PlayerSwims.Value ? "Swimming On" : "Swimming Off");
                     }
 				}
             }
@@ -220,7 +234,7 @@ namespace Underwater
             [HarmonyPatch("Reset"), HarmonyPostfix]
             private static void Reset_Postfix(ZInput __instance)
             {
-                __instance.AddButton("ToggleSwim", KeyCode.Backspace);
+                __instance.AddButton(ToggleSwimName, ToggleSwimKey.Value);
             }
         }
     }
