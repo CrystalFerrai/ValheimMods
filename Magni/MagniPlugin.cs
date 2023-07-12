@@ -19,7 +19,7 @@ using System;
 
 namespace Magni
 {
-    [BepInPlugin(ModId, "Magni", "1.0.0.0")]
+    [BepInPlugin(ModId, "Magni", "1.0.1.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class MagniPlugin : BaseUnityPlugin

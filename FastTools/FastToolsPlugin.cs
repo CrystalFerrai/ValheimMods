@@ -1,4 +1,4 @@
-﻿// Copyright 2021 Crystal Ferrai
+﻿// Copyright 2023 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ using System.Collections.Generic;
 
 namespace FastTools
 {
-    [BepInPlugin(ModId, "Fast Tools", "1.1.2.0")]
+    [BepInPlugin(ModId, "Fast Tools", "1.1.3.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class FastToolsPlugin : BaseUnityPlugin

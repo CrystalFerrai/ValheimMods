@@ -1,4 +1,4 @@
-﻿// Copyright 2021 Crystal Ferrai
+﻿// Copyright 2023 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ using UnityEngine.UI;
 
 namespace BetterChat
 {
-	[BepInPlugin(ModId, "Better Chat", "1.4.4.0")]
+	[BepInPlugin(ModId, "Better Chat", "1.4.5.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class BetterChatPlugin : BaseUnityPlugin

@@ -4,6 +4,8 @@ Run the game once with the mod enabled to generate the config. See config for de
 
 Tip: The exponent of the curve is configurable. To visualize the food curve and see how different exponents look, enter the above formula into a graphing calculator such as [this one](https://www.desmos.com/calculator) and change the ``8`` to whatever number you want to see.
 
+This mod is client only and does not need to be installed on dedicated servers. For the best experience, all clients should use the same configuration.
+
 ## Installation
 This mod is designed to install and run via [r2modman](https://thunderstore.io/package/ebkr/r2modman/). You can optionally install it manually following the steps below.
 
@@ -13,6 +15,10 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+1.1.9
+
+* Updated BepinEx version
+
 1.1.8
 
 * Modified patching method for compatibility with Azumatt's MagicEitrBase mod.

@@ -2,6 +2,10 @@ Adds an option for players to walk along the seafloor instead of swimming at the
 
 This mod was created primarily to assist with placing building pieces underwater. I may try to add diving controls in the future, but for now the options are to swim on the surface or walk on the bottom.
 
+Run the game once with the mod enabled to generate the config. See config for details on what each option does.
+
+This mod is client only and does not need to be installed on dedicated servers.
+
 ## Installation
 This mod is designed to install and run via [r2modman](https://thunderstore.io/package/ebkr/r2modman/). You can optionally install it manually following the steps below.
 
@@ -12,6 +16,10 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+1.0.2
+
+* Updated BepinEx version
+
 1.0.1
 
 * The shortcut key for toggling player swimming can now be changed in the mod config.

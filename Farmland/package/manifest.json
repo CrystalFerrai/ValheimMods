@@ -1,9 +1,9 @@
 ﻿{
     "name": "Farmland",
-    "version_number": "1.0.0",
+    "version_number": "1.0.1",
     "description": "Allows cultivating land that usually disallows it.",
     "dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.1901"
+        "denikson-BepInExPack_Valheim-5.4.2105"
     ],
     "website_url": "https://github.com/CrystalFerrai/ValheimMods",
 
@@ -11,13 +11,13 @@
     "AuthorName": "Crystal",
     "Name": "Farmland",
     "DisplayName": "Farmland",
-    "Version": "1.0.0",
+    "Version": "1.0.1",
     "Licence": "",
     "WebsiteURL": "https://github.com/CrystalFerrai/ValheimMods",
     "Description": "Allows cultivating land that usually disallows it.",
     "GameVersion": "",
     "Dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.1901"
+        "denikson-BepInExPack_Valheim-5.4.2105"
     ],
     "OptionalDependencies": [],
     "Incompatibilities": [],

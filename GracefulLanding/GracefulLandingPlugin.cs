@@ -1,4 +1,4 @@
-﻿// Copyright 2021 Crystal Ferrai
+﻿// Copyright 2023 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ using System.Reflection.Emit;
 
 namespace GracefulLanding
 {
-    [BepInPlugin(ModId, "Graceful Landing", "1.0.3.0")]
+    [BepInPlugin(ModId, "Graceful Landing", "1.0.4.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class GracefulLandingPlugin : BaseUnityPlugin

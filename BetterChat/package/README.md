@@ -11,6 +11,8 @@ Adds configurable features to the chat system.
 
 Most everything listed is configurable. Run the game once with the mod enabled to generate the config. See config for details on what each option does.
 
+This mod is client only and does not need to be installed on dedicated servers.
+
 ## Installation
 This mod is designed to install and run via [r2modman](https://thunderstore.io/package/ebkr/r2modman/). You can optionally install it manually following the steps below.
 
@@ -21,6 +23,10 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+1.4.5
+
+* Updated BepinEx version
+
 1.4.4
 
 * Removed erroneously added shout distance setting which didn't actually do anything

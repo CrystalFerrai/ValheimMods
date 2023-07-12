@@ -9,7 +9,9 @@ Increases the base map discovery range around the player as well as dynamically 
 
 Values listed above are defaults. All of them are configurable. Run the game once with the mod enabled to generate the config. See config for details on what each option does.
 
-It is generally recommended to only adjust the radius values in the "Base" category of the config. Default values in the "Multipliers" category have been extensively tested and tweaked to try to approximate actual visibility changes, and changing them can significantly impact exploration radius in sometimes unexpected ways.
+It is generally recommended to only adjust the radius values in the "Base" category of the config. Default values in the "Multipliers" category have been tweaked to try to approximate actual visibility changes, and changing them can significantly impact exploration radius in sometimes unexpected ways.
+
+This mod is client only and does not need to be installed on dedicated servers. For the best experience, all clients should use the same configuration.
 
 ## Installation
 This mod is designed to install and run via [r2modman](https://thunderstore.io/package/ebkr/r2modman/). You can optionally install it manually following the steps below.
@@ -20,6 +22,10 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+2.0.9
+
+* Updated BepinEx version
+
 2.0.8
 
 * Fixed compatibility issue with new game version.

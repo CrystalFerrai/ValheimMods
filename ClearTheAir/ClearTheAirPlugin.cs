@@ -21,7 +21,7 @@ using System.Reflection;
 
 namespace ClearTheAir
 {
-	[BepInPlugin(ModId, "ClearTheAir", "1.0.0.0")]
+	[BepInPlugin(ModId, "ClearTheAir", "1.0.1.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class ClearTheAirPlugin : BaseUnityPlugin
