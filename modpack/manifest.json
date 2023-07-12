@@ -4,7 +4,7 @@
     "description": "Collection of all of Crystal's Valheim Mods",
     "dependencies": [
         "Crystal-BetterChat-1.4.5",
-        "Crystal-BuildSpace-1.0.3",
+        "Crystal-BuildSpace-1.0.2",
         "Crystal-ClearTheAir-1.0.1",
         "Crystal-Comfortable-1.0.1",
         "Crystal-DeathPenalty-1.1.1",
@@ -31,7 +31,7 @@
     "GameVersion": "",
     "Dependencies": [
         "Crystal-BetterChat-1.4.5",
-        "Crystal-BuildSpace-1.0.3",
+        "Crystal-BuildSpace-1.0.2",
         "Crystal-ClearTheAir-1.0.1",
         "Crystal-Comfortable-1.0.1",
         "Crystal-DeathPenalty-1.1.1",
