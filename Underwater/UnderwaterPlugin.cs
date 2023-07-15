@@ -23,7 +23,7 @@ using UnityEngine;
 
 namespace Underwater
 {
-	[BepInPlugin(ModId, "Underwater", "1.0.2.0")]
+	[BepInPlugin(ModId, "Underwater", "1.0.3.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class UnderwaterPlugin : BaseUnityPlugin
@@ -43,11 +43,13 @@ namespace Underwater
 
         private static readonly MethodInfo sTakeInputMethod;
         private static readonly FieldInfo sCharacterField;
+        private static readonly FieldInfo sViewField;
 
         static UnderwaterPlugin()
 		{
             sTakeInputMethod = typeof(PlayerController).GetMethod("TakeInput", BindingFlags.NonPublic | BindingFlags.Instance);
             sCharacterField = typeof(PlayerController).GetField("m_character", BindingFlags.NonPublic | BindingFlags.Instance);
+            sViewField = typeof(PlayerController).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance);
 		}
 
         private void Awake()
@@ -70,7 +72,7 @@ namespace Underwater
             sZInputHarmony.PatchAll(typeof(ZInput_Patches));
             sPlayerControllerHarmony.PatchAll(typeof(PlayerController_Patches));
 
-            if (PlayerSwims.Value || CameraIgnoreWater.Value)
+            if (!PlayerSwims.Value || CameraIgnoreWater.Value)
             {
                 sGameCameraHarmony.PatchAll(typeof(GameCamera_Patches));
             }
@@ -86,13 +88,10 @@ namespace Underwater
 
         private void IgnoreWater_SettingChanged(object sender, EventArgs e)
         {
-            if (PlayerSwims.Value || CameraIgnoreWater.Value)
+            sGameCameraHarmony.UnpatchSelf();
+            if (!PlayerSwims.Value || CameraIgnoreWater.Value)
             {
                 sGameCameraHarmony.PatchAll(typeof(GameCamera_Patches));
-            }
-            else
-            {
-                sGameCameraHarmony.UnpatchSelf();
             }
         }
 
@@ -215,16 +214,23 @@ namespace Underwater
             [HarmonyPatch("FixedUpdate"), HarmonyPostfix]
             private static void FixedUpdate_Postfix(PlayerController __instance)
             {
-                if ((bool)sTakeInputMethod.Invoke(__instance, null))
+                ZNetView view = (ZNetView)sViewField.GetValue(__instance);
+                if (view && !view.IsOwner())
+                {
+                    return;
+                }
+                if (!(bool)sTakeInputMethod.Invoke(__instance, null))
 				{
-                    if (ZInput.GetButtonDown(ToggleSwimName))
-					{
-                        PlayerSwims.Value = !PlayerSwims.Value;
-
-                        Player player = (Player)sCharacterField.GetValue(__instance);
-                        player.Message(MessageHud.MessageType.TopLeft, PlayerSwims.Value ? "Swimming On" : "Swimming Off");
-                    }
+                    return;
 				}
+
+                if (ZInput.GetButtonDown(ToggleSwimName))
+                {
+                    PlayerSwims.Value = !PlayerSwims.Value;
+
+                    Player player = (Player)sCharacterField.GetValue(__instance);
+                    player.Message(MessageHud.MessageType.TopLeft, PlayerSwims.Value ? "Swimming On" : "Swimming Off");
+                }
             }
         }
 

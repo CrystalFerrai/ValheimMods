@@ -1,6 +1,6 @@
 ﻿{
     "name": "Underwater",
-    "version_number": "1.0.2",
+    "version_number": "1.0.3",
     "description": "Allow players to go underwater.",
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.2105"
@@ -11,7 +11,7 @@
     "AuthorName": "Crystal",
     "Name": "Underwater",
     "DisplayName": "Underwater",
-    "Version": "1.0.2",
+    "Version": "1.0.3",
     "Licence": "",
     "WebsiteURL": "https://github.com/CrystalFerrai/ValheimMods",
     "Description": "Allow players to go underwater.",
