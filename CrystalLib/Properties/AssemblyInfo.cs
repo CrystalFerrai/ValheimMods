@@ -19,11 +19,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Underwater")]
-[assembly: AssemblyDescription("Underwater")]
+[assembly: AssemblyTitle("CrystalLib")]
+[assembly: AssemblyDescription("CrystalLib")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Crystal")]
-[assembly: AssemblyProduct("Underwater")]
+[assembly: AssemblyProduct("CrystalLib")]
 [assembly: AssemblyCopyright("Copyright © 2023 Crystal Ferrai")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -34,7 +34,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("3cdab7b7-951c-4013-8b57-7931e76589d4")]
+[assembly: Guid("1b09bd80-a4c4-4706-9b13-2d7fc263faa1")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -46,5 +46,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.4.0")]
-[assembly: AssemblyFileVersion("1.0.4.0")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]

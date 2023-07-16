@@ -14,6 +14,7 @@
 
 using BepInEx;
 using BepInEx.Configuration;
+using CrystalLib;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -23,34 +24,21 @@ using UnityEngine;
 
 namespace Underwater
 {
-	[BepInPlugin(ModId, "Underwater", "1.0.3.0")]
+	[BepInPlugin(ModId, "Underwater", "1.0.4.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class UnderwaterPlugin : BaseUnityPlugin
     {
         public const string ModId = "dev.crystal.underwater";
 
-        private const string ToggleSwimName = "ToggleSwim";
-
         public static ConfigEntry<bool> PlayerSwims;
         public static ConfigEntry<bool> CameraIgnoreWater;
         public static ConfigEntry<KeyCode> ToggleSwimKey;
 
+        private static InputBinding sToggleSwimBinding;
+
         private static Harmony sCharacterHarmony;
         private static Harmony sGameCameraHarmony;
-        private static Harmony sZInputHarmony;
-        private static Harmony sPlayerControllerHarmony;
-
-        private static readonly MethodInfo sTakeInputMethod;
-        private static readonly FieldInfo sCharacterField;
-        private static readonly FieldInfo sViewField;
-
-        static UnderwaterPlugin()
-		{
-            sTakeInputMethod = typeof(PlayerController).GetMethod("TakeInput", BindingFlags.NonPublic | BindingFlags.Instance);
-            sCharacterField = typeof(PlayerController).GetField("m_character", BindingFlags.NonPublic | BindingFlags.Instance);
-            sViewField = typeof(PlayerController).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance);
-		}
 
         private void Awake()
         {
@@ -61,16 +49,14 @@ namespace Underwater
             CameraIgnoreWater.SettingChanged += IgnoreWater_SettingChanged;
 
             ToggleSwimKey = Config.Bind("Underwater", nameof(ToggleSwimKey), KeyCode.Backspace, "Binds a shortcut key for toggling the PlayerSwims option.");
-			ToggleSwimKey.SettingChanged += ToggleSwimKey_SettingChanged;
+
+            sToggleSwimBinding = new InputBinding("ToggleSwim", ToggleSwimKey);
+			sToggleSwimBinding.InputPressed += ToggleSwimBinding_InputPressed;
 
             sCharacterHarmony = new Harmony(ModId + "_Character");
             sGameCameraHarmony = new Harmony(ModId + "_GameCamera");
-            sZInputHarmony = new Harmony(ModId + "_ZInput");
-            sPlayerControllerHarmony = new Harmony(ModId + "_PlayerController");
 
             sCharacterHarmony.PatchAll(typeof(Character_Patches));
-            sZInputHarmony.PatchAll(typeof(ZInput_Patches));
-            sPlayerControllerHarmony.PatchAll(typeof(PlayerController_Patches));
 
             if (!PlayerSwims.Value || CameraIgnoreWater.Value)
             {
@@ -82,8 +68,8 @@ namespace Underwater
         {
             sCharacterHarmony.UnpatchSelf();
             sGameCameraHarmony.UnpatchSelf();
-            sZInputHarmony.UnpatchSelf();
-            sPlayerControllerHarmony.UnpatchSelf();
+
+            sToggleSwimBinding.Dispose();
         }
 
         private void IgnoreWater_SettingChanged(object sender, EventArgs e)
@@ -94,12 +80,10 @@ namespace Underwater
                 sGameCameraHarmony.PatchAll(typeof(GameCamera_Patches));
             }
         }
-
-        private void ToggleSwimKey_SettingChanged(object sender, EventArgs e)
+        private void ToggleSwimBinding_InputPressed(object sender, InputEventArgs e)
         {
-            if (ZInput.instance == null) return;
-
-            ZInput.instance.Setbutton(ToggleSwimName, ToggleSwimKey.Value);
+            PlayerSwims.Value = !PlayerSwims.Value;
+            e.Player.Message(MessageHud.MessageType.TopLeft, PlayerSwims.Value ? "Swimming On" : "Swimming Off");
         }
 
         [HarmonyPatch(typeof(Character))]
@@ -205,42 +189,6 @@ namespace Underwater
 							break;
 					}
 				}
-            }
-        }
-
-        [HarmonyPatch(typeof(PlayerController))]
-        private static class PlayerController_Patches
-        {
-            [HarmonyPatch("FixedUpdate"), HarmonyPostfix]
-            private static void FixedUpdate_Postfix(PlayerController __instance)
-            {
-                ZNetView view = (ZNetView)sViewField.GetValue(__instance);
-                if (view && !view.IsOwner())
-                {
-                    return;
-                }
-                if (!(bool)sTakeInputMethod.Invoke(__instance, null))
-				{
-                    return;
-				}
-
-                if (ZInput.GetButtonDown(ToggleSwimName))
-                {
-                    PlayerSwims.Value = !PlayerSwims.Value;
-
-                    Player player = (Player)sCharacterField.GetValue(__instance);
-                    player.Message(MessageHud.MessageType.TopLeft, PlayerSwims.Value ? "Swimming On" : "Swimming Off");
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(ZInput))]
-        private static class ZInput_Patches
-        {
-            [HarmonyPatch("Reset"), HarmonyPostfix]
-            private static void Reset_Postfix(ZInput __instance)
-            {
-                __instance.AddButton(ToggleSwimName, ToggleSwimKey.Value);
             }
         }
     }
