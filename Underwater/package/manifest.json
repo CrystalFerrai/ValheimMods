@@ -3,7 +3,8 @@
     "version_number": "1.0.4",
     "description": "Allow players to go underwater.",
     "dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.2105"
+        "denikson-BepInExPack_Valheim-5.4.2105",
+        "Crystal-CrystalLib-1.0.0"
     ],
     "website_url": "https://github.com/CrystalFerrai/ValheimMods",
 
@@ -17,7 +18,8 @@
     "Description": "Allow players to go underwater.",
     "GameVersion": "",
     "Dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.2105"
+        "denikson-BepInExPack_Valheim-5.4.2105",
+        "Crystal-CrystalLib-1.0.0"
     ],
     "OptionalDependencies": [],
     "Incompatibilities": [],
