@@ -130,7 +130,7 @@ namespace CrystalLib
                 {
                     return;
                 }
-                if (!(bool)sTakeInputMethod.Invoke(__instance, null))
+                if (!(bool)sTakeInputMethod.Invoke(__instance, new object[] { false }))
                 {
                     return;
                 }

@@ -11,6 +11,10 @@ This library should install automatically when installing a mod that depends on 
 2. Download latest ``CrystalLib.dll`` by clicking "Manual Download". Extract the dll from the zip file into ``[GameDirectory]\Bepinex\plugins``. (You only need the dll.)
 
 ## Changelog
+1.0.1
+
+* Updated for game compatibility
+
 1.0.0
 
 * Initial release

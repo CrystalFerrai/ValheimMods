@@ -80,6 +80,7 @@ namespace Underwater
                 sGameCameraHarmony.PatchAll(typeof(GameCamera_Patches));
             }
         }
+
         private void ToggleSwimBinding_InputPressed(object sender, InputEventArgs e)
         {
             PlayerSwims.Value = !PlayerSwims.Value;

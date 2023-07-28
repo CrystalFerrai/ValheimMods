@@ -19,12 +19,13 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace BetterChat
 {
-	[BepInPlugin(ModId, "Better Chat", "1.4.5.0")]
+	[BepInPlugin(ModId, "Better Chat", "1.4.6.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class BetterChatPlugin : BaseUnityPlugin
@@ -298,8 +299,9 @@ namespace BetterChat
             {
                 Searching,
                 Inserting,
-                Labeling,
                 Searching2,
+                Labeling,
+                Searching3,
                 Labeling2,
                 Finishing
             }
@@ -322,24 +324,27 @@ namespace BetterChat
                 {
                     if (state == TranspilerState.Inserting)
                     {
-                        if (instruction.opcode != OpCodes.Brfalse) throw new InvalidOperationException($"[BetterChat] {nameof(Chat_Slash_Patches)} encountered unexpected IL code. Unable to patch. This is most likely due to a game update changing the target code. Disable {nameof(SlashOpensChat)} in the config as a workaround until the mod can be fixed.");
+                        if (instruction.opcode != OpCodes.Brtrue)
+                        {
+                            throw new InvalidOperationException($"[BetterChat] {nameof(Chat_Slash_Patches)} encountered unexpected IL code. Unable to patch. This is most likely due to a game update changing the target code. Disable {nameof(SlashOpensChat)} in the config as a workaround until the mod can be fixed. Details: Search failed, opcode={instruction.opcode}");
+                        }
 
-                        // Previous instruction was checking if enter is pressed. If so, skip the slash key check (boolean OR).
-                        yield return new CodeInstruction(OpCodes.Brtrue, label1);
+                        // Previous instruction was checking if enter is pressed. If so, skip the slash key check.
+                        yield return instruction.Clone();
 
-                        // Check for slash key if enter is not pressed. Also store the result of the check.
-                        yield return new CodeInstruction(OpCodes.Ldc_I4, (int)KeyCode.Slash);
-                        yield return new CodeInstruction(OpCodes.Call, typeof(Input).GetMethod(nameof(Input.GetKeyDown), new[] { typeof(KeyCode) }));
+						// Check for slash key if enter is not pressed. Also store the result of the check.
+						yield return new CodeInstruction(OpCodes.Ldc_I4, (int)KeyCode.Slash);
+                        yield return new CodeInstruction(OpCodes.Call, typeof(Input).GetMethod(nameof(ZInput.GetKeyDown), new[] { typeof(KeyCode) }));
                         yield return new CodeInstruction(OpCodes.Stloc, isSlashPressed.LocalIndex);
                         yield return new CodeInstruction(OpCodes.Ldloc, isSlashPressed.LocalIndex);
 
-                        state = TranspilerState.Labeling;
+						state = TranspilerState.Searching2;
                     }
                     else if (state == TranspilerState.Labeling)
                     {
                         // Label this instruction as the one to jump to if the enter key is pressed (to skip the slash check).
                         instruction.labels.Add(label1);
-                        state = TranspilerState.Searching2;
+                        state = TranspilerState.Searching3;
                     }
                     else if (state == TranspilerState.Labeling2)
                     {
@@ -353,25 +358,33 @@ namespace BetterChat
                     if (state == TranspilerState.Searching && instruction.opcode == OpCodes.Call)
                     {
                         MethodBase method = (MethodBase)instruction.operand;
-                        if (method.Name == nameof(Input.GetKeyDown))
+                        if (method.Name == nameof(ZInput.GetKeyDown))
                         {
                             state = TranspilerState.Inserting;
                         }
                     }
-                    else if (state == TranspilerState.Searching2 && instruction.opcode == OpCodes.Callvirt)
+                    else if (state == TranspilerState.Searching2 && instruction.opcode == OpCodes.Ldsfld)
+					{
+                        FieldInfo field = (FieldInfo)instruction.operand;
+                        if (field.Name == nameof(Player.m_localPlayer))
+                        {
+                            state = TranspilerState.Labeling;
+                        }
+					}
+                    else if (state == TranspilerState.Searching3 && instruction.opcode == OpCodes.Callvirt)
                     {
                         MethodBase method = (MethodBase)instruction.operand;
                         if (method.Name == nameof(InputField.ActivateInputField))
                         {
-                            // If slash was not pressed (meaning enter was), then skip the block below
+                            // If slash was not pressed (meaning some other chat activation key was), then skip the block below
                             yield return new CodeInstruction(OpCodes.Ldloc, isSlashPressed.LocalIndex);
                             yield return new CodeInstruction(OpCodes.Brfalse, label2);
 
                             // If slash was pressed, replace current chat input string with a / character
                             yield return new CodeInstruction(OpCodes.Ldarg_0);
-                            yield return new CodeInstruction(OpCodes.Ldfld, typeof(Chat).GetField(nameof(Chat.m_input)));
+                            yield return new CodeInstruction(OpCodes.Ldfld, typeof(Terminal).GetField(nameof(Terminal.m_input)));
                             yield return new CodeInstruction(OpCodes.Ldstr, "/");
-                            yield return new CodeInstruction(OpCodes.Callvirt, typeof(InputField).GetMethod("set_text"));
+                            yield return new CodeInstruction(OpCodes.Call, typeof(TMP_InputField).GetMethod("set_text"));
 
                             // Move caret to end (after slash) in LateUpdate
                             yield return new CodeInstruction(OpCodes.Ldc_I4_1);
@@ -381,6 +394,11 @@ namespace BetterChat
                         }
                     }
                 }
+
+                if (state != TranspilerState.Finishing)
+				{
+					throw new InvalidOperationException($"[BetterChat] {nameof(Chat_Slash_Patches)} encountered unexpected IL code. Unable to patch. This is most likely due to a game update changing the target code. Disable {nameof(SlashOpensChat)} in the config as a workaround until the mod can be fixed. Details: Never reached finishing state");
+				}
             }
 
             [HarmonyPatch("LateUpdate"), HarmonyPostfix]
