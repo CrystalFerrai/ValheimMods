@@ -6,6 +6,10 @@ This repository hosts all of the Valheim mods created by Crystal. The primary in
 
 Currently, mod releases are only being published to [Thunderstore](https://valheim.thunderstore.io/package/Crystal/). You can download releases from there, or you can install and use [r2modman](https://valheim.thunderstore.io/package/ebkr/r2modman/) to download and manage the mods for you (recommended).
 
+### PTB Releases
+
+Occasionally, there will be mod prereleases for the public test branch of the game. If any such releases currently exist, you can find them [here](https://github.com/CrystalFerrai/ValheimMods/releases) on Github. These releases will be removed and moved to Thunderstore whenever the current game PTB is moved to the public branch.
+
 ## How to Build
 
 For easier development, all mods are part of the same repo and share the same Visual Studio solution. Each mod is a separate project within the solution.
