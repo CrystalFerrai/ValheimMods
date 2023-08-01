@@ -109,6 +109,7 @@ namespace Magical
 			sPlayerTrackingHarmony.UnpatchSelf();
 			sPlayerHarmony.UnpatchSelf();
 			sAttackHarmony.UnpatchSelf();
+			sPlayers.Clear();
 		}
 
 		private static void ClampConfig()
