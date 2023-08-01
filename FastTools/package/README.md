@@ -1,4 +1,4 @@
-Reduced usage delay for build hammer and other placement tools. Delay is configurable.
+Reduced usage delay for build hammer and other placement tools. Delay is configurable. Stamina cost is also configurable.
 
 Run the game once with the mod enabled to generate the config. See config for details on what each option does.
 
@@ -13,6 +13,10 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+1.2.0
+
+* New config option to change the stamina cost of using placement tools.
+
 1.1.3
 
 * Updated BepinEx version
