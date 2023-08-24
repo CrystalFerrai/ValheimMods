@@ -84,13 +84,13 @@ namespace Magical
 			HealthRegenTickRate = Config.Bind("Regen", nameof(HealthRegenTickRate), 10.0f, "The number of seconds between ticks of health regeneration. Game default 10.");
 			HealthRegenTickRate.SettingChanged += PlayerConstant_SettingChanged;
 
-			SkillStaminaReduction = Config.Bind("Skill", nameof(SkillStaminaReduction), 0.33f, "Stamina cost reduction multiplier for actions based on player skill. Value represents reduction with 100 skill which will scale down at lower skill levels. Game default 0.33.");
+			SkillStaminaReduction = Config.Bind("Skill", nameof(SkillStaminaReduction), 0.33f, "Stamina cost reduction multiplier for actions based on player skill. Value represents reduction with 100 skill and will scale down at lower skill levels. Game default 0.33.");
 			SkillStaminaReduction.SettingChanged += Attack_SettingChanged;
 
-			SkillEitrReduction = Config.Bind("Skill", nameof(SkillEitrReduction), 0.33f, "Eitr cost reduction multiplier for actions based on player skill. Value represents reduction with 100 skill which will scale down at lower skill levels. Game default 0.33.");
+			SkillEitrReduction = Config.Bind("Skill", nameof(SkillEitrReduction), 0.33f, "Eitr cost reduction multiplier for actions based on player skill. Value represents reduction with 100 skill and will scale down at lower skill levels. Game default 0.33.");
 			SkillEitrReduction.SettingChanged += Attack_SettingChanged;
 
-			SkillHealthReduction = Config.Bind("Skill", nameof(SkillHealthReduction), 0.33f, "Health cost reduction multiplier for actions based on player skill. Value represents reduction with 100 skill which will scale down at lower skill levels. Game default 0.33.");
+			SkillHealthReduction = Config.Bind("Skill", nameof(SkillHealthReduction), 0.33f, "Health cost reduction multiplier for actions based on player skill. Value represents reduction with 100 skill and will scale down at lower skill levels. Game default 0.33.");
 			SkillHealthReduction.SettingChanged += Attack_SettingChanged;
 
 			sPlayerTrackingHarmony = new Harmony(ModId + "_Player_Tracking");
