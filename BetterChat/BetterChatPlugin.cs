@@ -25,7 +25,7 @@ using UnityEngine.UI;
 
 namespace BetterChat
 {
-	[BepInPlugin(ModId, "Better Chat", "1.4.6.0")]
+	[BepInPlugin(ModId, "Better Chat", "1.4.8.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class BetterChatPlugin : BaseUnityPlugin
@@ -301,8 +301,6 @@ namespace BetterChat
                 Inserting,
                 Searching2,
                 Labeling,
-                Searching3,
-                Labeling2,
                 Finishing
             }
 
@@ -312,8 +310,7 @@ namespace BetterChat
                 LocalBuilder isSlashPressed = generator.DeclareLocal(typeof(bool));
                 isSlashPressed.SetLocalSymInfo(nameof(isSlashPressed));
 
-                Label label1 = generator.DefineLabel();
-                Label label2 = generator.DefineLabel();
+                Label label = generator.DefineLabel();
 
                 yield return new CodeInstruction(OpCodes.Ldc_I4_0);
                 yield return new CodeInstruction(OpCodes.Stloc, isSlashPressed.LocalIndex);
@@ -342,14 +339,8 @@ namespace BetterChat
                     }
                     else if (state == TranspilerState.Labeling)
                     {
-                        // Label this instruction as the one to jump to if the enter key is pressed (to skip the slash check).
-                        instruction.labels.Add(label1);
-                        state = TranspilerState.Searching3;
-                    }
-                    else if (state == TranspilerState.Labeling2)
-                    {
                         // Label this instruction as the one to jump to when skipping the slash insertion code.
-                        instruction.labels.Add(label2);
+                        instruction.labels.Add(label);
                         state = TranspilerState.Finishing;
                     }
 
@@ -363,22 +354,14 @@ namespace BetterChat
                             state = TranspilerState.Inserting;
                         }
                     }
-                    else if (state == TranspilerState.Searching2 && instruction.opcode == OpCodes.Ldsfld)
-					{
-                        FieldInfo field = (FieldInfo)instruction.operand;
-                        if (field.Name == nameof(Player.m_localPlayer))
-                        {
-                            state = TranspilerState.Labeling;
-                        }
-					}
-                    else if (state == TranspilerState.Searching3 && instruction.opcode == OpCodes.Callvirt)
+                    else if (state == TranspilerState.Searching2 && instruction.opcode == OpCodes.Callvirt)
                     {
                         MethodBase method = (MethodBase)instruction.operand;
                         if (method.Name == nameof(InputField.ActivateInputField))
                         {
                             // If slash was not pressed (meaning some other chat activation key was), then skip the block below
                             yield return new CodeInstruction(OpCodes.Ldloc, isSlashPressed.LocalIndex);
-                            yield return new CodeInstruction(OpCodes.Brfalse, label2);
+                            yield return new CodeInstruction(OpCodes.Brfalse, label);
 
                             // If slash was pressed, replace current chat input string with a / character
                             yield return new CodeInstruction(OpCodes.Ldarg_0);
@@ -390,7 +373,7 @@ namespace BetterChat
                             yield return new CodeInstruction(OpCodes.Ldc_I4_1);
                             yield return new CodeInstruction(OpCodes.Stsfld, typeof(BetterChatPlugin).GetField(nameof(sMoveCaretToEnd), BindingFlags.Static | BindingFlags.NonPublic));
 
-                            state = TranspilerState.Labeling2;
+                            state = TranspilerState.Labeling;
                         }
                     }
                 }

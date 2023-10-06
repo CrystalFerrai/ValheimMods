@@ -22,7 +22,7 @@ using UnityEngine;
 
 namespace ProperPortals
 {
-    [BepInPlugin(ModId, "Proper Portals", "1.2.3.0")]
+    [BepInPlugin(ModId, "Proper Portals", "1.2.4.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class ProperPortalsPlugin : BaseUnityPlugin

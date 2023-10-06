@@ -53,6 +53,7 @@ namespace CrystalLib
 		private static readonly MethodInfo sTakeInputMethod;
 		private static readonly FieldInfo sCharacterField;
 		private static readonly FieldInfo sViewField;
+		private static readonly FieldInfo sButtonsField;
 
 		static InputBinding()
 		{
@@ -61,6 +62,7 @@ namespace CrystalLib
 			sTakeInputMethod = typeof(PlayerController).GetMethod("TakeInput", BindingFlags.NonPublic | BindingFlags.Instance);
 			sCharacterField = typeof(PlayerController).GetField("m_character", BindingFlags.NonPublic | BindingFlags.Instance);
 			sViewField = typeof(PlayerController).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance);
+			sButtonsField = typeof(ZInput).GetField("m_buttons", BindingFlags.NonPublic | BindingFlags.Instance);
 
 			sZInputHarmony = new Harmony("CrystalLib_KeyBind_ZInput");
 			sPlayerControllerHarmony = new Harmony("CrystalLib_KeyBind_PlayerController");
@@ -116,7 +118,13 @@ namespace CrystalLib
         {
             if (ZInput.instance == null) return;
 
-            ZInput.instance.Setbutton(Name, ConfigEntry.Value);
+            SetButton(Name, ConfigEntry.Value);
+        }
+
+        private static void SetButton(string name, KeyCode keyCode)
+        {
+            var buttons = (Dictionary<string, ZInput.ButtonDef>)sButtonsField.GetValue(ZInput.instance);
+            buttons[name].m_key = keyCode;
         }
 
         [HarmonyPatch(typeof(PlayerController))]

@@ -24,7 +24,7 @@ using UnityEngine;
 
 namespace Underwater
 {
-	[BepInPlugin(ModId, "Underwater", "1.0.4.0")]
+	[BepInPlugin(ModId, "Underwater", "1.0.6.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class UnderwaterPlugin : BaseUnityPlugin

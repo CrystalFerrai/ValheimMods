@@ -1,6 +1,11 @@
 Collection of Valheim mods created by Crystal.
 
 ## Changelog
+1.7.0
+
+* Added: Magical
+* Updated: All Mods
+
 1.6.2
 
 * Updated: All Mods

@@ -21,7 +21,7 @@ using System.Reflection.Emit;
 
 namespace DigDeeper
 {
-    [BepInPlugin(ModId, "Dig Deeper", "1.1.3.0")]
+    [BepInPlugin(ModId, "Dig Deeper", "1.1.4.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class DigDeeperPlugin : BaseUnityPlugin

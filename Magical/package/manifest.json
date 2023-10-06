@@ -1,9 +1,9 @@
 ﻿{
     "name": "Magical",
-    "version_number": "1.0.0",
+    "version_number": "1.0.1",
     "description": "Customize various things related to health, stamina and eitr.",
     "dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.2105"
+        "denikson-BepInExPack_Valheim-5.4.2200"
     ],
     "website_url": "https://github.com/CrystalFerrai/ValheimMods",
 
@@ -11,13 +11,13 @@
     "AuthorName": "Crystal",
     "Name": "Magical",
     "DisplayName": "Magical",
-    "Version": "1.0.0",
+    "Version": "1.0.1",
     "Licence": "",
     "WebsiteURL": "https://github.com/CrystalFerrai/ValheimMods",
     "Description": "Customize various things related to health, stamina and eitr.",
     "GameVersion": "",
     "Dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.2105"
+        "denikson-BepInExPack_Valheim-5.4.2200"
     ],
     "OptionalDependencies": [],
     "Incompatibilities": [],
