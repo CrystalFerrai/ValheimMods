@@ -16,15 +16,27 @@ For easier development, all mods are part of the same repo and share the same Vi
 
 Before the solution will build, you will need to get some third party DLLs and place them in a `lib` directory at the root of the repo (next to `ValheimMods.sln`). This is where all of the `.csproj` point to for external assembly references. The following should be included in the `lib` directory:
 
-* [BepInEx](https://github.com/BepInEx/BepInEx/releases) library. Confirmed working version is 5.4.2105, but other 5.4.x versions likely will also work. These files specifically need to be included:
+* [BepInExPack_Valheim](https://valheim.thunderstore.io/package/denikson/BepInExPack_Valheim/) assemblies. Confirmed working version is 5.4.2202, but later 5.4.x versions likely will also work. These files specifically need to be included:
     * 0Harmony.dll
     * BepinEx.dll
     * BepinEx.Harmony.dll
-* Valheim script assemblies from the game client installation. These can be found in `valheim_Data/Managed` and start with `assembly_`. Currently in use are the following, but keep in mind this list may not be up to date. So others might also be needed.
+* Valheim script assemblies and Unity engine assemblies from the game client installation. These can be found in `valheim_Data/Managed`. Currently in use are the following, but keep in mind this list may not be up to date. So others might also be needed.
     * assembly_guiutils.dll
     * assembly_utils.dll
     * assembly_valheim.dll
-* Unstripped Unity engine assemblies that match the unity version used by Valheim. These can be found in different places, but I pulled them from [BepInExPack_Valheim on Thunderstore](https://valheim.thunderstore.io/package/denikson/BepInExPack_Valheim/) (you may need to search if this link gets broken). This pack also includes the BepInEx assemblies listed above.
+    * ui_lib.dll
+    * Unity.InputSystem.dll
+    * Unity.TextMeshPro.dll
+    * UnityEngine.AssetBundleModule.dll
+    * UnityEngine.CoreModule.dll
+    * UnityEngine.dll
+    * UnityEngine.InputLegacyModule.dll
+    * UnityEngine.ParticleSystemModule.dll
+    * UnityEngine.PhysicsModule.dll
+    * UnityEngine.SharedInternalsModule.dll
+    * UnityEngine.TextRenderingModule.dll
+    * UnityEngine.UI.dll
+    * UnityEngine.UIModule.dll
 
 Once the `lib` directory is populated, you should be able to open `ValheimMods.sln` in Visual Studio 2022 and build the solution.
 
