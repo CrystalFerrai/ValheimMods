@@ -17,13 +17,13 @@ using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace CrystalLib
 {
-    /// <summary>
-    /// Helper to register and manage a player input binding
-    /// </summary>
+	/// <summary>
+	/// Helper to register and manage a player input binding
+	/// </summary>
 	public class InputBinding : IDisposable
     {
         /// <summary>
@@ -38,14 +38,14 @@ namespace CrystalLib
         /// <summary>
         /// The config entry for the key code used for the binding
         /// </summary>
-		public ConfigEntry<KeyCode> ConfigEntry { get; }
+		public ConfigEntry<Key> ConfigEntry { get; }
 
         /// <summary>
         /// Fires when a player activates the bound input
         /// </summary>
         public event EventHandler<InputEventArgs> InputPressed;
 
-        private static readonly  List<InputBinding> sInstances;
+        private static readonly List<InputBinding> sInstances;
 
 		private static readonly Harmony sZInputHarmony;
 		private static readonly Harmony sPlayerControllerHarmony;
@@ -76,7 +76,7 @@ namespace CrystalLib
         /// </summary>
         /// <param name="name">The name of the binding. Should be globally unique.</param>
         /// <param name="configEntry">A config entry for the key code to use for the binding</param>
-        public InputBinding(string name, ConfigEntry<KeyCode> configEntry)
+        public InputBinding(string name, ConfigEntry<Key> configEntry)
 		{
             Name = name;
 			ConfigEntry = configEntry;
@@ -121,7 +121,7 @@ namespace CrystalLib
             SetButton(Name, ConfigEntry.Value);
         }
 
-        private static void SetButton(string name, KeyCode keyCode)
+        private static void SetButton(string name, Key keyCode)
         {
             var buttons = (Dictionary<string, ZInput.ButtonDef>)sButtonsField.GetValue(ZInput.instance);
             buttons[name].m_key = keyCode;

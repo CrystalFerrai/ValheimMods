@@ -20,11 +20,11 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Underwater
 {
-	[BepInPlugin(ModId, "Underwater", "1.0.6.0")]
+	[BepInPlugin(ModId, "Underwater", "1.0.7.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class UnderwaterPlugin : BaseUnityPlugin
@@ -33,9 +33,9 @@ namespace Underwater
 
         public static ConfigEntry<bool> PlayerSwims;
         public static ConfigEntry<bool> CameraIgnoreWater;
-        public static ConfigEntry<KeyCode> ToggleSwimKey;
+        public static ConfigEntry<Key> ToggleSwimKey;
 
-        private static InputBinding sToggleSwimBinding;
+        private static CrystalLib.InputBinding sToggleSwimBinding;
 
         private static Harmony sCharacterHarmony;
         private static Harmony sGameCameraHarmony;
@@ -48,9 +48,9 @@ namespace Underwater
             CameraIgnoreWater = Config.Bind("Underwater", nameof(CameraIgnoreWater), false, "Whether the camera should ignore water, allowing it to move beneath the surface. This setting is implied true if PlayerSwims is false. Game default false.");
             CameraIgnoreWater.SettingChanged += IgnoreWater_SettingChanged;
 
-            ToggleSwimKey = Config.Bind("Underwater", nameof(ToggleSwimKey), KeyCode.Backspace, "Binds a shortcut key for toggling the PlayerSwims option.");
+            ToggleSwimKey = Config.Bind("Underwater", nameof(ToggleSwimKey), Key.Backspace, "Binds a shortcut key for toggling the PlayerSwims option.");
 
-            sToggleSwimBinding = new InputBinding("ToggleSwim", ToggleSwimKey);
+            sToggleSwimBinding = new CrystalLib.InputBinding("ToggleSwim", ToggleSwimKey);
 			sToggleSwimBinding.InputPressed += ToggleSwimBinding_InputPressed;
 
             sCharacterHarmony = new Harmony(ModId + "_Character");

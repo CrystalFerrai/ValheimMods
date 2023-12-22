@@ -21,7 +21,7 @@ using System.Reflection;
 
 namespace BuildSpace
 {
-	[BepInPlugin(ModId, "BuildSpace", "1.0.3.0")]
+	[BepInPlugin(ModId, "BuildSpace", "1.0.4.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class BuildSpacePlugin : BaseUnityPlugin

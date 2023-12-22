@@ -22,7 +22,7 @@ using System.Reflection.Emit;
 
 namespace FastTools
 {
-	[BepInPlugin(ModId, "Fast Tools", "1.2.1.0")]
+	[BepInPlugin(ModId, "Fast Tools", "1.2.2.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class FastToolsPlugin : BaseUnityPlugin

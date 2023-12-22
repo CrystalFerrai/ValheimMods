@@ -11,6 +11,12 @@ This library should install automatically when installing a mod that depends on 
 2. Download latest ``CrystalLib.dll`` by clicking "Manual Download". Extract the dll from the zip file into ``[GameDirectory]\Bepinex\plugins``. (You only need the dll.)
 
 ## Changelog
+
+1.1.0
+
+* **Breaking Change**: References to `UnityEngine.KeyCode` have been replaced by references to `UnityEngine.InputSystem.Key` which affects the API of the `InputBinding` class. This is necessary to follow changes in Valheim's input system.
+* Updated .NET version
+
 1.0.2
 
 * Updated for game compatibility

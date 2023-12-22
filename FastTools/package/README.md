@@ -13,6 +13,12 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+
+1.2.2
+
+* Updated BepinEx version
+* Updated .NET version
+
 1.2.1
 
 * Updated BepinEx version
