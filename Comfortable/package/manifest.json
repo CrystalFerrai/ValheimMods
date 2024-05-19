@@ -1,6 +1,6 @@
 ﻿{
     "name": "Comfortable",
-    "version_number": "1.0.3",
+    "version_number": "1.0.4",
     "description": "Adjust comfort radius and rested time.",
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.2202"
@@ -11,7 +11,7 @@
     "AuthorName": "Crystal",
     "Name": "Comfortable",
     "DisplayName": "Comfortable",
-    "Version": "1.0.3",
+    "Version": "1.0.4",
     "Licence": "",
     "WebsiteURL": "https://github.com/CrystalFerrai/ValheimMods",
     "Description": "Adjust comfort radius and rested time.",

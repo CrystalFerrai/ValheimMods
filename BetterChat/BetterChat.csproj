@@ -26,8 +26,8 @@
     <Reference Include="BepInEx.Harmony">
       <HintPath>..\lib\BepInEx.Harmony.dll</HintPath>
     </Reference>
-    <Reference Include="ui_lib">
-      <HintPath>..\lib\ui_lib.dll</HintPath>
+    <Reference Include="gui_framework">
+      <HintPath>..\lib\gui_framework.dll</HintPath>
     </Reference>
     <Reference Include="Unity.TextMeshPro">
       <HintPath>..\lib\Unity.TextMeshPro.dll</HintPath>

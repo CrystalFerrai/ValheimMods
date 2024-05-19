@@ -25,7 +25,7 @@ using UnityEngine.UI;
 
 namespace BetterChat
 {
-	[BepInPlugin(ModId, "Better Chat", "1.4.9.0")]
+	[BepInPlugin(ModId, "Better Chat", "1.4.10.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class BetterChatPlugin : BaseUnityPlugin
@@ -349,7 +349,7 @@ namespace BetterChat
                     if (state == TranspilerState.Searching && instruction.opcode == OpCodes.Call)
                     {
                         MethodBase method = (MethodBase)instruction.operand;
-                        if (method.Name == nameof(ZInput.GetKeyDown))
+                        if (method.Name == nameof(ZInput.GetButtonDown))
                         {
                             state = TranspilerState.Inserting;
                         }

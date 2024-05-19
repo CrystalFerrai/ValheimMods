@@ -23,7 +23,7 @@ using UnityEngine;
 
 namespace Comfortable
 {
-	[BepInPlugin(ModId, "Comfortable", "1.0.3.0")]
+	[BepInPlugin(ModId, "Comfortable", "1.0.4.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class ComfortablePlugin : BaseUnityPlugin
@@ -42,7 +42,6 @@ namespace Comfortable
 
         private static readonly List<Player> sPlayers;
 
-        private static readonly int sStatusEffectRested;
         private static readonly float sComfortRadiusConstant;
 
         // Copy of FireItemRadiusMultiplier so we can reference the old value after it changes
@@ -51,7 +50,6 @@ namespace Comfortable
         static ComfortablePlugin()
 		{
             sPlayers = new List<Player>();
-            sStatusEffectRested = (int)typeof(Player).GetField("s_statusEffectRested", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
             sComfortRadiusConstant = (float)typeof(SE_Rested).GetField("c_ComfortRadius", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
 		}
 
@@ -182,12 +180,12 @@ namespace Comfortable
 
         private static SE_Rested GetRestedEffect()
 		{
-            return (SE_Rested)ObjectDB.instance?.GetStatusEffect(sStatusEffectRested);
+            return (SE_Rested)ObjectDB.instance?.GetStatusEffect(SEMan.s_statusEffectRested);
         }
 
         private static SE_Rested GetRestedEffect(Player player)
         {
-            return (SE_Rested)player.GetSEMan().GetStatusEffect(sStatusEffectRested);
+            return (SE_Rested)player.GetSEMan().GetStatusEffect(SEMan.s_statusEffectRested);
         }
 
         private static void UpdateFireEffectRadius(EffectArea area, float oldMultiplier, float newMultiplier)
