@@ -1,4 +1,4 @@
-﻿// Copyright 2023 Crystal Ferrai
+// Copyright 2023 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -158,49 +158,49 @@ namespace Sated
                 TranspilerState state = TranspilerState.Searching;
 
                 foreach (CodeInstruction instruction in instructions)
-				{
-					switch (state)
-					{
-						case TranspilerState.Searching:
+                {
+                    switch (state)
+                    {
+                        case TranspilerState.Searching:
                             if (instruction.opcode == OpCodes.Ldloca_S)
-							{
+                            {
                                 state = TranspilerState.Checking1;
-							}
+                            }
                             yield return instruction;
-							break;
+                            break;
                         case TranspilerState.Checking1:
                             if (instruction.opcode == OpCodes.Call)
                             {
                                 state = TranspilerState.Checking2;
                             }
                             else
-							{
+                            {
                                 state = TranspilerState.Searching;
-							}
+                            }
                             yield return instruction;
                             break;
                         case TranspilerState.Checking2:
                             if (instruction.opcode == OpCodes.Stloc_1)
-							{
+                            {
                                 state = TranspilerState.ReplacingHp;
-							}
+                            }
                             else
-							{
+                            {
                                 state = TranspilerState.Searching;
-							}
+                            }
                             yield return instruction;
                             break;
                         case TranspilerState.ReplacingHp:
                             if (instruction.opcode == OpCodes.Ldfld)
-							{
+                            {
                                 yield return new CodeInstruction(OpCodes.Call, typeof(Player_Patches).GetMethod(nameof(GetHp), BindingFlags.NonPublic | BindingFlags.Static));
                                 state = TranspilerState.ReplacingStamina;
-							}
+                            }
                             else
-							{
+                            {
                                 yield return instruction;
-							}
-							break;
+                            }
+                            break;
                         case TranspilerState.ReplacingStamina:
                             if (instruction.opcode == OpCodes.Ldfld)
                             {
@@ -225,13 +225,13 @@ namespace Sated
                             break;
                         case TranspilerState.Finishing:
                             yield return instruction;
-							break;
-					}
-				}
+                            break;
+                    }
+                }
             }
 
             private static float GetHp(Player.Food food)
-			{
+            {
                 return (1.0f - Mathf.Pow(GetTime(food), HealthCurveExponent.Value)) * food.m_item.m_shared.m_food;
             }
 
@@ -246,7 +246,7 @@ namespace Sated
             }
 
             private static float GetTime(Player.Food food)
-			{
+            {
                 return 1.0f - food.m_time / food.m_item.m_shared.m_foodBurnTime;
             }
         }
