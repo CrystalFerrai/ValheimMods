@@ -2,7 +2,10 @@ Health and stamina from food follows the curve ``y=1-x^8`` instead of the vanill
 
 Run the game once with the mod enabled to generate the config. See config for details on what each option does.
 
-Tip: The exponent of the curve is configurable. To visualize the food curve and see how different exponents look, enter the above formula into a graphing calculator such as [this one](https://www.desmos.com/calculator) and change the ``8`` to whatever number you want to see.
+Tips:
+
+- The exponent of the curve is configurable. To visualize the food curve and see how different exponents look, enter the above formula into a graphing calculator such as [this one](https://www.desmos.com/calculator) and change the ``8`` to whatever number you want to see.
+- The food blinking duration is configurable. In vanilla, food starts blinking after half of its duration, at which point another food may be consumed to replace it. If you tweaked the curve so that food lasts longer, you may want to reduce the blinking duration. To visualize when food starts blinking w.r.t. to your chosen food curve, enter the formula ``x>(100-50)/100`` on the same calculator above and adjust ``50`` to your liking.
 
 This mod is client only and does not need to be installed on dedicated servers. For the best experience, all clients should use the same configuration.
 
@@ -15,6 +18,10 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
 ## Changelog
+
+Unreleased
+
+* Added config option to adjust food blinking duration.
 
 1.1.11
 
