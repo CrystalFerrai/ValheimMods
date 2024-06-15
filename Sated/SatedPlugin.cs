@@ -1,4 +1,4 @@
-// Copyright 2023 Crystal Ferrai
+﻿// Copyright 2023 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,8 +41,10 @@ namespace Sated
         public static ConfigEntry<float> HealthCurveExponent;
         public static ConfigEntry<float> StaminaCurveExponent;
         public static ConfigEntry<float> EitrCurveExponent;
+        public static ConfigEntry<float> BlinkingDurationPercentage;
 
         private static Harmony sPlayerHarmony;
+        private static Harmony sPlayerFoodHarmony;
 #if FEATURE_FOOD_BARS
         private static Harmony sHudHarmony;
         private static Harmony sHudFoodHarmony;
@@ -71,18 +73,24 @@ namespace Sated
 #endif
 
             HealthCurveExponent = Config.Bind("Food", nameof(HealthCurveExponent), 8.0f, "The value of the exponent 'e' used in the food curve formula 'y = 1 - x^e' for calculating added health. Valid range 0.1 - 100. Higher values make you full longer, but also drop off more suddenly. A value of 1 indicates a linear decline. Values less than 1 invert the curve, causing a faster initial decline which gradually slows down.");
-            HealthCurveExponent.SettingChanged += CurveExponent_SettingChanged;
+            HealthCurveExponent.SettingChanged += Any_SettingChanged;
 
             StaminaCurveExponent = Config.Bind("Food", nameof(StaminaCurveExponent), 8.0f, "The value of the exponent 'e' used in the food curve formula 'y = 1 - x^e' for calculating added stamina. Valid range 0.1 - 100. Higher values make you full longer, but also drop off more suddenly. A value of 1 indicates a linear decline. Values less than 1 invert the curve, causing a faster initial decline which gradually slows down.");
-            StaminaCurveExponent.SettingChanged += CurveExponent_SettingChanged;
+            StaminaCurveExponent.SettingChanged += Any_SettingChanged;
 
             EitrCurveExponent = Config.Bind("Food", nameof(EitrCurveExponent), 8.0f, "The value of the exponent 'e' used in the food curve formula 'y = 1 - x^e' for calculating added eitr. Valid range 0.1 - 100. Higher values make you full longer, but also drop off more suddenly. A value of 1 indicates a linear decline. Values less than 1 invert the curve, causing a faster initial decline which gradually slows down.");
-            EitrCurveExponent.SettingChanged += CurveExponent_SettingChanged;
+            EitrCurveExponent.SettingChanged += Any_SettingChanged;
+
+            BlinkingDurationPercentage = Config.Bind("Food", nameof(BlinkingDurationPercentage), 50.0f, "The food blinking duration percentage compared to total food duration (as soon as it starts blinking, another food may be consumed to replace it). Valid range 0 - 100. Vanilla value is 50, meaning a 10m food starts blinking after 5m. Lower values reduce the blinking duration compared to vanilla (0 disables blinking). Higher values increase the duration (100 enforces blinking right away).");
+            BlinkingDurationPercentage.SettingChanged += Any_SettingChanged;
 
             ClampConfig();
 
             sPlayerHarmony = new Harmony(ModId + "_Player");
             sPlayerHarmony.PatchAll(typeof(Player_Patches));
+
+            sPlayerFoodHarmony = new Harmony(ModId + "_PlayerFood");
+            sPlayerFoodHarmony.PatchAll(typeof(PlayerFood_Patches));
 
 #if FEATURE_FOOD_BARS
             sHudHarmony = new Harmony(ModId + "_Hud");
@@ -99,6 +107,7 @@ namespace Sated
         private void OnDestroy()
         {
             sPlayerHarmony.UnpatchSelf();
+            sPlayerFoodHarmony.UnpatchSelf();
 #if FEATURE_FOOD_BARS
             sHudHarmony.UnpatchSelf();
             sHudFoodHarmony.UnpatchSelf();
@@ -115,9 +124,12 @@ namespace Sated
 
             if (EitrCurveExponent.Value < 0.1f) EitrCurveExponent.Value = 0.1f;
             if (EitrCurveExponent.Value > 100.0f) EitrCurveExponent.Value = 100.0f;
+
+            if (BlinkingDurationPercentage.Value < 0.0f) BlinkingDurationPercentage.Value = 0.0f;
+            if (BlinkingDurationPercentage.Value > 100.0f) BlinkingDurationPercentage.Value = 100.0f;
         }
 
-        private void CurveExponent_SettingChanged(object sender, EventArgs e)
+        private void Any_SettingChanged(object sender, EventArgs e)
         {
             ClampConfig();
         }
@@ -248,6 +260,17 @@ namespace Sated
             private static float GetTime(Player.Food food)
             {
                 return 1.0f - food.m_time / food.m_item.m_shared.m_foodBurnTime;
+            }
+        }
+
+        [HarmonyPatch(typeof(Player.Food))]
+        private static class PlayerFood_Patches
+        {
+            [HarmonyPatch(nameof(Player.Food.CanEatAgain)), HarmonyPrefix]
+            private static void CanEatAgain_Prefix(Player.Food __instance, ref bool __result, ref bool __runOriginal)
+            {
+                __runOriginal = false;
+                __result = __instance.m_time < __instance.m_item.m_shared.m_foodBurnTime * BlinkingDurationPercentage.Value / 100.0f;
             }
         }
 
