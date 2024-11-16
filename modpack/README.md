@@ -2,6 +2,10 @@ Collection of Valheim mods created by Crystal.
 
 ## Changelog
 
+1.7.3
+
+* Updated: BetterChat, Comfortable
+
 1.7.2
 
 * Updated: Pathfinder, Underwater
