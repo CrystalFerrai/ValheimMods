@@ -33,7 +33,7 @@ using System.Text;
 
 namespace Pathfinder
 {
-    [BepInPlugin(ModId, "Pathfinder", "2.0.11.0")]
+    [BepInPlugin(ModId, "Pathfinder", "2.0.12.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class PathfinderPlugin : BaseUnityPlugin
@@ -55,8 +55,6 @@ namespace Pathfinder
         private static Text sRadiusHudText;
         private static Text sVariablesHudText;
 
-        private static readonly MethodInfo sGetPlayersInRangeMethod;
-
 #if DEBUG_SHOW_OVERLAY
         private static Harmony sDebugHarmony;
         private static StringBuilder sDebugTextBuilder;
@@ -65,7 +63,6 @@ namespace Pathfinder
 
         static PathfinderPlugin()
 		{
-            sGetPlayersInRangeMethod = typeof(Player).GetMethod("GetPlayersInRange", BindingFlags.NonPublic | BindingFlags.Static);
 		}
 
         private void Awake()
@@ -237,7 +234,7 @@ namespace Pathfinder
                 // Player may not be the one piloting a boat, but should still get the sea radius if they are riding in one that has a pilot.
                 // A longship is about 20 units long. 19 is about as far as you could possibly get from a pilot and still be on the boat.
                 List<Player> players = new List<Player>();
-                sGetPlayersInRangeMethod.Invoke(null, new object[] { player.transform.position, 21.0f, players });
+                Player.GetPlayersInRange(player.transform.position, 21.0f, players);
                 if (players.Any(p => p.IsAttachedToShip()))
                 {
                     baseRadius = SeaExploreRadius.Value;

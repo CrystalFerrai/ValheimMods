@@ -50,6 +50,8 @@ namespace CrystalLib
 		private static readonly Harmony sZInputHarmony;
 		private static readonly Harmony sPlayerControllerHarmony;
 
+		private static readonly MethodInfo sAddButtonMethod;
+		private static readonly MethodInfo sKeyToPathMethod;
 		private static readonly MethodInfo sTakeInputMethod;
 		private static readonly FieldInfo sCharacterField;
 		private static readonly FieldInfo sViewField;
@@ -59,6 +61,8 @@ namespace CrystalLib
 		{
             sInstances = new List<InputBinding>();
 
+			sAddButtonMethod = typeof(ZInput).GetMethod("AddButton", BindingFlags.NonPublic | BindingFlags.Instance);
+			sKeyToPathMethod = typeof(ZInput).GetMethod("KeyToPath", BindingFlags.NonPublic | BindingFlags.Static);
 			sTakeInputMethod = typeof(PlayerController).GetMethod("TakeInput", BindingFlags.NonPublic | BindingFlags.Instance);
 			sCharacterField = typeof(PlayerController).GetField("m_character", BindingFlags.NonPublic | BindingFlags.Instance);
 			sViewField = typeof(PlayerController).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -87,7 +91,7 @@ namespace CrystalLib
 
             if (ZInput.instance != null)
 			{
-                ZInput.instance.AddButton(Name, ConfigEntry.Value);
+                AddButton(Name, ConfigEntry.Value);
 			}
 		}
 
@@ -121,10 +125,22 @@ namespace CrystalLib
             SetButton(Name, ConfigEntry.Value);
         }
 
-        private static void SetButton(string name, Key keyCode)
+        private static void AddButton(string name, Key keyCode, ZInput instance = null)
+		{
+            if (instance is null) instance = ZInput.instance;
+            if (instance is null) return;
+
+            string path = (string)sKeyToPathMethod.Invoke(null, new object[] { keyCode });
+			sAddButtonMethod.Invoke(instance, new object[] { name, path, false, true, false, 0.0f, 0.0f });
+		}
+
+		private static void SetButton(string name, Key keyCode)
         {
-            var buttons = (Dictionary<string, ZInput.ButtonDef>)sButtonsField.GetValue(ZInput.instance);
-            buttons[name].m_key = keyCode;
+			string path = (string)sKeyToPathMethod.Invoke(ZInput.instance, new object[] { keyCode });
+            ZInput.ButtonDef newButton = new ZInput.ButtonDef(name, path);
+
+			var buttons = (Dictionary<string, ZInput.ButtonDef>)sButtonsField.GetValue(ZInput.instance);
+			buttons[name] = newButton;
         }
 
         [HarmonyPatch(typeof(PlayerController))]
@@ -161,8 +177,8 @@ namespace CrystalLib
             private static void Reset_Postfix(ZInput __instance)
             {
                 foreach (InputBinding instance in sInstances)
-                {
-                    __instance.AddButton(instance.Name, instance.ConfigEntry.Value);
+				{
+					AddButton(instance.Name, instance.ConfigEntry.Value, __instance);
                 }
             }
         }

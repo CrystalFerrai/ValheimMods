@@ -12,6 +12,10 @@ This library should install automatically when installing a mod that depends on 
 
 ## Changelog
 
+1.1.1
+
+* Updated for game compatibility
+
 1.1.0
 
 * **Breaking Change**: References to `UnityEngine.KeyCode` have been replaced by references to `UnityEngine.InputSystem.Key` which affects the API of the `InputBinding` class. This is necessary to follow changes in Valheim's input system.

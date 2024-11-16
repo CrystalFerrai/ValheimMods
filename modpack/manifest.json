@@ -1,6 +1,6 @@
 {
     "name": "CrystalPack",
-    "version_number": "1.7.1",
+    "version_number": "1.7.2",
     "description": "Collection of all of Crystal's Valheim Mods",
     "dependencies": [
         "Crystal-BetterChat-1.4.9",
@@ -14,10 +14,10 @@
         "Crystal-GracefulLanding-1.0.6",
         "Crystal-Magical-1.0.2",
         "Crystal-Magni-1.0.3",
-        "Crystal-Pathfinder-2.0.11",
+        "Crystal-Pathfinder-2.0.12",
         "Crystal-ProperPortals-1.2.5",
         "Crystal-Sated-1.1.11",
-        "Crystal-Underwater-1.0.7"
+        "Crystal-Underwater-1.0.8"
     ],
     "website_url": "https://github.com/CrystalFerrai/ValheimMods",
 
@@ -25,7 +25,7 @@
     "AuthorName": "Crystal",
     "Name": "CrystalPack",
     "DisplayName": "Crystal Pack",
-    "Version": "1.7.1",
+    "Version": "1.7.2",
     "Licence": "",
     "WebsiteURL": "https://github.com/CrystalFerrai/ValheimMods",
     "Description": "Collection of all of Crystal's Valheim Mods",
@@ -42,10 +42,10 @@
         "Crystal-GracefulLanding-1.0.6",
         "Crystal-Magical-1.0.2",
         "Crystal-Magni-1.0.3",
-        "Crystal-Pathfinder-2.0.11",
+        "Crystal-Pathfinder-2.0.12",
         "Crystal-ProperPortals-1.2.5",
         "Crystal-Sated-1.1.11",
-        "Crystal-Underwater-1.0.7"
+        "Crystal-Underwater-1.0.8"
     ],
     "OptionalDependencies": [],
     "Incompatibilities": [],

@@ -2,6 +2,10 @@ Collection of Valheim mods created by Crystal.
 
 ## Changelog
 
+1.7.2
+
+* Updated: Pathfinder, Underwater
+
 1.7.1
 
 * Updated: All Mods
