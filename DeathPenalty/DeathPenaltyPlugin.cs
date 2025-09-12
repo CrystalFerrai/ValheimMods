@@ -22,7 +22,7 @@ using System.Reflection.Emit;
 
 namespace DeathPenalty
 {
-    [BepInPlugin(ModId, "Death Penalty", "1.1.3.0")]
+    [BepInPlugin(ModId, "Death Penalty", "1.1.4.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class DeathPenaltyPlugin : BaseUnityPlugin

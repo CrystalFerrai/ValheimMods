@@ -33,7 +33,7 @@ using System.Text;
 
 namespace Pathfinder
 {
-    [BepInPlugin(ModId, "Pathfinder", "2.0.12.0")]
+    [BepInPlugin(ModId, "Pathfinder", "2.0.13.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class PathfinderPlugin : BaseUnityPlugin

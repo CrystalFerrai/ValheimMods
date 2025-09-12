@@ -25,7 +25,7 @@ using UnityEngine.UI;
 
 namespace BetterChat
 {
-	[BepInPlugin(ModId, "Better Chat", "1.4.10.0")]
+	[BepInPlugin(ModId, "Better Chat", "1.4.11.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class BetterChatPlugin : BaseUnityPlugin
@@ -399,7 +399,7 @@ namespace BetterChat
         private static class Chat_Show_Patch
         {
             [HarmonyPatch(nameof(Chat.OnNewChatMessage)), HarmonyPostfix]
-            private static void OnNewChatMessage_Postfix(Chat __instance, GameObject go, long senderID, Vector3 pos, Talker.Type type, string user, string text)
+            private static void OnNewChatMessage_Postfix(Chat __instance, GameObject go, long senderID, Vector3 pos, Talker.Type type, UserInfo sender, string text)
             {
                 // Resetting this to 0 restarts the window hide timer (and makes the window visible)
                 sHideTimerField.SetValue(__instance, 0.0f);

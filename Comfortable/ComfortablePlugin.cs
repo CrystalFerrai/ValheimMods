@@ -23,7 +23,7 @@ using UnityEngine;
 
 namespace Comfortable
 {
-	[BepInPlugin(ModId, "Comfortable", "1.0.4.0")]
+	[BepInPlugin(ModId, "Comfortable", "1.0.5.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class ComfortablePlugin : BaseUnityPlugin

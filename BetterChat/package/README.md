@@ -24,6 +24,11 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 
 ## Changelog
 
+1.4.11
+
+* Updated for game compatibility
+* Updated BepinEx version
+
 1.4.10
 
 * Updated for game compatibility

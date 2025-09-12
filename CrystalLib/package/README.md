@@ -12,6 +12,10 @@ This library should install automatically when installing a mod that depends on 
 
 ## Changelog
 
+1.1.2
+
+* Updated BepinEx version
+
 1.1.1
 
 * Updated for game compatibility

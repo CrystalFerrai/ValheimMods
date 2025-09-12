@@ -1,9 +1,9 @@
 ﻿{
     "name": "Magni",
-    "version_number": "1.0.3",
+    "version_number": "1.0.4",
     "description": "Increased carry weight capacity.",
     "dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.2202"
+        "denikson-BepInExPack_Valheim-5.4.2333"
     ],
     "website_url": "https://github.com/CrystalFerrai/ValheimMods",
 
@@ -11,13 +11,13 @@
     "AuthorName": "Crystal",
     "Name": "Magni",
     "DisplayName": "Magni",
-    "Version": "1.0.3",
+    "Version": "1.0.4",
     "Licence": "",
     "WebsiteURL": "https://github.com/CrystalFerrai/ValheimMods",
     "Description": "Increased carry weight capacity.",
     "GameVersion": "",
     "Dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.2202"
+        "denikson-BepInExPack_Valheim-5.4.2333"
     ],
     "OptionalDependencies": [],
     "Incompatibilities": [],

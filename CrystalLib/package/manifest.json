@@ -1,9 +1,9 @@
 ﻿{
     "name": "CrystalLib",
-    "version_number": "1.1.1",
+    "version_number": "1.1.2",
     "description": "Code library with utilities for mods to use.",
     "dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.2202"
+        "denikson-BepInExPack_Valheim-5.4.2333"
     ],
     "website_url": "https://github.com/CrystalFerrai/ValheimMods",
 
@@ -11,13 +11,13 @@
     "AuthorName": "Crystal",
     "Name": "CrystalLib",
     "DisplayName": "CrystalLib",
-    "Version": "1.1.1",
+    "Version": "1.1.2",
     "Licence": "",
     "WebsiteURL": "https://github.com/CrystalFerrai/ValheimMods",
     "Description": "Code library with utilities for mods to use.",
     "GameVersion": "",
     "Dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.2202"
+        "denikson-BepInExPack_Valheim-5.4.2333"
     ],
     "OptionalDependencies": [],
     "Incompatibilities": [],

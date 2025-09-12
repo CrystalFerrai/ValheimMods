@@ -22,7 +22,7 @@ using System.Reflection.Emit;
 
 namespace Magical
 {
-	[BepInPlugin(ModId, "Magical", "1.0.2.0")]
+	[BepInPlugin(ModId, "Magical", "1.0.3.0")]
 	[BepInProcess("valheim.exe")]
 	[BepInProcess("valheim_server.exe")]
 	public class MagicalPlugin : BaseUnityPlugin

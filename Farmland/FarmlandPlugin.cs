@@ -23,7 +23,7 @@ using UnityEngine;
 
 namespace Farmland
 {
-	[BepInPlugin(ModId, "Farmland", "1.0.3.0")]
+	[BepInPlugin(ModId, "Farmland", "1.0.4.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class FarmlandPlugin : BaseUnityPlugin
