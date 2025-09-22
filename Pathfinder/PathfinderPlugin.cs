@@ -46,6 +46,8 @@ namespace Pathfinder
         public static ConfigEntry<float> ForestRadiusPenalty;
         public static ConfigEntry<float> DaylightRadiusScale;
         public static ConfigEntry<float> WeatherRadiusScale;
+        public static ConfigEntry<float> LandExploreRadiusMinimum;
+        public static ConfigEntry<float> SeaExploreRadiusMinimum;
         public static ConfigEntry<bool> DisplayCurrentRadiusValue;
         public static ConfigEntry<bool> DisplayVariables;
 
@@ -70,8 +72,14 @@ namespace Pathfinder
             LandExploreRadius = Config.Bind("Base", nameof(LandExploreRadius), 200.0f, "The radius around the player to uncover while travelling on land near sea level. Higher values may cause performance issues. Max allowed is 2000. Game default is 100.");
             LandExploreRadius.SettingChanged += Config_SettingChanged;
 
+            LandExploreRadiusMinimum = Config.Bind("Base", nameof(LandExploreRadiusMinimum), 10.0f, "Defines a minimum radius (lower cap) you don't want to go under while on foot. Accepted range 10-" + nameof(LandExploreRadius) + ". Default is 10.");
+            LandExploreRadiusMinimum.SettingChanged += Config_SettingChanged;
+
             SeaExploreRadius = Config.Bind("Base", nameof(SeaExploreRadius), 300.0f, "The radius around the player to uncover while travelling on a boat. Higher values may cause performance issues. Max allowed is 2000. Game default is 100.");
             SeaExploreRadius.SettingChanged += Config_SettingChanged;
+
+            SeaExploreRadiusMinimum = Config.Bind("Base", nameof(SeaExploreRadiusMinimum), 20.0f, "Defines a minimum radius (lower cap) you don't want to go under while on boat. Accepted range 20-" + nameof(SeaExploreRadius) + ". Default is 20.");
+            SeaExploreRadiusMinimum.SettingChanged += Config_SettingChanged;
 
             AltitudeRadiusBonus = Config.Bind("Multipliers", nameof(AltitudeRadiusBonus), 0.5f, "Bonus multiplier to apply to land exploration radius based on altitude. For every 100 units above sea level (smooth scale), add this value multiplied by LandExploreRadius to the total. For example, with a radius of 200 and a multiplier of 0.5, radius is 200 at sea level, 250 at 50 altitude, 300 at 100 altitude, 400 at 200 altitude, etc. For reference, a typical mountain peak is around 170 altitude. Accepted range 0-2. Set to 0 to disable.");
             AltitudeRadiusBonus.SettingChanged += Config_SettingChanged;
@@ -157,6 +165,12 @@ namespace Pathfinder
 
             if (WeatherRadiusScale.Value < 0.0f) WeatherRadiusScale.Value = 0.0f;
             if (WeatherRadiusScale.Value > 1.0f) WeatherRadiusScale.Value = 1.0f;
+
+            if (LandExploreRadiusMinimum.Value < 10.0f) LandExploreRadiusMinimum.Value = 10.0f;
+            if (LandExploreRadiusMinimum.Value > LandExploreRadius.Value) LandExploreRadiusMinimum.Value = 10.0f;
+
+            if (SeaExploreRadiusMinimum.Value < 20.0f) SeaExploreRadiusMinimum.Value = 20.0f;
+            if (SeaExploreRadiusMinimum.Value > SeaExploreRadius.Value) SeaExploreRadiusMinimum.Value = 20.0f;
         }
 
         [HarmonyPatch(typeof(Minimap))]
@@ -216,6 +230,7 @@ namespace Pathfinder
             private static float GetExploreRadius(Player player)
             {
                 float result;
+                float minimumRadius;
 
                 if (player.InInterior())
                 {
@@ -238,10 +253,12 @@ namespace Pathfinder
                 if (players.Any(p => p.IsAttachedToShip()))
                 {
                     baseRadius = SeaExploreRadius.Value;
+                    minimumRadius = SeaExploreRadiusMinimum.Value;
                 }
                 else
                 {
                     baseRadius = LandExploreRadius.Value;
+                    minimumRadius = LandExploreRadiusMinimum.Value;
                 }
 
                 // Take the higher of directional or ambient light, subtract 1 to turn this into a value we can add to our multiplier
@@ -302,7 +319,7 @@ namespace Pathfinder
                 }
 #endif
 
-                result = Mathf.Clamp(baseRadius * multiplier, 20.0f, 2000.0f);
+                result = Mathf.Clamp(baseRadius * multiplier, minimumRadius, 2000.0f);
 
                 if (DisplayVariables.Value)
                 {
