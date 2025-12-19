@@ -1,4 +1,4 @@
-﻿// Copyright 2023 Crystal Ferrai
+// Copyright 2023 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ using System.Reflection.Emit;
 
 namespace DigDeeper
 {
-    [BepInPlugin(ModId, "Dig Deeper", "1.1.6.0")]
+    [BepInPlugin(ModId, "Dig Deeper", "1.1.7.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class DigDeeperPlugin : BaseUnityPlugin
@@ -98,7 +98,7 @@ namespace DigDeeper
                     switch (state)
                     {
                         case TranspilerState.Searching:
-                            if (instruction.opcode == OpCodes.Ldc_R4 && (float)instruction.operand == 8.0f)
+                            if (instruction.opcode == OpCodes.Ldc_R8 && (double)instruction.operand == 8.0)
                             {
                                 valueInstruction = instruction;
                                 state = TranspilerState.Replacing;
@@ -111,13 +111,14 @@ namespace DigDeeper
                         case TranspilerState.Replacing:
                             if (instruction.opcode == OpCodes.Sub)
                             {
-                                valueInstruction.operand = MaximumDepth.Value;
-                            }
+                                valueInstruction.operand = (double)MaximumDepth.Value;
+								yield return valueInstruction;
+							}
                             else if (instruction.opcode == OpCodes.Add)
                             {
-                                valueInstruction.operand = MaximumHeight.Value;
-                            }
-                            yield return valueInstruction;
+                                valueInstruction.operand = (double)MaximumHeight.Value;
+								yield return valueInstruction;
+							}
                             yield return instruction;
                             valueInstruction = null;
                             state = TranspilerState.Searching;
@@ -162,12 +163,13 @@ namespace DigDeeper
                             if (instruction.opcode == OpCodes.Sub)
                             {
                                 valueInstruction.operand = MaximumDepth.Value;
-                            }
+								yield return valueInstruction;
+							}
                             else if (instruction.opcode == OpCodes.Add)
                             {
                                 valueInstruction.operand = MaximumHeight.Value;
-                            }
-                            yield return valueInstruction;
+								yield return valueInstruction;
+							}
                             yield return instruction;
                             valueInstruction = null;
                             state = TranspilerState.Searching;
