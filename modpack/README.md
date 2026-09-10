@@ -2,6 +2,10 @@ Collection of Valheim mods created by Crystal.
 
 ## Changelog
 
+1.8.1
+
+* Updated: All Mods
+
 1.8.0
 
 * Updated: All Mods
