@@ -14,6 +14,7 @@
 
 using BepInEx;
 using BepInEx.Configuration;
+using ConditionalConfigSync;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -21,12 +22,23 @@ using System.Reflection.Emit;
 
 namespace DigDeeper
 {
-    [BepInPlugin(ModId, "Dig Deeper", "1.2.0.0")]
-    [BepInProcess("valheim.exe")]
+    [BepInPlugin(ModId, ModName, ModVersion)]
+	[BepInDependency("_shudnal.ConditionalConfigSync", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class DigDeeperPlugin : BaseUnityPlugin
     {
-        public const string ModId = "dev.crystal.digdeeper";
+		public const string ModId = "dev.crystal.digdeeper";
+		public const string ModName = "Dig Deeper";
+        public const string ModVersion = "1.3.0.0";
+
+		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
+        {
+            DisplayName = ModName,
+            CurrentVersion = ModVersion,
+            MinimumRequiredVersion = ModVersion,
+            ModRequired = true
+		};
 
         public static ConfigEntry<float> MaximumDepth;
         public static ConfigEntry<float> MaximumHeight;
@@ -36,13 +48,15 @@ namespace DigDeeper
 
         private void Awake()
         {
-            MaximumDepth = Config.Bind("Digging", nameof(MaximumDepth), 20.0f, "The maximum depth you can dig below the terrain surface. Range 0-128. Game default is 8.");
+            MaximumDepth = Config.Bind("Digging", nameof(MaximumDepth), 20.0f, "The maximum depth you can dig below the terrain surface. Range 0-128. Game default is 8. [The value will be enforced on a server.]");
             MaximumDepth.SettingChanged += Config_SettingChanged;
+            ConfigSync.AddConfigEntry(MaximumDepth, ConfigSyncMode.AlwaysServerControlled);
 
-            MaximumHeight = Config.Bind("Digging", nameof(MaximumHeight), 8.0f, "The maximum height you can raise the terrain. Range 0-128. Game default is 8.");
+			MaximumHeight = Config.Bind("Digging", nameof(MaximumHeight), 8.0f, "The maximum height you can raise the terrain. Range 0-128. Game default is 8. [The value will be enforced on a server.]");
             MaximumHeight.SettingChanged += Config_SettingChanged;
+            ConfigSync.AddConfigEntry(MaximumHeight, ConfigSyncMode.AlwaysServerControlled);
 
-            ClampConfig();
+			ClampConfig();
 
             sHeightmapHarmony = new Harmony(ModId + "_Heightmap");
             sHeightmapHarmony.PatchAll(typeof(Heightmap_Patches));

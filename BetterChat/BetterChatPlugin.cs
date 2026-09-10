@@ -14,6 +14,7 @@
 
 using BepInEx;
 using BepInEx.Configuration;
+using ConditionalConfigSync;
 using HarmonyLib;
 using Splatform;
 using System;
@@ -26,14 +27,25 @@ using UnityEngine.UI;
 
 namespace BetterChat
 {
-	[BepInPlugin(ModId, "Better Chat", "1.5.0.0")]
-    [BepInProcess("valheim.exe")]
+	[BepInPlugin(ModId, ModName, ModVersion)]
+	[BepInDependency("_shudnal.ConditionalConfigSync", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class BetterChatPlugin : BaseUnityPlugin
     {
         public const string ModId = "dev.crystal.betterchat";
+        public const string ModName = "Better Chat";
+        public const string ModVersion = "1.6.0.0";
 
-        public static ConfigEntry<bool> AlwaysVisible;
+		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
+		{
+			DisplayName = ModName,
+			CurrentVersion = ModVersion,
+			MinimumRequiredVersion = ModVersion,
+			ModRequired = true
+		};
+
+		public static ConfigEntry<bool> AlwaysVisible;
         public static ConfigEntry<float> HideDelay;
         public static ConfigEntry<bool> ForceCase;
         public static ConfigEntry<bool> SlashOpensChat;
@@ -68,29 +80,37 @@ namespace BetterChat
         {
             AlwaysVisible = Config.Bind("Chat", nameof(AlwaysVisible), false, "If True, the chat window will remain visible at all times. If False, the chat window will appear when new messages are received.");
             AlwaysVisible.SettingChanged += AlwaysVisible_SettingChanged;
+            ConfigSync.AddConfigEntry(AlwaysVisible, ConfigSyncMode.AlwaysClientControlled);
 
             HideDelay = Config.Bind("Chat", nameof(HideDelay), 10.0f, "The time, in seconds, to keep the chat window visible after sending or receiving a message. Minimum is 0.5. Has no effect if AlwaysVisible=true.");
             HideDelay.SettingChanged += HideDelay_SettingChanged;
+			ConfigSync.AddConfigEntry(HideDelay, ConfigSyncMode.AlwaysClientControlled);
 
-            ForceCase = Config.Bind("Chat", nameof(ForceCase), false, "If True, shout will be in all caps and whisper will be in all lowercase (game default). If False, messages will appear as they were originally entered.");
+			ForceCase = Config.Bind("Chat", nameof(ForceCase), false, "If True, shout will be in all caps and whisper will be in all lowercase (game default). If False, messages will appear as they were originally entered.");
             ForceCase.SettingChanged += ForceCase_SettingChanged;
+			ConfigSync.AddConfigEntry(ForceCase, ConfigSyncMode.AlwaysClientControlled);
 
-            SlashOpensChat = Config.Bind("Chat", nameof(SlashOpensChat), true, "If True, pressing the slash key (/) will open the chat window and start a message.");
+			SlashOpensChat = Config.Bind("Chat", nameof(SlashOpensChat), true, "If True, pressing the slash key (/) will open the chat window and start a message.");
             SlashOpensChat.SettingChanged += SlashOpensChat_SettingChanged;
+			ConfigSync.AddConfigEntry(SlashOpensChat, ConfigSyncMode.AlwaysClientControlled);
 
-            DefaultShout = Config.Bind("Chat", nameof(DefaultShout), false, "If True, text entered will shout by default - type /say for talk. If False, chat will be talk by default - type /s for shout.");
+			DefaultShout = Config.Bind("Chat", nameof(DefaultShout), false, "If True, text entered will shout by default - type /say for talk. If False, chat will be talk by default - type /s for shout.");
             DefaultShout.SettingChanged += DefaultShout_SettingChanged;
+			ConfigSync.AddConfigEntry(DefaultShout, ConfigSyncMode.AlwaysClientControlled);
 
-            ShowShoutPings = Config.Bind("Chat", nameof(ShowShoutPings), true, "If True, pings will show on your map when players shout (game default). If False, the pings will not show. (Other players can still see your shout pings.)");
+			ShowShoutPings = Config.Bind("Chat", nameof(ShowShoutPings), true, "If True, pings will show on your map when players shout (game default). If False, the pings will not show. (Other players can still see your shout pings.) [The value may be enforced on a server via sync policy.]");
             ShowShoutPings.SettingChanged += ShowShoutPings_SettingChanged;
+			ConfigSync.AddConfigEntry(ShowShoutPings, ConfigSyncMode.Conditional, serverControlledByDefault: true);
 
-            TalkDistance = Config.Bind("Chat", nameof(TalkDistance), 15.0f, "The maximum distance from a player at which you will receive their normal chat messages (not whisper or shout). Game default is 15. Acceptable range is 1-100.");
+			TalkDistance = Config.Bind("Chat", nameof(TalkDistance), 15.0f, "The maximum distance from a player at which you will receive their normal chat messages (not whisper or shout). Game default is 15. Acceptable range is 1-100. [The value may be enforced on a server via sync policy.]");
             TalkDistance.SettingChanged += Distance_SettingChanged;
+			ConfigSync.AddConfigEntry(TalkDistance, ConfigSyncMode.Conditional, serverControlledByDefault: true);
 
-            WhisperDistance = Config.Bind("Chat", nameof(WhisperDistance), 4.0f, "The maximum distance from a player at which you will receive their whispered chat messages. Game default is 4. Acceptable range is 1-20");
+			WhisperDistance = Config.Bind("Chat", nameof(WhisperDistance), 4.0f, "The maximum distance from a player at which you will receive their whispered chat messages. Game default is 4. Acceptable range is 1-20. [The value may be enforced on a server via sync policy.]");
             WhisperDistance.SettingChanged += Distance_SettingChanged;
+			ConfigSync.AddConfigEntry(WhisperDistance, ConfigSyncMode.Conditional, serverControlledByDefault: true);
 
-            ClampConfig();
+			ClampConfig();
 
             sChatAwakeHarmony = new Harmony(ModId + "_ChatAwake");
             sPlayerHarmony = new Harmony(ModId + "_Player");

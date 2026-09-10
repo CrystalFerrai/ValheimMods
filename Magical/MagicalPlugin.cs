@@ -14,6 +14,7 @@
 
 using BepInEx;
 using BepInEx.Configuration;
+using ConditionalConfigSync;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -22,12 +23,23 @@ using System.Reflection.Emit;
 
 namespace Magical
 {
-	[BepInPlugin(ModId, "Magical", "1.1.0.0")]
+	[BepInPlugin(ModId, ModName, ModVersion)]
+	[BepInDependency("_shudnal.ConditionalConfigSync", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInProcess("valheim.exe")]
 	[BepInProcess("valheim_server.exe")]
 	public class MagicalPlugin : BaseUnityPlugin
 	{
 		public const string ModId = "dev.crystal.magical";
+		public const string ModName = "Magical";
+		public const string ModVersion = "1.2.0.0";
+
+		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
+		{
+			DisplayName = ModName,
+			CurrentVersion = ModVersion,
+			MinimumRequiredVersion = ModVersion,
+			ModRequired = true
+		};
 
 		public static ConfigEntry<float> BaseStamina;
 		public static ConfigEntry<float> BaseEitr;
@@ -57,41 +69,53 @@ namespace Magical
 
 		private void Awake()
 		{
-			BaseStamina = Config.Bind("Base", nameof(BaseStamina), 50.0f, "Maximum stamina before any food modifiers are applied. Game default 50.");
+			BaseStamina = Config.Bind("Base", nameof(BaseStamina), 50.0f, "Maximum stamina before any food modifiers are applied. Game default 50. [The value will be enforced on a server.]");
 			BaseStamina.SettingChanged += PlayerVariable_SettingChanged;
+			ConfigSync.AddConfigEntry(BaseStamina, ConfigSyncMode.AlwaysServerControlled);
 
-			BaseEitr = Config.Bind("Base", nameof(BaseEitr), 0.0f, "Maximum eitr before any food modifiers are applied. Game default 0.");
+			BaseEitr = Config.Bind("Base", nameof(BaseEitr), 0.0f, "Maximum eitr before any food modifiers are applied. Game default 0. [The value will be enforced on a server.]");
 			BaseEitr.SettingChanged += PlayerConstant_SettingChanged;
+			ConfigSync.AddConfigEntry(BaseEitr, ConfigSyncMode.AlwaysServerControlled);
 
-			BaseHealth = Config.Bind("Base", nameof(BaseHealth), 25.0f, "Maximum health before any food modifiers are applied. Game default 25.");
+			BaseHealth = Config.Bind("Base", nameof(BaseHealth), 25.0f, "Maximum health before any food modifiers are applied. Game default 25. [The value will be enforced on a server.]");
 			BaseHealth.SettingChanged += PlayerVariable_SettingChanged;
+			ConfigSync.AddConfigEntry(BaseHealth, ConfigSyncMode.AlwaysServerControlled);
 
-			BaseStaminaRegen = Config.Bind("Regen", nameof(BaseStaminaRegen), 6.0f, "The base rate of stamina regen per second, before any modifiers are applied. Game default 6.");
+			BaseStaminaRegen = Config.Bind("Regen", nameof(BaseStaminaRegen), 6.0f, "The base rate of stamina regen per second, before any modifiers are applied. Game default 6. [The value will be enforced on a server.]");
 			BaseStaminaRegen.SettingChanged += PlayerVariable_SettingChanged;
+			ConfigSync.AddConfigEntry(BaseStaminaRegen, ConfigSyncMode.AlwaysServerControlled);
 
-			BaseEitrRegen = Config.Bind("Regen", nameof(BaseEitrRegen), 2.0f, "The base rate of eitr regen per second, before any modifiers are applied. Game default 2.");
+			BaseEitrRegen = Config.Bind("Regen", nameof(BaseEitrRegen), 2.0f, "The base rate of eitr regen per second, before any modifiers are applied. Game default 2. [The value will be enforced on a server.]");
 			BaseEitrRegen.SettingChanged += PlayerVariable_SettingChanged;
+			ConfigSync.AddConfigEntry(BaseEitrRegen, ConfigSyncMode.AlwaysServerControlled);
 
-			BaseHealthRegen = Config.Bind("Regen", nameof(BaseHealthRegen), 0.0f, "The base rate of health regen per health regen tick, before any modifiers are applied. Game default 0.");
+			BaseHealthRegen = Config.Bind("Regen", nameof(BaseHealthRegen), 0.0f, "The base rate of health regen per health regen tick, before any modifiers are applied. Game default 0. [The value will be enforced on a server.]");
 			BaseHealthRegen.SettingChanged += PlayerConstant_SettingChanged;
+			ConfigSync.AddConfigEntry(BaseHealthRegen, ConfigSyncMode.AlwaysServerControlled);
 
-			StaminaRegenDelay = Config.Bind("Regen", nameof(StaminaRegenDelay), 1.0f, "The number of seconds after using stamina before it starts to regenerate. Game default 1.");
+			StaminaRegenDelay = Config.Bind("Regen", nameof(StaminaRegenDelay), 1.0f, "The number of seconds after using stamina before it starts to regenerate. Game default 1. [The value will be enforced on a server.]");
 			StaminaRegenDelay.SettingChanged += PlayerVariable_SettingChanged;
+			ConfigSync.AddConfigEntry(StaminaRegenDelay, ConfigSyncMode.AlwaysServerControlled);
 
-			EitrRegenDelay = Config.Bind("Regen", nameof(EitrRegenDelay), 1.0f, "The number of seconds after using eitr before it starts to regenerate. Game default 1.");
+			EitrRegenDelay = Config.Bind("Regen", nameof(EitrRegenDelay), 1.0f, "The number of seconds after using eitr before it starts to regenerate. Game default 1. [The value will be enforced on a server.]");
 			EitrRegenDelay.SettingChanged += PlayerVariable_SettingChanged;
+			ConfigSync.AddConfigEntry(EitrRegenDelay, ConfigSyncMode.AlwaysServerControlled);
 
-			HealthRegenTickRate = Config.Bind("Regen", nameof(HealthRegenTickRate), 10.0f, "The number of seconds between ticks of health regeneration. Game default 10.");
+			HealthRegenTickRate = Config.Bind("Regen", nameof(HealthRegenTickRate), 10.0f, "The number of seconds between ticks of health regeneration. Game default 10. [The value will be enforced on a server.]");
 			HealthRegenTickRate.SettingChanged += PlayerConstant_SettingChanged;
+			ConfigSync.AddConfigEntry(HealthRegenTickRate, ConfigSyncMode.AlwaysServerControlled);
 
-			SkillStaminaReduction = Config.Bind("Skill", nameof(SkillStaminaReduction), 0.33f, "Stamina cost reduction multiplier for actions based on player skill. Value represents reduction with 100 skill and will scale down at lower skill levels. Game default 0.33.");
+			SkillStaminaReduction = Config.Bind("Skill", nameof(SkillStaminaReduction), 0.33f, "Stamina cost reduction multiplier for actions based on player skill. Value represents reduction with 100 skill and will scale down at lower skill levels. Game default 0.33. [The value will be enforced on a server.]");
 			SkillStaminaReduction.SettingChanged += Attack_SettingChanged;
+			ConfigSync.AddConfigEntry(SkillStaminaReduction, ConfigSyncMode.AlwaysServerControlled);
 
-			SkillEitrReduction = Config.Bind("Skill", nameof(SkillEitrReduction), 0.33f, "Eitr cost reduction multiplier for actions based on player skill. Value represents reduction with 100 skill and will scale down at lower skill levels. Game default 0.33.");
+			SkillEitrReduction = Config.Bind("Skill", nameof(SkillEitrReduction), 0.33f, "Eitr cost reduction multiplier for actions based on player skill. Value represents reduction with 100 skill and will scale down at lower skill levels. Game default 0.33. [The value will be enforced on a server.]");
 			SkillEitrReduction.SettingChanged += Attack_SettingChanged;
+			ConfigSync.AddConfigEntry(SkillEitrReduction, ConfigSyncMode.AlwaysServerControlled);
 
-			SkillHealthReduction = Config.Bind("Skill", nameof(SkillHealthReduction), 0.33f, "Health cost reduction multiplier for actions based on player skill. Value represents reduction with 100 skill and will scale down at lower skill levels. Game default 0.33.");
+			SkillHealthReduction = Config.Bind("Skill", nameof(SkillHealthReduction), 0.33f, "Health cost reduction multiplier for actions based on player skill. Value represents reduction with 100 skill and will scale down at lower skill levels. Game default 0.33. [The value will be enforced on a server.]");
 			SkillHealthReduction.SettingChanged += Attack_SettingChanged;
+			ConfigSync.AddConfigEntry(SkillHealthReduction, ConfigSyncMode.AlwaysServerControlled);
 
 			sPlayerTrackingHarmony = new Harmony(ModId + "_Player_Tracking");
 			sPlayerHarmony = new Harmony(ModId + "_Player");

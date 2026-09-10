@@ -24,7 +24,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Crystal")]
 [assembly: AssemblyProduct("SeaLevel")]
-[assembly: AssemblyCopyright("Copyright © 2023 Crystal Ferrai")]
+[assembly: AssemblyCopyright("Copyright © 2026 Crystal Ferrai")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

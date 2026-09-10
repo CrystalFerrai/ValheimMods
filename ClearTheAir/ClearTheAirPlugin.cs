@@ -14,6 +14,7 @@
 
 using BepInEx;
 using BepInEx.Configuration;
+using ConditionalConfigSync;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -21,14 +22,25 @@ using System.Reflection;
 
 namespace ClearTheAir
 {
-	[BepInPlugin(ModId, "ClearTheAir", "1.1.0.0")]
-    [BepInProcess("valheim.exe")]
+	[BepInPlugin(ModId, ModName, ModVersion)]
+	[BepInDependency("_shudnal.ConditionalConfigSync", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class ClearTheAirPlugin : BaseUnityPlugin
     {
         public const string ModId = "dev.crystal.cleartheair";
+        public const string ModName = "Clear The Air";
+        public const string ModVersion = "1.2.0.0";
 
-        public static ConfigEntry<float> MistClearRadiusMultiplier;
+		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
+		{
+			DisplayName = ModName,
+			CurrentVersion = ModVersion,
+			MinimumRequiredVersion = ModVersion,
+			ModRequired = true
+		};
+
+		public static ConfigEntry<float> MistClearRadiusMultiplier;
 
         // Notes on related game types
         // Mister: emits mist within a radius
@@ -50,10 +62,11 @@ namespace ClearTheAir
 
         private void Awake()
         {
-            MistClearRadiusMultiplier = Config.Bind("Mist", nameof(MistClearRadiusMultiplier), 1.0f, "Multiplier to apply to the for clear radius of all items which can clear mist. Game default 1.");
+            MistClearRadiusMultiplier = Config.Bind("Mist", nameof(MistClearRadiusMultiplier), 1.0f, "Multiplier to apply to the fog clear radius of all items which can clear mist. Game default 1. [The value will be enforced on a server.]");
             MistClearRadiusMultiplier.SettingChanged += MistClearRadiusMultiplier_SettingChanged;
+            ConfigSync.AddConfigEntry(MistClearRadiusMultiplier, ConfigSyncMode.AlwaysServerControlled);
 
-            ClampConfig();
+			ClampConfig();
             mMistClearRadiusMultiplier = MistClearRadiusMultiplier.Value;
 
             sDemisterHarmony = new Harmony(ModId + "_Demister");

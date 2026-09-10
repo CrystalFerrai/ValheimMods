@@ -1,20 +1,28 @@
-Health and stamina from food follows the curve ``y=1-x^8`` instead of the vanilla curve ``y=(1-x)^0.3``. This means that 50% of the way through the food, you are still getting nearly 100% of the benefit (vs 81%) and 75% of the way through you are still getting about 90% of the benefit (vs 65%). Values drop sharply as you near the end. This does not increase the overall duration of food, only makes more of the duration useful.
+Health, stamina and eitr from food follows the curve ``y=1-x^8`` instead of the vanilla curve ``y=(1-x)^0.3``. This means that 50% of the way through the food, you are still getting nearly 100% of the benefit (vs 81%) and 75% of the way through you are still getting about 90% of the benefit (vs 65%). Values drop sharply as you near the end. This does not increase the overall duration of food, only makes more of the duration useful.
 
 Run the game once with the mod enabled to generate the config. See config for details on what each option does.
 
-Tip: The exponent of the curve is configurable. To visualize the food curve and see how different exponents look, enter the above formula into a graphing calculator such as [this one](https://www.desmos.com/calculator) and change the ``8`` to whatever number you want to see.
+Tip: The exponent of each curve is configurable. To visualize the curve and see how different exponents look, enter the above formula into a graphing calculator such as [this one](https://www.desmos.com/calculator) and change the ``8`` to whatever number you want to see.
 
-This mod is client only and does not need to be installed on dedicated servers. For the best experience, all clients should use the same configuration.
+This mod must be installed on client and server.
+
+Some configuration options can be enforced by a server running [ConditionalConfigSync](https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync). See included ConfigSync_Readme.txt file for more information.
 
 ## Installation
-This mod is designed to install and run via [r2modman](https://thunderstore.io/package/ebkr/r2modman/). You can optionally install it manually following the steps below.
+This mod is designed to install and run via a mod manager such as [r2modman](https://thunderstore.io/package/ebkr/r2modman/). You can optionally install it manually following the steps below.
 
 **Manual Install**
+
 1. Install [BepInExPack Valheim](https://valheim.thunderstore.io/package/denikson/BepInExPack_Valheim/)
-2. Download latest ``Sated.dll`` by clicking "Manual Download". Extract the dll from the zip file into ``[GameDirectory]\Bepinex\plugins``. (You only need the dll.)
-3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
+2. Install [ConditionalConfigSync](https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync)
+3. Download latest ``Sated.dll`` by clicking "Manual Download". Extract the dll from the zip file into ``[GameDirectory]\Bepinex\plugins``. (You only need the dll.)
+4. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything (or use a configuration management mod).
 
 ## Changelog
+
+1.3.0
+
+* Added server config sync via [ConditionalConfigSync](https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync)
 
 1.2.0
 

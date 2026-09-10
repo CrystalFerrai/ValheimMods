@@ -14,6 +14,7 @@
 
 using BepInEx;
 using BepInEx.Configuration;
+using ConditionalConfigSync;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -22,14 +23,25 @@ using UnityEngine;
 
 namespace ProperPortals
 {
-    [BepInPlugin(ModId, "Proper Portals", "1.3.0.0")]
-    [BepInProcess("valheim.exe")]
+	[BepInPlugin(ModId, ModName, ModVersion)]
+	[BepInDependency("_shudnal.ConditionalConfigSync", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class ProperPortalsPlugin : BaseUnityPlugin
     {
         public const string ModId = "dev.crystal.properportals";
+        public const string ModName = "Proper Portals";
+        public const string ModVersion = "1.4.0.0";
 
-        public static ConfigEntry<bool> CarryAnything;
+		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
+		{
+			DisplayName = ModName,
+			CurrentVersion = ModVersion,
+			MinimumRequiredVersion = ModVersion,
+			ModRequired = true
+		};
+
+		public static ConfigEntry<bool> CarryAnything;
         public static ConfigEntry<float> FadeTime;
         public static ConfigEntry<float> MinPortalTime;
         public static ConfigEntry<float> ActivationRange;
@@ -49,19 +61,23 @@ namespace ProperPortals
 
         private void Awake()
         {
-            CarryAnything = Config.Bind("Portal", nameof(CarryAnything), true, "Whether to allow using portals while carrying portal restricted items such as metals. Set false to use world setting. Set true to force allow.");
+            CarryAnything = Config.Bind("Portal", nameof(CarryAnything), true, "Whether to allow using portals while carrying portal restricted items such as metals. Set false to use world setting. Set true to force allow. [The value will be enforced on a server.]");
             CarryAnything.SettingChanged += CarryAnything_SettingChanged;
+			ConfigSync.AddConfigEntry(CarryAnything, ConfigSyncMode.AlwaysServerControlled);
 
-            FadeTime = Config.Bind("Portal", nameof(FadeTime), 0.5f, "The time it takes to fade the screen before teleporting. Teleporting does not start until after the screen fade completes. Game default is 1.");
+			FadeTime = Config.Bind("Portal", nameof(FadeTime), 0.5f, "The time it takes to fade the screen before teleporting. Teleporting does not start until after the screen fade completes. Game default is 1. [The value may be enforced on a server via sync policy.]");
             FadeTime.SettingChanged += PortalTime_SettingChanged;
+			ConfigSync.AddConfigEntry(FadeTime, ConfigSyncMode.Conditional, serverControlledByDefault: true);
 
-            MinPortalTime = Config.Bind("Portal", nameof(MinPortalTime), 0.0f, "The minimum time to wait for a teleport to complete, in seconds. It can take longer if the target location needs to be loaded. Increase this if you have the issue of dropping in before loading completes. Game default is 8.");
+			MinPortalTime = Config.Bind("Portal", nameof(MinPortalTime), 0.0f, "The minimum time to wait for a teleport to complete, in seconds. It can take longer if the target location needs to be loaded. Increase this if you have the issue of dropping in before loading completes. Game default is 8. [The value may be enforced on a server via sync policy.]");
             MinPortalTime.SettingChanged += PortalTime_SettingChanged;
+			ConfigSync.AddConfigEntry(MinPortalTime, ConfigSyncMode.Conditional, serverControlledByDefault: true);
 
-            ActivationRange = Config.Bind("Portal", nameof(ActivationRange), 2.0f, "The distance at which a portal will start glowing and making noise when a player approaches it. Maximum accepted value is 10. Setting to 0 prevents portals from glowing or making noise at all. Game default is 3.");
+			ActivationRange = Config.Bind("Portal", nameof(ActivationRange), 2.0f, "The distance at which a portal will start glowing and making noise when a player approaches it. Maximum accepted value is 10. Setting to 0 prevents portals from glowing or making noise at all. Game default is 3. [The value will be enforced on a server.]");
             ActivationRange.SettingChanged += ActivationRange_SettingChanged;
+			ConfigSync.AddConfigEntry(ActivationRange, ConfigSyncMode.AlwaysServerControlled);
 
-            ClampConfig();
+			ClampConfig();
 
             sInventoryHarmony = new Harmony(ModId + "_Inventory");
             sHudHarmony = new Harmony(ModId + "_Hud");

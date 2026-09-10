@@ -14,6 +14,7 @@
 
 using BepInEx;
 using BepInEx.Configuration;
+using ConditionalConfigSync;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -23,24 +24,36 @@ using UnityEngine;
 
 namespace Farmland
 {
-	[BepInPlugin(ModId, "Farmland", "1.1.0.0")]
-    [BepInProcess("valheim.exe")]
+	[BepInPlugin(ModId, ModName, ModVersion)]
+	[BepInDependency("_shudnal.ConditionalConfigSync", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class FarmlandPlugin : BaseUnityPlugin
     {
         public const string ModId = "dev.crystal.farmland";
+        public const string ModName = "Farmland";
+        public const string ModVersion = "1.2.0.0";
 
-        public static ConfigEntry<float> VegetationThreshold;
+		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
+		{
+			DisplayName = ModName,
+			CurrentVersion = ModVersion,
+			MinimumRequiredVersion = ModVersion,
+			ModRequired = true
+		};
+
+		public static ConfigEntry<float> VegetationThreshold;
 
         private static Harmony sPlayerHarmony;
         private static Harmony sTerrainCompHarmony;
 
         private void Awake()
         {
-            VegetationThreshold = Config.Bind("Land", nameof(VegetationThreshold), 0.0f, "The amount of vegetation land must support to allow cultivation. Lower values provide more farmable land. Range 0.0 to 1.0. Game default 0.25. Mod default 0.0.");
+            VegetationThreshold = Config.Bind("Land", nameof(VegetationThreshold), 0.0f, "The amount of vegetation land must support to allow cultivation. Lower values provide more farmable land. Range 0.0 to 1.0. Game default 0.25. Mod default 0.0. [The value will be enforced on a server.]");
             VegetationThreshold.SettingChanged += VegetationThreshold_SettingChanged;
+			ConfigSync.AddConfigEntry(VegetationThreshold, ConfigSyncMode.AlwaysServerControlled);
 
-            ClampConfig();
+			ClampConfig();
 
             sPlayerHarmony = new Harmony(ModId + "_Player");
             sPlayerHarmony.PatchAll(typeof(Player_Patches));

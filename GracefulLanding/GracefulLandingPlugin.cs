@@ -14,6 +14,7 @@
 
 using BepInEx;
 using BepInEx.Configuration;
+using ConditionalConfigSync;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -21,14 +22,25 @@ using System.Reflection.Emit;
 
 namespace GracefulLanding
 {
-    [BepInPlugin(ModId, "Graceful Landing", "1.1.0.0")]
-    [BepInProcess("valheim.exe")]
+    [BepInPlugin(ModId, ModName, ModVersion)]
+	[BepInDependency("_shudnal.ConditionalConfigSync", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class GracefulLandingPlugin : BaseUnityPlugin
     {
         public const string ModId = "dev.crystal.gracefullanding";
+        public const string ModName = "Graceful Landing";
+        public const string ModVersion = "1.2.0.0";
 
-        public static ConfigEntry<float> MinDamageHeight;
+		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
+		{
+			DisplayName = ModName,
+			CurrentVersion = ModVersion,
+			MinimumRequiredVersion = ModVersion,
+			ModRequired = true
+		};
+
+		public static ConfigEntry<float> MinDamageHeight;
         public static ConfigEntry<float> MaxDamageHeight;
         public static ConfigEntry<float> MaxDamageAmount;
 
@@ -36,16 +48,19 @@ namespace GracefulLanding
 
         private void Awake()
         {
-            MinDamageHeight = Config.Bind("Falling", nameof(MinDamageHeight), 8.0f, "The minimum distance you must fall to receive any fall damage. Allowed range 1-10000. Game default 4.");
+            MinDamageHeight = Config.Bind("Falling", nameof(MinDamageHeight), 8.0f, "The minimum distance you must fall to receive any fall damage. Allowed range 1-10000. Game default 4. [The value will be enforced on a server.]");
             MinDamageHeight.SettingChanged += Falling_SettingChanged;
+			ConfigSync.AddConfigEntry(MinDamageHeight, ConfigSyncMode.AlwaysServerControlled);
 
-            MaxDamageHeight = Config.Bind("Falling", nameof(MaxDamageHeight), 64.0f, $"The minimum distance you must to receive maximum fall damage. Allowed range 1-10000. Must be equal to or higher than {nameof(MinDamageHeight)}. Game default 16.");
+			MaxDamageHeight = Config.Bind("Falling", nameof(MaxDamageHeight), 64.0f, $"The minimum distance you must to receive maximum fall damage. Allowed range 1-10000. Must be equal to or higher than {nameof(MinDamageHeight)}. Game default 16. [The value will be enforced on a server.]");
             MaxDamageHeight.SettingChanged += Falling_SettingChanged;
+			ConfigSync.AddConfigEntry(MaxDamageHeight, ConfigSyncMode.AlwaysServerControlled);
 
-            MaxDamageAmount = Config.Bind("Falling", nameof(MaxDamageAmount), 100.0f, "The maximum fall damage that can be received. Allowed range 0-10000. Game default 100.");
+			MaxDamageAmount = Config.Bind("Falling", nameof(MaxDamageAmount), 100.0f, "The maximum fall damage that can be received. Allowed range 0-10000. Game default 100. [The value will be enforced on a server.]");
             MaxDamageAmount.SettingChanged += Falling_SettingChanged;
+			ConfigSync.AddConfigEntry(MaxDamageAmount, ConfigSyncMode.AlwaysServerControlled);
 
-            ClampConfig();
+			ClampConfig();
 
             sCharacterHarmony = new Harmony(ModId + "_Character");
             sCharacterHarmony.PatchAll(typeof(Character_Patches));

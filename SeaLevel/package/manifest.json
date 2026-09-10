@@ -3,29 +3,7 @@
     "version_number": "1.0.0",
     "description": "Change the global water level.",
     "dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.2333"
+        "denikson-BepInExPack_Valheim-5.4.2350"
     ],
-    "website_url": "https://github.com/CrystalFerrai/ValheimMods",
-
-    "ManifestVersion": 2,
-    "AuthorName": "Crystal",
-    "Name": "SeaLevel",
-    "DisplayName": "SeaLevel",
-    "Version": "1.0.0",
-    "Licence": "",
-    "WebsiteURL": "https://github.com/CrystalFerrai/ValheimMods",
-    "Description": "Change the global water level.",
-    "GameVersion": "",
-    "Dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.2333"
-    ],
-    "OptionalDependencies": [],
-    "Incompatibilities": [],
-    "NetworkMode": "client",
-    "PackageType": "mod",
-    "InstallMode": "managed",
-    "Loaders": [
-        "bepinex"
-    ],
-    "ExtraData": {}
+    "website_url": "https://github.com/CrystalFerrai/ValheimMods"
 }

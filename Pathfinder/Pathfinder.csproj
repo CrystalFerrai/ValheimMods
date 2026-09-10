@@ -26,6 +26,9 @@
     <Reference Include="BepInEx.Harmony">
       <HintPath>..\lib\BepInEx.Harmony.dll</HintPath>
     </Reference>
+    <Reference Include="ConditionalConfigSync">
+      <HintPath>..\lib\ConditionalConfigSync.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>..\lib\UnityEngine.dll</HintPath>
     </Reference>

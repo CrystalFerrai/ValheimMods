@@ -14,6 +14,7 @@
 
 using BepInEx;
 using BepInEx.Configuration;
+using ConditionalConfigSync;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -23,14 +24,25 @@ using UnityEngine;
 
 namespace Comfortable
 {
-	[BepInPlugin(ModId, "Comfortable", "1.1.0.0")]
-    [BepInProcess("valheim.exe")]
+	[BepInPlugin(ModId, ModName, ModVersion)]
+	[BepInDependency("_shudnal.ConditionalConfigSync", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class ComfortablePlugin : BaseUnityPlugin
     {
         public const string ModId = "dev.crystal.comfortable";
+        public const string ModName = "Comfortable";
+        public const string ModVersion = "1.2.0.0";
 
-        public static ConfigEntry<float> BaseRestTime;
+		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
+		{
+			DisplayName = ModName,
+			CurrentVersion = ModVersion,
+			MinimumRequiredVersion = ModVersion,
+			ModRequired = true
+		};
+
+		public static ConfigEntry<float> BaseRestTime;
         public static ConfigEntry<float> RestTimePerComfort;
         public static ConfigEntry<float> ComfortItemRadius;
         public static ConfigEntry<float> FireItemRadiusMultiplier;
@@ -55,19 +67,23 @@ namespace Comfortable
 
         private void Awake()
         {
-            BaseRestTime = Config.Bind("Comfort", nameof(BaseRestTime), 480.0f, "The base time of the rested buff, in seconds. Game default 480.");
+            BaseRestTime = Config.Bind("Comfort", nameof(BaseRestTime), 480.0f, "The base time of the rested buff, in seconds. Game default 480. [The value will be enforced on a server.]");
             BaseRestTime.SettingChanged += BaseRestTime_SettingChanged;
+            ConfigSync.AddConfigEntry(BaseRestTime, ConfigSyncMode.AlwaysServerControlled);
 
-            RestTimePerComfort = Config.Bind("Comfort", nameof(RestTimePerComfort), 60.0f, "The time to add to the rested buff, in seconds, for each comfort level beyond 1. Game default 60.");
+			RestTimePerComfort = Config.Bind("Comfort", nameof(RestTimePerComfort), 60.0f, "The time to add to the rested buff, in seconds, for each comfort level beyond 1. Game default 60. [The value will be enforced on a server.]");
             RestTimePerComfort.SettingChanged += RestTimePerComfort_SettingChanged;
+			ConfigSync.AddConfigEntry(RestTimePerComfort, ConfigSyncMode.AlwaysServerControlled);
 
-            ComfortItemRadius = Config.Bind("Comfort", nameof(ComfortItemRadius), 10.0f, "The range at which comforting items will affect the comfort level of players. Game default 10.");
+			ComfortItemRadius = Config.Bind("Comfort", nameof(ComfortItemRadius), 10.0f, "The range at which comforting items will affect the comfort level of players. Game default 10. [The value will be enforced on a server.]");
             ComfortItemRadius.SettingChanged += ComfortItemRadius_SettingChanged;
+			ConfigSync.AddConfigEntry(ComfortItemRadius, ConfigSyncMode.AlwaysServerControlled);
 
-            FireItemRadiusMultiplier = Config.Bind("Comfort", nameof(FireItemRadiusMultiplier), 1.0f, "A multiplier to apply to the range at which items provide the \"Fire\" buff. Game default 1. Very high values may cause performance issues.");
+			FireItemRadiusMultiplier = Config.Bind("Comfort", nameof(FireItemRadiusMultiplier), 1.0f, "A multiplier to apply to the range at which items provide the \"Fire\" buff. Game default 1. Very high values may cause performance issues. [The value will be enforced on a server.]");
             FireItemRadiusMultiplier.SettingChanged += FireItemRadiusMultiplier_SettingChanged;
+			ConfigSync.AddConfigEntry(FireItemRadiusMultiplier, ConfigSyncMode.AlwaysServerControlled);
 
-            ClampConfig();
+			ClampConfig();
             mFireRadiusMultiplier = FireItemRadiusMultiplier.Value;
 
             sFejdStartupHarmony = new Harmony(ModId + "_FejdStartup");
@@ -157,7 +173,7 @@ namespace Comfortable
             }
             else
             {
-                Debug.LogError("Comfortable: Could not locate SE_Rested effect object. This mod will not function properly.");
+                Debug.LogError("[Comfortable] Could not locate SE_Rested effect object. This mod will not function properly.");
             }
         }
 

@@ -14,28 +14,41 @@
 
 using BepInEx;
 using BepInEx.Configuration;
+using ConditionalConfigSync;
 using HarmonyLib;
 using System;
 
 namespace Magni
 {
-    [BepInPlugin(ModId, "Magni", "1.1.0.0")]
-    [BepInProcess("valheim.exe")]
+	[BepInPlugin(ModId, ModName, ModVersion)]
+	[BepInDependency("_shudnal.ConditionalConfigSync", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class MagniPlugin : BaseUnityPlugin
     {
         public const string ModId = "dev.crystal.magni";
+        public const string ModName = "Magni";
+        public const string ModVersion = "1.2.0.0";
 
-        public static ConfigEntry<float> CarryCapacityMultiplier;
+		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
+		{
+			DisplayName = ModName,
+			CurrentVersion = ModVersion,
+			MinimumRequiredVersion = ModVersion,
+			ModRequired = true
+		};
+
+		public static ConfigEntry<float> CarryCapacityMultiplier;
 
         private static Harmony sPlayerHarmony;
 
         private void Awake()
         {
-            CarryCapacityMultiplier = Config.Bind("Weight", nameof(CarryCapacityMultiplier), 2.0f, "Multiplier to apply to max carry weight capacity. Game default = 1.0. Mod default = 2.0.");
+            CarryCapacityMultiplier = Config.Bind("Weight", nameof(CarryCapacityMultiplier), 2.0f, "Multiplier to apply to max carry weight capacity. Game default = 1.0. Mod default = 2.0. [The value will be enforced on a server.]");
             CarryCapacityMultiplier.SettingChanged += CarryCapacity_SettingChanged;
+			ConfigSync.AddConfigEntry(CarryCapacityMultiplier, ConfigSyncMode.AlwaysServerControlled);
 
-            ClampConfig();
+			ClampConfig();
 
             sPlayerHarmony = new Harmony(ModId + "_Player");
             sPlayerHarmony.PatchAll(typeof(Player_Patches));

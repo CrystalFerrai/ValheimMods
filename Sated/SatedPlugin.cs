@@ -19,6 +19,7 @@
 
 using BepInEx;
 using BepInEx.Configuration;
+using ConditionalConfigSync;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -28,17 +29,28 @@ using UnityEngine;
 
 namespace Sated
 {
-    [BepInPlugin(ModId, "Sated", "1.2.0.0")]
-    [BepInProcess("valheim.exe")]
+	[BepInPlugin(ModId, ModName, ModVersion)]
+	[BepInDependency("_shudnal.ConditionalConfigSync", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class SatedPlugin : BaseUnityPlugin
     {
         public const string ModId = "dev.crystal.sated";
+        public const string ModName = "Sated";
+        public const string ModVersion = "1.3.0.0";
+
+		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
+		{
+			DisplayName = ModName,
+			CurrentVersion = ModVersion,
+			MinimumRequiredVersion = ModVersion,
+			ModRequired = true
+		};
 
 #if FEATURE_FOOD_BARS
         public static ConfigEntry<bool> ShowFoodTimerBars;
 #endif
-        public static ConfigEntry<float> HealthCurveExponent;
+		public static ConfigEntry<float> HealthCurveExponent;
         public static ConfigEntry<float> StaminaCurveExponent;
         public static ConfigEntry<float> EitrCurveExponent;
 
@@ -64,18 +76,22 @@ namespace Sated
 #if FEATURE_FOOD_BARS
             ShowFoodTimerBars = Config.Bind("Food", nameof(ShowFoodTimerBars), true, "Whether to show timer bars below food icons on the HUD.");
             ShowFoodTimerBars.SettingChanged += ShowFoodTimerBars_SettingChanged;
+            ConfigSync.AddConfigEntry(ShowFoodTimerBars, ConfigSyncMode.AlwaysClientControlled);
 #endif
 
-            HealthCurveExponent = Config.Bind("Food", nameof(HealthCurveExponent), 8.0f, "The value of the exponent 'e' used in the food curve formula 'y = 1 - x^e' for calculating added health. Valid range 0.1 - 100. Higher values make you full longer, but also drop off more suddenly. A value of 1 indicates a linear decline. Values less than 1 invert the curve, causing a faster initial decline which gradually slows down.");
+			HealthCurveExponent = Config.Bind("Food", nameof(HealthCurveExponent), 8.0f, "The value of the exponent 'e' used in the food curve formula 'y = 1 - x^e' for calculating added health. Valid range 0.1 - 100. Higher values make you full longer, but also drop off more suddenly. A value of 1 indicates a linear decline. Values less than 1 invert the curve, causing a faster initial decline which gradually slows down. [The value will be enforced on a server.]");
             HealthCurveExponent.SettingChanged += CurveExponent_SettingChanged;
+			ConfigSync.AddConfigEntry(HealthCurveExponent, ConfigSyncMode.AlwaysServerControlled);
 
-            StaminaCurveExponent = Config.Bind("Food", nameof(StaminaCurveExponent), 8.0f, "The value of the exponent 'e' used in the food curve formula 'y = 1 - x^e' for calculating added stamina. Valid range 0.1 - 100. Higher values make you full longer, but also drop off more suddenly. A value of 1 indicates a linear decline. Values less than 1 invert the curve, causing a faster initial decline which gradually slows down.");
+			StaminaCurveExponent = Config.Bind("Food", nameof(StaminaCurveExponent), 8.0f, "The value of the exponent 'e' used in the food curve formula 'y = 1 - x^e' for calculating added stamina. Valid range 0.1 - 100. Higher values make you full longer, but also drop off more suddenly. A value of 1 indicates a linear decline. Values less than 1 invert the curve, causing a faster initial decline which gradually slows down. [The value will be enforced on a server.]");
             StaminaCurveExponent.SettingChanged += CurveExponent_SettingChanged;
+			ConfigSync.AddConfigEntry(StaminaCurveExponent, ConfigSyncMode.AlwaysServerControlled);
 
-            EitrCurveExponent = Config.Bind("Food", nameof(EitrCurveExponent), 8.0f, "The value of the exponent 'e' used in the food curve formula 'y = 1 - x^e' for calculating added eitr. Valid range 0.1 - 100. Higher values make you full longer, but also drop off more suddenly. A value of 1 indicates a linear decline. Values less than 1 invert the curve, causing a faster initial decline which gradually slows down.");
+			EitrCurveExponent = Config.Bind("Food", nameof(EitrCurveExponent), 8.0f, "The value of the exponent 'e' used in the food curve formula 'y = 1 - x^e' for calculating added eitr. Valid range 0.1 - 100. Higher values make you full longer, but also drop off more suddenly. A value of 1 indicates a linear decline. Values less than 1 invert the curve, causing a faster initial decline which gradually slows down. [The value will be enforced on a server.]");
             EitrCurveExponent.SettingChanged += CurveExponent_SettingChanged;
+			ConfigSync.AddConfigEntry(EitrCurveExponent, ConfigSyncMode.AlwaysServerControlled);
 
-            ClampConfig();
+			ClampConfig();
 
             sPlayerHarmony = new Harmony(ModId + "_Player");
             sPlayerHarmony.PatchAll(typeof(Player_Patches));

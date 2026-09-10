@@ -18,6 +18,7 @@
 
 using BepInEx;
 using BepInEx.Configuration;
+using ConditionalConfigSync;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -33,14 +34,25 @@ using System.Text;
 
 namespace Pathfinder
 {
-    [BepInPlugin(ModId, "Pathfinder", "2.1.0.0")]
-    [BepInProcess("valheim.exe")]
+	[BepInPlugin(ModId, ModName, ModVersion)]
+	[BepInDependency("_shudnal.ConditionalConfigSync", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class PathfinderPlugin : BaseUnityPlugin
     {
         public const string ModId = "dev.crystal.pathfinder";
+        public const string ModName = "Pathfinder";
+        public const string ModVersion = "2.2.0.0";
 
-        public static ConfigEntry<float> MinimumRadius;
+		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
+		{
+			DisplayName = ModName,
+			CurrentVersion = ModVersion,
+			MinimumRequiredVersion = ModVersion,
+			ModRequired = true
+		};
+
+		public static ConfigEntry<float> MinimumRadius;
         public static ConfigEntry<float> MaximumRadius;
         public static ConfigEntry<float> LandExploreRadius;
         public static ConfigEntry<float> SeaExploreRadius;
@@ -69,37 +81,47 @@ namespace Pathfinder
 
         private void Awake()
 		{
-			MinimumRadius = Config.Bind("Base", nameof(MinimumRadius), 20.0f, "The minimum exploration radius allowed. If a lower radius is calculated, it will be increased to this value. Higher values may cause performance issues. Accepted range 0-10000. Must be equal or lower than MaximumRadius.");
+			MinimumRadius = Config.Bind("Base", nameof(MinimumRadius), 20.0f, "The minimum exploration radius allowed. If a lower radius is calculated, it will be increased to this value. Higher values may cause performance issues. Accepted range 0-10000. Must be equal or lower than MaximumRadius. [The value will be enforced on a server.]");
 			MinimumRadius.SettingChanged += MinimumRadius_SettingChanged;
+			ConfigSync.AddConfigEntry(MinimumRadius, ConfigSyncMode.AlwaysServerControlled);
 
-			MaximumRadius = Config.Bind("Base", nameof(MaximumRadius), 2000.0f, "The maximum exploration radius allowed. If a higher radius is calculated, it will be decreased to this value. Higher values may cause performance issues. Accepted range 0-10000. Must be equal or higher than MinimumRadius.");
+			MaximumRadius = Config.Bind("Base", nameof(MaximumRadius), 2000.0f, "The maximum exploration radius allowed. If a higher radius is calculated, it will be decreased to this value. Higher values may cause performance issues. Accepted range 0-10000. Must be equal or higher than MinimumRadius. [The value will be enforced on a server.]");
 			MaximumRadius.SettingChanged += MaximumRadius_SettingChanged;
+			ConfigSync.AddConfigEntry(MaximumRadius, ConfigSyncMode.AlwaysServerControlled);
 
-			LandExploreRadius = Config.Bind("Base", nameof(LandExploreRadius), 200.0f, "The radius around the player to uncover while travelling on land near sea level. Higher values may cause performance issues. Max allowed is 2000. Game default is 100.");
+			LandExploreRadius = Config.Bind("Base", nameof(LandExploreRadius), 200.0f, "The radius around the player to uncover while travelling on land near sea level. Higher values may cause performance issues. Max allowed is 2000. Game default is 100. [The value will be enforced on a server.]");
             LandExploreRadius.SettingChanged += Config_SettingChanged;
+			ConfigSync.AddConfigEntry(LandExploreRadius, ConfigSyncMode.AlwaysServerControlled);
 
-            SeaExploreRadius = Config.Bind("Base", nameof(SeaExploreRadius), 300.0f, "The radius around the player to uncover while travelling on a boat. Higher values may cause performance issues. Max allowed is 2000. Game default is 100.");
+			SeaExploreRadius = Config.Bind("Base", nameof(SeaExploreRadius), 300.0f, "The radius around the player to uncover while travelling on a boat. Higher values may cause performance issues. Max allowed is 2000. Game default is 100. [The value will be enforced on a server.]");
             SeaExploreRadius.SettingChanged += Config_SettingChanged;
+			ConfigSync.AddConfigEntry(SeaExploreRadius, ConfigSyncMode.AlwaysServerControlled);
 
-            AltitudeRadiusBonus = Config.Bind("Multipliers", nameof(AltitudeRadiusBonus), 0.5f, "Bonus multiplier to apply to land exploration radius based on altitude. For every 100 units above sea level (smooth scale), add this value multiplied by LandExploreRadius to the total. For example, with a radius of 200 and a multiplier of 0.5, radius is 200 at sea level, 250 at 50 altitude, 300 at 100 altitude, 400 at 200 altitude, etc. For reference, a typical mountain peak is around 170 altitude. Accepted range 0-2. Set to 0 to disable.");
+			AltitudeRadiusBonus = Config.Bind("Multipliers", nameof(AltitudeRadiusBonus), 0.5f, "Bonus multiplier to apply to land exploration radius based on altitude. For every 100 units above sea level (smooth scale), add this value multiplied by LandExploreRadius to the total. For example, with a radius of 200 and a multiplier of 0.5, radius is 200 at sea level, 250 at 50 altitude, 300 at 100 altitude, 400 at 200 altitude, etc. For reference, a typical mountain peak is around 170 altitude. Accepted range 0-2. Set to 0 to disable. [The value will be enforced on a server.]");
             AltitudeRadiusBonus.SettingChanged += Config_SettingChanged;
+			ConfigSync.AddConfigEntry(AltitudeRadiusBonus, ConfigSyncMode.AlwaysServerControlled);
 
-            ForestRadiusPenalty = Config.Bind("Multipliers", nameof(ForestRadiusPenalty), 0.3f, "Penalty to apply to land exploration radius when in a forest (black forest, forested parts of meadows and plains). This value is multiplied by the base land exploration radius and subtraced from the total. Accepted range 0-1. Set to 0 to disable.");
+			ForestRadiusPenalty = Config.Bind("Multipliers", nameof(ForestRadiusPenalty), 0.3f, "Penalty to apply to land exploration radius when in a forest (black forest, forested parts of meadows and plains). This value is multiplied by the base land exploration radius and subtraced from the total. Accepted range 0-1. Set to 0 to disable. [The value will be enforced on a server.]");
             ForestRadiusPenalty.SettingChanged += Config_SettingChanged;
+			ConfigSync.AddConfigEntry(ForestRadiusPenalty, ConfigSyncMode.AlwaysServerControlled);
 
-            DaylightRadiusScale = Config.Bind("Multipliers", nameof(DaylightRadiusScale), 0.2f, "Influences how much daylight (directional and ambient light) affects exploration radius. This value is multiplied by the base land or sea exploration radius and added to the total. Accepted range 0-1. Set to 0 to disable.");
+			DaylightRadiusScale = Config.Bind("Multipliers", nameof(DaylightRadiusScale), 0.2f, "Influences how much daylight (directional and ambient light) affects exploration radius. This value is multiplied by the base land or sea exploration radius and added to the total. Accepted range 0-1. Set to 0 to disable. [The value will be enforced on a server.]");
             DaylightRadiusScale.SettingChanged += Config_SettingChanged;
+			ConfigSync.AddConfigEntry(DaylightRadiusScale, ConfigSyncMode.AlwaysServerControlled);
 
-            WeatherRadiusScale = Config.Bind("Multipliers", nameof(WeatherRadiusScale), 0.5f, "Influences how much the current weather affects exploration radius. This value is multiplied by the base land or sea exploration radius and added to the total. Accepted range 0-1. Set to 0 to disable.");
+			WeatherRadiusScale = Config.Bind("Multipliers", nameof(WeatherRadiusScale), 0.5f, "Influences how much the current weather affects exploration radius. This value is multiplied by the base land or sea exploration radius and added to the total. Accepted range 0-1. Set to 0 to disable. [The value will be enforced on a server.]");
             WeatherRadiusScale.SettingChanged += Config_SettingChanged;
+			ConfigSync.AddConfigEntry(WeatherRadiusScale, ConfigSyncMode.AlwaysServerControlled);
 
-            DisplayCurrentRadiusValue = Config.Bind("Miscellaneous", nameof(DisplayCurrentRadiusValue), false, "Enabling this will display the currently computed exploration radius in the bottom left of the in-game Hud. Useful if you are trying to tweak config values and want to see the result.");
+			DisplayCurrentRadiusValue = Config.Bind("Miscellaneous", nameof(DisplayCurrentRadiusValue), false, "Enabling this will display the currently computed exploration radius in the bottom left of the in-game Hud. Useful if you are trying to tweak config values and want to see the result.");
             DisplayCurrentRadiusValue.SettingChanged += DisplayRadiusValue_SettingChanged;
+			ConfigSync.AddConfigEntry(DisplayCurrentRadiusValue, ConfigSyncMode.AlwaysClientControlled);
 
-            DisplayVariables = Config.Bind("Miscellaneous", nameof(DisplayVariables), false, "Enabling this will display on the Hud the values of various variables that go into calculating the exploration radius. Mostly useful for debugging and tweaking the config.");
+			DisplayVariables = Config.Bind("Miscellaneous", nameof(DisplayVariables), false, "Enabling this will display on the Hud the values of various variables that go into calculating the exploration radius. Mostly useful for debugging and tweaking the config.");
             DisplayVariables.SettingChanged += DisplayVariablesValue_SettingChanged;
+			ConfigSync.AddConfigEntry(DisplayVariables, ConfigSyncMode.AlwaysClientControlled);
 
-            ClampConfig();
+			ClampConfig();
 
             sMinimapHarmony = new Harmony(ModId + "_Minimap");
             sHudHarmony = new Harmony(ModId + "_Hud");

@@ -14,6 +14,7 @@
 
 using BepInEx;
 using BepInEx.Configuration;
+using ConditionalConfigSync;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -22,14 +23,25 @@ using System.Reflection.Emit;
 
 namespace FastTools
 {
-	[BepInPlugin(ModId, "Fast Tools", "1.3.0.0")]
-    [BepInProcess("valheim.exe")]
+	[BepInPlugin(ModId, ModName, ModVersion)]
+	[BepInDependency("_shudnal.ConditionalConfigSync", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class FastToolsPlugin : BaseUnityPlugin
     {
         public const string ModId = "dev.crystal.fasttools";
+        public const string ModName = "Fast Tools";
+        public const string ModVersion = "1.4.0.0";
 
-        public static ConfigEntry<float> PlaceDelay;
+		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
+		{
+			DisplayName = ModName,
+			CurrentVersion = ModVersion,
+			MinimumRequiredVersion = ModVersion,
+			ModRequired = true
+		};
+
+		public static ConfigEntry<float> PlaceDelay;
         public static ConfigEntry<float> RemoveDelay;
         public static ConfigEntry<float> StaminaUseMultiplier;
 
@@ -45,14 +57,17 @@ namespace FastTools
 
         private void Awake()
         {
-            PlaceDelay = Config.Bind("Tools", nameof(PlaceDelay), 0.25f, "The delay time for placing items, in seconds. Allowed range 0-10. Game default is 0.4.");
+            PlaceDelay = Config.Bind("Tools", nameof(PlaceDelay), 0.25f, "The delay time for placing items, in seconds. Allowed range 0-10. Game default is 0.4. [The value may be enforced on a server via sync policy.]");
             PlaceDelay.SettingChanged += Delay_SettingChanged;
+			ConfigSync.AddConfigEntry(PlaceDelay, ConfigSyncMode.Conditional, serverControlledByDefault: false);
 
-            RemoveDelay = Config.Bind("Tools", nameof(RemoveDelay), 0.15f, "The delay time for removing items, in seconds. Allowed range 0-10. Game default is 0.25.");
+			RemoveDelay = Config.Bind("Tools", nameof(RemoveDelay), 0.15f, "The delay time for removing items, in seconds. Allowed range 0-10. Game default is 0.25. [The value may be enforced on a server via sync policy.]");
             RemoveDelay.SettingChanged += Delay_SettingChanged;
+			ConfigSync.AddConfigEntry(RemoveDelay, ConfigSyncMode.Conditional, serverControlledByDefault: false);
 
-			StaminaUseMultiplier = Config.Bind("Tools", nameof(StaminaUseMultiplier), 1.0f, "Multiplier to apply to the stamina cost of using a placement tool (hammer, hoe, cultivator). Game default is 1.0.");
+			StaminaUseMultiplier = Config.Bind("Tools", nameof(StaminaUseMultiplier), 1.0f, "Multiplier to apply to the stamina cost of using a placement tool (hammer, hoe, cultivator). Game default is 1.0. [The value will be enforced on a server.]");
 			StaminaUseMultiplier.SettingChanged += StaminaUseMultiplier_SettingChanged;
+			ConfigSync.AddConfigEntry(StaminaUseMultiplier, ConfigSyncMode.AlwaysServerControlled);
 
 			ClampConfig();
 

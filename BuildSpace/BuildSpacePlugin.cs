@@ -14,6 +14,7 @@
 
 using BepInEx;
 using BepInEx.Configuration;
+using ConditionalConfigSync;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -21,14 +22,25 @@ using System.Reflection;
 
 namespace BuildSpace
 {
-	[BepInPlugin(ModId, "BuildSpace", "1.1.0.0")]
-    [BepInProcess("valheim.exe")]
+	[BepInPlugin(ModId, ModName, ModVersion)]
+	[BepInDependency("_shudnal.ConditionalConfigSync", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class BuildSpacePlugin : BaseUnityPlugin
     {
         public const string ModId = "dev.crystal.buildspace";
+        public const string ModName = "Build Space";
+        public const string ModVersion = "1.2.0.0";
 
-        public static ConfigEntry<float> BuildRadiusMultiplier;
+		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
+		{
+			DisplayName = ModName,
+			CurrentVersion = ModVersion,
+			MinimumRequiredVersion = ModVersion,
+			ModRequired = true
+		};
+
+		public static ConfigEntry<float> BuildRadiusMultiplier;
 
         private static Harmony sCraftingStationHarmony;
 
@@ -44,10 +56,11 @@ namespace BuildSpace
 
         private void Awake()
         {
-            BuildRadiusMultiplier = Config.Bind("Build", nameof(BuildRadiusMultiplier), 1.0f, "Multiplier to apply to the build radius of crafting stations. Game default 1.");
+            BuildRadiusMultiplier = Config.Bind("Build", nameof(BuildRadiusMultiplier), 1.0f, "Multiplier to apply to the build radius of crafting stations. Game default 1. [The value will be enforced on a server.]");
             BuildRadiusMultiplier.SettingChanged += BuildRadiusMultiplier_SettingChanged;
+            ConfigSync.AddConfigEntry(BuildRadiusMultiplier, ConfigSyncMode.AlwaysServerControlled);
 
-            ClampConfig();
+			ClampConfig();
             mBuildRadiusMultiplier = BuildRadiusMultiplier.Value;
 
             sCraftingStationHarmony = new Harmony(ModId + "_CraftingStation");

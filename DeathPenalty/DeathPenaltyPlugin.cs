@@ -14,6 +14,7 @@
 
 using BepInEx;
 using BepInEx.Configuration;
+using ConditionalConfigSync;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -22,14 +23,25 @@ using System.Reflection.Emit;
 
 namespace DeathPenalty
 {
-    [BepInPlugin(ModId, "Death Penalty", "1.2.0.0")]
-    [BepInProcess("valheim.exe")]
+    [BepInPlugin(ModId, ModName, ModVersion)]
+	[BepInDependency("_shudnal.ConditionalConfigSync", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class DeathPenaltyPlugin : BaseUnityPlugin
     {
         public const string ModId = "dev.crystal.deathpenalty";
+        public const string ModName = "Death Penalty";
+        public const string ModVersion = "1.3.0.0";
 
-        public static ConfigEntry<float> SkillLossPercent;
+		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
+		{
+			DisplayName = ModName,
+			CurrentVersion = ModVersion,
+			MinimumRequiredVersion = ModVersion,
+			ModRequired = true
+		};
+
+		public static ConfigEntry<float> SkillLossPercent;
         public static ConfigEntry<bool> ResetLevelProgress;
         public static ConfigEntry<float> MercyEffectDuration;
         public static ConfigEntry<float> SafetyEffectDuration;
@@ -50,19 +62,23 @@ namespace DeathPenalty
 
         private void Awake()
         {
-            SkillLossPercent = Config.Bind("Death", nameof(SkillLossPercent), 5.0f, "The percent loss suffered to the level of all skills when the player dies. Range 0-100. 0 disables skill loss. 50 reduces all skills by half. 100 resets all skills to 0. Game default is 5.");
+            SkillLossPercent = Config.Bind("Death", nameof(SkillLossPercent), 5.0f, "The percent loss suffered to the level of all skills when the player dies. Range 0-100. 0 disables skill loss. 50 reduces all skills by half. 100 resets all skills to 0. Game default depends on world settings. This mod overrides the value. [The value will be enforced on a server.]");
             SkillLossPercent.SettingChanged += SkillLossPercent_SettingChanged;
+			ConfigSync.AddConfigEntry(SkillLossPercent, ConfigSyncMode.AlwaysServerControlled);
 
-            ResetLevelProgress = Config.Bind("Death", nameof(ResetLevelProgress), true, "Whether to reset progress towards the next level for all skills when the player dies. This is independent of the loss of skill levels. Game default is true.");
+			ResetLevelProgress = Config.Bind("Death", nameof(ResetLevelProgress), true, "Whether to reset progress towards the next level for all skills when the player dies. This is independent of the loss of skill levels. Game default is true. [The value will be enforced on a server.]");
             ResetLevelProgress.SettingChanged += ResetLevelProgress_SettingChanged;
+			ConfigSync.AddConfigEntry(ResetLevelProgress, ConfigSyncMode.AlwaysServerControlled);
 
-            MercyEffectDuration = Config.Bind("Death", nameof(MercyEffectDuration), 600.0f, "The duration, in seconds, of the \"No Skill Loss\" status effect that is granted on death which prevents further loss of skills via subsequent deaths. Game default is 600.");
+			MercyEffectDuration = Config.Bind("Death", nameof(MercyEffectDuration), 600.0f, "The duration, in seconds, of the \"No Skill Loss\" status effect that is granted on death which prevents further loss of skills via subsequent deaths. Game default is 600. [The value will be enforced on a server.]");
             MercyEffectDuration.SettingChanged += MercyEffectDuration_SettingChanged;
+			ConfigSync.AddConfigEntry(MercyEffectDuration, ConfigSyncMode.AlwaysServerControlled);
 
-            SafetyEffectDuration = Config.Bind("Death", nameof(SafetyEffectDuration), 50.0f, "The duration, in seconds, of the \"Corpse Run\" status effect that is granted upon looting a tombstone which boosts regen and other stats. Game default is 50.");
+			SafetyEffectDuration = Config.Bind("Death", nameof(SafetyEffectDuration), 50.0f, "The duration, in seconds, of the \"Corpse Run\" status effect that is granted upon looting a tombstone which boosts regen and other stats. Game default is 50. [The value will be enforced on a server.]");
             SafetyEffectDuration.SettingChanged += SafetyEffectDuration_SettingChanged;
+			ConfigSync.AddConfigEntry(SafetyEffectDuration, ConfigSyncMode.AlwaysServerControlled);
 
-            ClampConfig();
+			ClampConfig();
 
             sSkillsLevelHarmony = new Harmony(ModId + "_Skills_Level");
             sSkillsAccumulatorHarmony = new Harmony(ModId + "_Skills_Accumulator");
