@@ -1,4 +1,4 @@
-﻿// Copyright 2023 Crystal Ferrai
+﻿// Copyright 2026 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ using UnityEngine;
 
 namespace ProperPortals
 {
-    [BepInPlugin(ModId, "Proper Portals", "1.2.6.0")]
+    [BepInPlugin(ModId, "Proper Portals", "1.3.0.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class ProperPortalsPlugin : BaseUnityPlugin
@@ -49,7 +49,7 @@ namespace ProperPortals
 
         private void Awake()
         {
-            CarryAnything = Config.Bind("Portal", nameof(CarryAnything), true, "Whether to allow using portals while carrying portal restricted items such as metals. Game default is false.");
+            CarryAnything = Config.Bind("Portal", nameof(CarryAnything), true, "Whether to allow using portals while carrying portal restricted items such as metals. Set false to use world setting. Set true to force allow.");
             CarryAnything.SettingChanged += CarryAnything_SettingChanged;
 
             FadeTime = Config.Bind("Portal", nameof(FadeTime), 0.5f, "The time it takes to fade the screen before teleporting. Teleporting does not start until after the screen fade completes. Game default is 1.");

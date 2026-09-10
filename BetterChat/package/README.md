@@ -24,6 +24,10 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 
 ## Changelog
 
+1.5.0
+
+* Updated for Valheim 1.0
+
 1.4.11
 
 * Updated for game compatibility

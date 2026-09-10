@@ -12,6 +12,10 @@ This library should install automatically when installing a mod that depends on 
 
 ## Changelog
 
+1.2.0
+
+* Updated for Valheim 1.0
+
 1.1.2
 
 * Updated BepinEx version

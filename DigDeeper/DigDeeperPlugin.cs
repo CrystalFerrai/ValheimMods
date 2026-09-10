@@ -1,4 +1,4 @@
-// Copyright 2023 Crystal Ferrai
+// Copyright 2026 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ using System.Reflection.Emit;
 
 namespace DigDeeper
 {
-    [BepInPlugin(ModId, "Dig Deeper", "1.1.7.0")]
+    [BepInPlugin(ModId, "Dig Deeper", "1.2.0.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class DigDeeperPlugin : BaseUnityPlugin
@@ -54,6 +54,7 @@ namespace DigDeeper
         private void OnDestroy()
         {
             sHeightmapHarmony.UnpatchSelf();
+            sTerrainCompHarmony.UnpatchSelf();
         }
 
         private static void ClampConfig()
@@ -76,7 +77,6 @@ namespace DigDeeper
             sTerrainCompHarmony.PatchAll(typeof(TerrainComp_Patches));
         }
 
-        // NOTE: This patch is for the old terrain system and can probably be removed soon.
         [HarmonyPatch(typeof(Heightmap))]
         private static class Heightmap_Patches
         {

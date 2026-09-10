@@ -1,9 +1,9 @@
 ﻿{
     "name": "DigDeeper",
-    "version_number": "1.1.7",
+    "version_number": "1.2.0",
     "description": "Allows digging deeper into the ground.",
     "dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.2333"
+        "denikson-BepInExPack_Valheim-5.4.2350"
     ],
     "website_url": "https://github.com/CrystalFerrai/ValheimMods",
 
@@ -11,13 +11,13 @@
     "AuthorName": "Crystal",
     "Name": "DigDeeper",
     "DisplayName": "DigDeeper",
-    "Version": "1.1.7",
+    "Version": "1.2.0",
     "Licence": "",
     "WebsiteURL": "https://github.com/CrystalFerrai/ValheimMods",
     "Description": "Allows digging deeper into the ground.",
     "GameVersion": "",
     "Dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.2333"
+        "denikson-BepInExPack_Valheim-5.4.2350"
     ],
     "OptionalDependencies": [],
     "Incompatibilities": [],

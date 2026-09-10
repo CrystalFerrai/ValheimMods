@@ -1,4 +1,4 @@
-﻿// Copyright 2023 Crystal Ferrai
+﻿// Copyright 2026 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ using UnityEngine;
 
 namespace Sated
 {
-    [BepInPlugin(ModId, "Sated", "1.1.12.0")]
+    [BepInPlugin(ModId, "Sated", "1.2.0.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class SatedPlugin : BaseUnityPlugin
@@ -51,12 +51,8 @@ namespace Sated
         private static GuiBar[] sFoodProgressBars;
 #endif
 
-        private static readonly FieldInfo sPlayerFoodsField;
-
         static SatedPlugin()
         {
-            sPlayerFoodsField = typeof(Player).GetField("m_foods", BindingFlags.Instance | BindingFlags.NonPublic);
-
 #if FEATURE_FOOD_BARS
             AssetBundle progresBarAssetBundle = LoadAssetBundle("progress_bar");
             sProgressBarPrefab = progresBarAssetBundle.LoadAsset<GameObject>("Assets/ProgressBar/ProgressBarElement.prefab");

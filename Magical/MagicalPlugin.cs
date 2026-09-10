@@ -1,4 +1,4 @@
-﻿// Copyright 2023 Crystal Ferrai
+﻿// Copyright 2026 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ using System.Reflection.Emit;
 
 namespace Magical
 {
-	[BepInPlugin(ModId, "Magical", "1.0.3.0")]
+	[BepInPlugin(ModId, "Magical", "1.1.0.0")]
 	[BepInProcess("valheim.exe")]
 	[BepInProcess("valheim_server.exe")]
 	public class MagicalPlugin : BaseUnityPlugin
@@ -337,7 +337,7 @@ namespace Magical
 				return ReplaceSkillModifier(instructions, SkillStaminaReduction.Value);
 			}
 
-			[HarmonyPatch("GetAttackEitr"), HarmonyTranspiler]
+			[HarmonyPatch("GetAttackEitr", typeof(Character), typeof(ItemDrop.ItemData)), HarmonyTranspiler]
 			private static IEnumerable<CodeInstruction> GetAttackEitr_Transpiler(IEnumerable<CodeInstruction> instructions)
 			{
 				return ReplaceSkillModifier(instructions, SkillEitrReduction.Value);

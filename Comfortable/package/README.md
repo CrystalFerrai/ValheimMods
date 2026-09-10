@@ -15,6 +15,10 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 
 ## Changelog
 
+1.1.0
+
+* Updated for Valheim 1.0
+
 1.0.5
 
 * Updated BepinEx version

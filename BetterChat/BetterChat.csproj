@@ -29,6 +29,9 @@
     <Reference Include="gui_framework">
       <HintPath>..\lib\gui_framework.dll</HintPath>
     </Reference>
+    <Reference Include="Splatform">
+      <HintPath>..\lib\Splatform.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.TextMeshPro">
       <HintPath>..\lib\Unity.TextMeshPro.dll</HintPath>
     </Reference>

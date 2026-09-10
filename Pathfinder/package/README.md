@@ -23,6 +23,11 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 
 ## Changelog
 
+2.1.0
+
+* Updated for Valheim 1.0
+* Min and max explore radius is now configurable.
+
 2.0.13
 
 * Updated BepinEx version

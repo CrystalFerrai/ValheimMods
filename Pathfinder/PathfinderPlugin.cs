@@ -1,4 +1,4 @@
-﻿// Copyright 2023 Crystal Ferrai
+﻿// Copyright 2026 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,13 +33,15 @@ using System.Text;
 
 namespace Pathfinder
 {
-    [BepInPlugin(ModId, "Pathfinder", "2.0.13.0")]
+    [BepInPlugin(ModId, "Pathfinder", "2.1.0.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class PathfinderPlugin : BaseUnityPlugin
     {
         public const string ModId = "dev.crystal.pathfinder";
 
+        public static ConfigEntry<float> MinimumRadius;
+        public static ConfigEntry<float> MaximumRadius;
         public static ConfigEntry<float> LandExploreRadius;
         public static ConfigEntry<float> SeaExploreRadius;
         public static ConfigEntry<float> AltitudeRadiusBonus;
@@ -66,8 +68,14 @@ namespace Pathfinder
 		}
 
         private void Awake()
-        {
-            LandExploreRadius = Config.Bind("Base", nameof(LandExploreRadius), 200.0f, "The radius around the player to uncover while travelling on land near sea level. Higher values may cause performance issues. Max allowed is 2000. Game default is 100.");
+		{
+			MinimumRadius = Config.Bind("Base", nameof(MinimumRadius), 20.0f, "The minimum exploration radius allowed. If a lower radius is calculated, it will be increased to this value. Higher values may cause performance issues. Accepted range 0-10000. Must be equal or lower than MaximumRadius.");
+			MinimumRadius.SettingChanged += MinimumRadius_SettingChanged;
+
+			MaximumRadius = Config.Bind("Base", nameof(MaximumRadius), 2000.0f, "The maximum exploration radius allowed. If a higher radius is calculated, it will be decreased to this value. Higher values may cause performance issues. Accepted range 0-10000. Must be equal or higher than MinimumRadius.");
+			MaximumRadius.SettingChanged += MaximumRadius_SettingChanged;
+
+			LandExploreRadius = Config.Bind("Base", nameof(LandExploreRadius), 200.0f, "The radius around the player to uncover while travelling on land near sea level. Higher values may cause performance issues. Max allowed is 2000. Game default is 100.");
             LandExploreRadius.SettingChanged += Config_SettingChanged;
 
             SeaExploreRadius = Config.Bind("Base", nameof(SeaExploreRadius), 300.0f, "The radius around the player to uncover while travelling on a boat. Higher values may cause performance issues. Max allowed is 2000. Game default is 100.");
@@ -106,12 +114,26 @@ namespace Pathfinder
 #endif
         }
 
-        private void Config_SettingChanged(object sender, System.EventArgs e)
-        {
-            ClampConfig();
+        private void Config_SettingChanged(object sender, EventArgs e)
+		{
+			ClampConfig();
         }
 
-        private void DisplayRadiusValue_SettingChanged(object sender, EventArgs e)
+		private void MinimumRadius_SettingChanged(object sender, EventArgs e)
+		{
+			if (MinimumRadius.Value > MaximumRadius.Value) MaximumRadius.Value = MinimumRadius.Value;
+
+			ClampConfig();
+		}
+
+		private void MaximumRadius_SettingChanged(object sender, EventArgs e)
+		{
+			if (MaximumRadius.Value < MinimumRadius.Value) MinimumRadius.Value = MaximumRadius.Value;
+
+			ClampConfig();
+		}
+
+		private void DisplayRadiusValue_SettingChanged(object sender, EventArgs e)
         {
             sRadiusHudText.gameObject.SetActive(DisplayCurrentRadiusValue.Value);
             if (!DisplayCurrentRadiusValue.Value)
@@ -139,8 +161,14 @@ namespace Pathfinder
         }
 
         private static void ClampConfig()
-        {
-            if (LandExploreRadius.Value < 0.0f) LandExploreRadius.Value = 0.0f;
+		{
+			if (MinimumRadius.Value < 0.0f) MinimumRadius.Value = 0.0f;
+			if (MinimumRadius.Value > 10000.0f) MinimumRadius.Value = 10000.0f;
+
+			if (MaximumRadius.Value < 0.0f) MaximumRadius.Value = 0.0f;
+			if (MaximumRadius.Value > 10000.0f) MaximumRadius.Value = 10000.0f;
+
+			if (LandExploreRadius.Value < 0.0f) LandExploreRadius.Value = 0.0f;
             if (LandExploreRadius.Value > 2000.0f) LandExploreRadius.Value = 2000.0f;
 
             if (SeaExploreRadius.Value < 0.0f) SeaExploreRadius.Value = 0.0f;
@@ -302,7 +330,7 @@ namespace Pathfinder
                 }
 #endif
 
-                result = Mathf.Clamp(baseRadius * multiplier, 20.0f, 2000.0f);
+                result = Mathf.Clamp(baseRadius * multiplier, MinimumRadius.Value, MaximumRadius.Value);
 
                 if (DisplayVariables.Value)
                 {

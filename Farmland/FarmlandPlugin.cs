@@ -1,4 +1,4 @@
-﻿// Copyright 2023 Crystal Ferrai
+﻿// Copyright 2026 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ using UnityEngine;
 
 namespace Farmland
 {
-	[BepInPlugin(ModId, "Farmland", "1.0.4.0")]
+	[BepInPlugin(ModId, "Farmland", "1.1.0.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class FarmlandPlugin : BaseUnityPlugin
@@ -72,50 +72,29 @@ namespace Farmland
         [HarmonyPatch(typeof(Player))]
         private static class Player_Patches
         {
-            private enum TranspilerState
-            {
-                Searching,
-                Updating,
-                Finishing
-            }
-
             // This patch changes the vegetation threshold at which the player can cultivate land.
             [HarmonyPatch("UpdatePlacementGhost"), HarmonyTranspiler]
             private static IEnumerable<CodeInstruction> UpdatePlacementGhost_Transpiler(IEnumerable<CodeInstruction> instructions)
             {
-                TranspilerState state = TranspilerState.Searching;
-
+                bool found = false;
                 foreach (CodeInstruction instruction in instructions)
                 {
-                    switch (state)
+                    if (instruction.opcode == OpCodes.Ldc_R4 && ((float)instruction.operand) == 0.25f)
                     {
-                        case TranspilerState.Searching:
-                            if (instruction.opcode == OpCodes.Callvirt)
-                            {
-                                state = TranspilerState.Updating;
-                            }
-                            yield return instruction;
-                            break;
-                        case TranspilerState.Updating:
-                            if (instruction.opcode == OpCodes.Ldc_R4 && ((float)instruction.operand) == 0.25f)
-                            {
-                                yield return new CodeInstruction(OpCodes.Ldc_R4, VegetationThreshold.Value);
-                                state = TranspilerState.Finishing;
-                            }
-                            else
-                            {
-                                yield return instruction;
-                                state = TranspilerState.Searching;
-                            }
-                            break;
-                        case TranspilerState.Finishing:
-                            yield return instruction;
-                            break;
+                        if (found)
+                        {
+                            Debug.LogWarning("[Farmland] Found multiple possible candidates for vegetation threshold in Player.UpdatePlacementGhost. Mod may need to be updated.");
+						}
+                        found = true;
+                        yield return new CodeInstruction(OpCodes.Ldc_R4, VegetationThreshold.Value);
                     }
+                    else
+                    {
+                        yield return instruction;
+					}
                 }
             }
         }
-
 
         [HarmonyPatch(typeof(TerrainComp))]
         private static class TerrainComp_Patches
@@ -135,6 +114,25 @@ namespace Farmland
             {
                 Label label1 = generator.DefineLabel();
 
+                MethodInfo findHeightMap = typeof(Heightmap).GetMethod(nameof(Heightmap.FindHeightmap), BindingFlags.Static | BindingFlags.Public, null, new Type[] { typeof(Vector3) }, null);
+                MethodInfo getBiome = typeof(Heightmap).GetMethod(nameof(Heightmap.GetBiome), BindingFlags.Instance | BindingFlags.Public);
+
+				FieldInfo paintTypeField = typeof(TerrainOp.Settings).GetField(nameof(TerrainOp.Settings.m_paintType));
+
+				LocalBuilder isAshlands = generator.DeclareLocal(typeof(bool));
+                isAshlands.SetLocalSymInfo(nameof(isAshlands));
+
+                // Check if within the Ashlands biome
+				yield return new CodeInstruction(OpCodes.Ldarg_1);
+				yield return new CodeInstruction(OpCodes.Call, findHeightMap);
+				yield return new CodeInstruction(OpCodes.Ldarg_1);
+				yield return new CodeInstruction(OpCodes.Ldc_R4, 0.02f);
+				yield return new CodeInstruction(OpCodes.Ldc_I4_0);
+				yield return new CodeInstruction(OpCodes.Callvirt, getBiome);
+				yield return new CodeInstruction(OpCodes.Ldc_I4_S, 32); // 32 = Biome.AshLands
+				yield return new CodeInstruction(OpCodes.Ceq);
+				yield return new CodeInstruction(OpCodes.Stloc, isAshlands.LocalIndex);
+
                 TranspilerState state = TranspilerState.Searching;
 
                 foreach (CodeInstruction instruction in instructions)
@@ -153,6 +151,10 @@ namespace Farmland
                             {
                                 yield return instruction;
 
+                                // If biome is Ashlands, skip value coercion
+                                yield return new CodeInstruction(OpCodes.Ldloc, isAshlands.LocalIndex);
+                                yield return new CodeInstruction(OpCodes.Brtrue, label1);
+
                                 // If vegetation value (alpha channel) is already greater than 0.25, skip the value coercion
                                 yield return new CodeInstruction(OpCodes.Ldloc_S, instruction.operand);
                                 yield return new CodeInstruction(OpCodes.Ldc_R4, 0.25f);
@@ -160,6 +162,7 @@ namespace Farmland
 
                                 // If this is not a cultivate operation, skip the value coercion
                                 yield return new CodeInstruction(OpCodes.Ldarg_3);
+                                yield return new CodeInstruction(OpCodes.Ldfld, paintTypeField);
                                 yield return new CodeInstruction(OpCodes.Ldc_I4_1);
                                 yield return new CodeInstruction(OpCodes.Bne_Un_S, label1);
 
@@ -185,6 +188,11 @@ namespace Farmland
                             break;
                     }
                 }
+
+                if (state != TranspilerState.Finishing)
+				{
+					throw new InvalidOperationException("[Farmland] Unable to patch code. This may be due to a game update that the mod has not yet updated for. Details: Invalid patch state");
+				}
             }
 		}
     }

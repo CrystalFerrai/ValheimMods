@@ -1,4 +1,4 @@
-﻿// Copyright 2023 Crystal Ferrai
+﻿// Copyright 2026 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ using UnityEngine;
 
 namespace Comfortable
 {
-	[BepInPlugin(ModId, "Comfortable", "1.0.5.0")]
+	[BepInPlugin(ModId, "Comfortable", "1.1.0.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class ComfortablePlugin : BaseUnityPlugin

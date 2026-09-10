@@ -14,7 +14,16 @@ This mod is designed to install and run via [r2modman](https://thunderstore.io/p
 2. Download latest ``Magni.dll`` by clicking "Manual Download". Extract the dll from the zip file into ``[GameDirectory]\Bepinex\plugins``. (You only need the dll.)
 3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
 
+## Known Issues
+
+Attempting to cultivate land in the Deep North results in creating a pile of snow.
+
 ## Changelog
+
+1.1.0
+
+* Updated for Valheim 1.0
+* Fix bug when cultivating in Ashlands
 
 1.0.4
 

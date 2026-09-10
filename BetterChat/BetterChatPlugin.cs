@@ -1,4 +1,4 @@
-﻿// Copyright 2023 Crystal Ferrai
+﻿// Copyright 2026 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
+using Splatform;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -25,7 +26,7 @@ using UnityEngine.UI;
 
 namespace BetterChat
 {
-	[BepInPlugin(ModId, "Better Chat", "1.4.11.0")]
+	[BepInPlugin(ModId, "Better Chat", "1.5.0.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class BetterChatPlugin : BaseUnityPlugin
@@ -409,12 +410,14 @@ namespace BetterChat
         [HarmonyPatch(typeof(Terminal))]
         private static class Chat_MixedCase_Terminal_Patch
         {
-            [HarmonyPatch("AddString", new[] { typeof(string), typeof(string), typeof(Talker.Type), typeof(bool) }), HarmonyTranspiler]
-            private static IEnumerable<CodeInstruction> AddString_Transpiler(IEnumerable<CodeInstruction> instructions)
+            [HarmonyTranspiler]
+            [HarmonyPatch("AddString", new[] { typeof(string), typeof(string), typeof(Talker.Type), typeof(bool) })]
+			[HarmonyPatch("AddString", new[] { typeof(PlatformUserID), typeof(string), typeof(Talker.Type), typeof(bool) })]
+			private static IEnumerable<CodeInstruction> AddString_Transpiler(IEnumerable<CodeInstruction> instructions)
             {
                 return StripForcedCase(instructions);
             }
-        }
+		}
 
         [HarmonyPatch(typeof(Chat))]
         private static class Chat_MixedCase_Chat_Patch

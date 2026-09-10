@@ -1,4 +1,4 @@
-﻿// Copyright 2023 Crystal Ferrai
+﻿// Copyright 2026 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ using System;
 
 namespace Magni
 {
-    [BepInPlugin(ModId, "Magni", "1.0.4.0")]
+    [BepInPlugin(ModId, "Magni", "1.1.0.0")]
     [BepInProcess("valheim.exe")]
     [BepInProcess("valheim_server.exe")]
     public class MagniPlugin : BaseUnityPlugin
