@@ -20,6 +20,11 @@ This mod is designed to install and run via a mod manager such as [r2modman](htt
 
 ## Changelog
 
+1.2.1
+
+* Restore camera water clip state if mod is disabled and reenabled via config
+* Update CrystalLib to fix input key rebinding issue
+
 1.2.0
 
 * Added server config sync via [ConditionalConfigSync](https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync)

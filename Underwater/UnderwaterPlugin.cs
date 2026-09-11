@@ -33,7 +33,7 @@ namespace Underwater
     {
         public const string ModId = "dev.crystal.underwater";
 		public const string ModName = "Underwater";
-		public const string ModVersion = "1.2.0.0";
+		public const string ModVersion = "1.2.1.0";
 
 		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
 		{
@@ -97,6 +97,10 @@ namespace Underwater
 			if (ModUseAllowed.Value)
 			{
 				sCharacterHarmony.PatchAll(typeof(Character_Patches));
+				if (!PlayerSwims.Value || CameraIgnoreWater.Value)
+				{
+					sGameCameraHarmony.PatchAll(typeof(GameCamera_Patches));
+				}
 			}
 			else
 			{
