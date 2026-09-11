@@ -2,6 +2,10 @@ Collection of Valheim mods created by Crystal.
 
 ## Changelog
 
+1.8.3
+
+* Updated: Several mods
+
 1.8.2
 
 * Updated: Underwater
