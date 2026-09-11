@@ -1,6 +1,6 @@
 {
     "name": "CrystalPack",
-    "version_number": "1.8.1",
+    "version_number": "1.8.2",
     "description": "Collection of all of Crystal's Valheim Mods",
     "dependencies": [
         "Crystal-BetterChat-1.6.0",
@@ -17,7 +17,7 @@
         "Crystal-Pathfinder-2.2.0",
         "Crystal-ProperPortals-1.4.0",
         "Crystal-Sated-1.3.0",
-        "Crystal-Underwater-1.2.0"
+        "Crystal-Underwater-1.2.1"
     ],
     "website_url": "https://github.com/CrystalFerrai/ValheimMods"
 }
