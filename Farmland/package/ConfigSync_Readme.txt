@@ -4,6 +4,10 @@ https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync
 
 This mod exposes the following properties.
 
+# Section: dev.crystal.farmland.ServerSync
+dev.crystal.farmland.ServerSync.ModRequired
+Policy: AlwaysServerControlled; Default: ServerControlled
+
 # Section: dev.crystal.farmland.Land
 dev.crystal.farmland.Land.VegetationThreshold
 Policy: AlwaysServerControlled; Default: ServerControlled

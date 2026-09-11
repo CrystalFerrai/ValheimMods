@@ -4,6 +4,10 @@ https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync
 
 This mod exposes the following properties.
 
+# Section: dev.crystal.pathfinder.ServerSync
+dev.crystal.pathfinder.ServerSync.ModRequired
+Policy: AlwaysServerControlled; Default: ServerControlled
+
 # Section: dev.crystal.pathfinder.Base
 dev.crystal.pathfinder.Base.LandExploreRadius
 Policy: AlwaysServerControlled; Default: ServerControlled

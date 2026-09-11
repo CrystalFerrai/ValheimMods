@@ -1,6 +1,6 @@
 ﻿{
     "name": "Farmland",
-    "version_number": "1.2.0",
+    "version_number": "1.2.1",
     "description": "Allows cultivating land that usually disallows it.",
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.2350",

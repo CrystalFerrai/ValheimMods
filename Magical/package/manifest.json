@@ -1,6 +1,6 @@
 ﻿{
     "name": "Magical",
-    "version_number": "1.2.0",
+    "version_number": "1.2.1",
     "description": "Customize various things related to health, stamina and eitr.",
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.2350",

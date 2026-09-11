@@ -1,6 +1,6 @@
 ﻿{
     "name": "BuildSpace",
-    "version_number": "1.2.0",
+    "version_number": "1.2.1",
     "description": "Adjust the build radius around crafting stations.",
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.2350",

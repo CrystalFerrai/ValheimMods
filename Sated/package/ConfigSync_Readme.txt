@@ -4,6 +4,10 @@ https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync
 
 This mod exposes the following properties.
 
+# Section: dev.crystal.sated.ServerSync
+dev.crystal.sated.ServerSync.ModRequired
+Policy: AlwaysServerControlled; Default: ServerControlled
+
 # Section: dev.crystal.sated.Food
 dev.crystal.sated.Food.EitrCurveExponent
 Policy: AlwaysServerControlled; Default: ServerControlled

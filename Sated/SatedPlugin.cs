@@ -37,15 +37,16 @@ namespace Sated
     {
         public const string ModId = "dev.crystal.sated";
         public const string ModName = "Sated";
-        public const string ModVersion = "1.3.0.0";
+        public const string ModVersion = "1.3.1.0";
 
 		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
 		{
 			DisplayName = ModName,
 			CurrentVersion = ModVersion,
-			MinimumRequiredVersion = ModVersion,
-			ModRequired = true
+			MinimumRequiredVersion = ModVersion
 		};
+
+		public static ConfigEntry<bool> ModRequired;
 
 #if FEATURE_FOOD_BARS
         public static ConfigEntry<bool> ShowFoodTimerBars;
@@ -72,7 +73,12 @@ namespace Sated
         }
 
         private void Awake()
-        {
+		{
+			ModRequired = Config.Bind("ServerSync", nameof(ModRequired), true, "If true on server, clients connecting will be rejected if they do not have the mod. If false, clients may connect without the mod. If true on client, cannot join a server unless it is running the mod.");
+			ConfigSync.ModRequired = ModRequired.Value;
+			ModRequired.SettingChanged += ModRequired_SettingChanged;
+			ConfigSync.AddConfigEntry(ModRequired, ConfigSyncMode.AlwaysServerControlled);
+
 #if FEATURE_FOOD_BARS
             ShowFoodTimerBars = Config.Bind("Food", nameof(ShowFoodTimerBars), true, "Whether to show timer bars below food icons on the HUD.");
             ShowFoodTimerBars.SettingChanged += ShowFoodTimerBars_SettingChanged;
@@ -129,7 +135,12 @@ namespace Sated
             if (EitrCurveExponent.Value > 100.0f) EitrCurveExponent.Value = 100.0f;
         }
 
-        private void CurveExponent_SettingChanged(object sender, EventArgs e)
+		private void ModRequired_SettingChanged(object sender, EventArgs e)
+		{
+			ConfigSync.ModRequired = ModRequired.Value;
+		}
+
+		private void CurveExponent_SettingChanged(object sender, EventArgs e)
         {
             ClampConfig();
         }

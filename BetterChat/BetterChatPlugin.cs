@@ -35,15 +35,16 @@ namespace BetterChat
     {
         public const string ModId = "dev.crystal.betterchat";
         public const string ModName = "Better Chat";
-        public const string ModVersion = "1.6.0.0";
+        public const string ModVersion = "1.6.1.0";
 
 		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
 		{
 			DisplayName = ModName,
 			CurrentVersion = ModVersion,
-			MinimumRequiredVersion = ModVersion,
-			ModRequired = true
+			MinimumRequiredVersion = ModVersion
 		};
+
+        public static ConfigEntry<bool> ModRequired;
 
 		public static ConfigEntry<bool> AlwaysVisible;
         public static ConfigEntry<float> HideDelay;
@@ -78,7 +79,12 @@ namespace BetterChat
 
         private void Awake()
         {
-            AlwaysVisible = Config.Bind("Chat", nameof(AlwaysVisible), false, "If True, the chat window will remain visible at all times. If False, the chat window will appear when new messages are received.");
+            ModRequired = Config.Bind("ServerSync", nameof(ModRequired), false, "If true on server, clients connecting will be rejected if they do not have the mod. If false, clients may connect without the mod. If true on client, cannot join a server unless it is running the mod.");
+            ConfigSync.ModRequired = ModRequired.Value;
+			ModRequired.SettingChanged += ModRequired_SettingChanged;
+			ConfigSync.AddConfigEntry(ModRequired, ConfigSyncMode.AlwaysServerControlled);
+
+			AlwaysVisible = Config.Bind("Chat", nameof(AlwaysVisible), false, "If True, the chat window will remain visible at all times. If False, the chat window will appear when new messages are received.");
             AlwaysVisible.SettingChanged += AlwaysVisible_SettingChanged;
             ConfigSync.AddConfigEntry(AlwaysVisible, ConfigSyncMode.AlwaysClientControlled);
 
@@ -175,6 +181,11 @@ namespace BetterChat
             if (WhisperDistance.Value < 1.0f) WhisperDistance.Value = 1.0f;
             if (WhisperDistance.Value > 20.0f) WhisperDistance.Value = 20.0f;
         }
+
+        private void ModRequired_SettingChanged(object sender, EventArgs e)
+        {
+            ConfigSync.ModRequired = ModRequired.Value;
+		}
 
         private void AlwaysVisible_SettingChanged(object sender, EventArgs e)
         {

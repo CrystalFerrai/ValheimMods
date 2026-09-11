@@ -1,6 +1,6 @@
 ﻿{
     "name": "ClearTheAir",
-    "version_number": "1.2.0",
+    "version_number": "1.2.1",
     "description": "More easily clear Mistlands mist.",
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.2350",

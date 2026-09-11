@@ -1,6 +1,6 @@
 ﻿{
     "name": "FastTools",
-    "version_number": "1.4.0",
+    "version_number": "1.4.1",
     "description": "Reduced usage delay for build hammer and other placement tools.",
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.2350",

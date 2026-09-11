@@ -1,6 +1,6 @@
 ﻿{
     "name": "ProperPortals",
-    "version_number": "1.4.0",
+    "version_number": "1.4.1",
     "description": "Carry anything through portals and shorter teleport load screens.",
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.2350",

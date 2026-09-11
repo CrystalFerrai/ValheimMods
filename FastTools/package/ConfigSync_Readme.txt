@@ -4,6 +4,10 @@ https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync
 
 This mod exposes the following properties.
 
+# Section: dev.crystal.fasttools.ServerSync
+dev.crystal.fasttools.ServerSync.ModRequired
+Policy: AlwaysServerControlled; Default: ServerControlled
+
 # Section: dev.crystal.fasttools.Tools
 dev.crystal.fasttools.Tools.PlaceDelay
 Policy: Conditional; Default: ClientControlled

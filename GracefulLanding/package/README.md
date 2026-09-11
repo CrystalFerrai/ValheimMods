@@ -4,7 +4,7 @@ This is a very simple mod that replaces a few fall damage related values with co
 
 Run the game once with the mod enabled to generate the config. See config for details on what each option does.
 
-This mod must be installed on client and server.
+This mod should be installed on client and server. Mod features may not work reliably if any clients do not have the mod installed. By default, a server running the mod will reject clients that do not have it installed. To allow unmodded clients, at the risk of unreliable functionality, a server may set `ModRequired`=`false` in the config.
 
 Some configuration options can be enforced by a server running [ConditionalConfigSync](https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync). See included ConfigSync_Readme.txt file for more information.
 
@@ -19,6 +19,10 @@ This mod is designed to install and run via a mod manager such as [r2modman](htt
 4. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything (or use a configuration management mod).
 
 ## Changelog
+
+1.2.1
+
+* Added `ModRequired` config value. If set to true on a server (default), connecting clients must have the mod installed. If false, the mod is optional for clients. Mod features may not work reliably if any clients do not have the mod installed.
 
 1.2.0
 

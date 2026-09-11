@@ -4,6 +4,10 @@ https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync
 
 This mod exposes the following properties.
 
+# Section: dev.crystal.gracefullanding.ServerSync
+dev.crystal.gracefullanding.ServerSync.ModRequired
+Policy: AlwaysServerControlled; Default: ServerControlled
+
 # Section: dev.crystal.gracefullanding.Falling
 dev.crystal.gracefullanding.Falling.MaxDamageAmount
 Policy: AlwaysServerControlled; Default: ServerControlled

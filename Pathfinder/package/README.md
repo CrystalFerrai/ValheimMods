@@ -11,7 +11,7 @@ Values listed above are defaults. All of them are configurable. Run the game onc
 
 It is generally recommended to only adjust the radius values in the "Base" category of the config. Default values in the "Multipliers" category have been tweaked to try to approximate actual visibility changes, and changing them can significantly impact exploration radius in sometimes unexpected ways.
 
-This mod must be installed on client and server.
+This mod should be installed on client and server. Mod features may not work reliably if any clients do not have the mod installed. By default, a server running the mod will reject clients that do not have it installed. To allow unmodded clients, at the risk of unreliable functionality, a server may set `ModRequired`=`false` in the config.
 
 Some configuration options can be enforced by a server running [ConditionalConfigSync](https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync). See included ConfigSync_Readme.txt file for more information.
 
@@ -26,6 +26,10 @@ This mod is designed to install and run via a mod manager such as [r2modman](htt
 4. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything (or use a configuration management mod).
 
 ## Changelog
+
+2.2.1
+
+* Added `ModRequired` config value. If set to true on a server (default), connecting clients must have the mod installed. If false, the mod is optional for clients. Mod features may not work reliably if any clients do not have the mod installed.
 
 2.2.0
 

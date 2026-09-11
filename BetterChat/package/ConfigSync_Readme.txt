@@ -4,6 +4,10 @@ https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync
 
 This mod exposes the following properties.
 
+# Section: dev.crystal.betterchat.ServerSync
+dev.crystal.betterchat.ServerSync.ModRequired
+Policy: AlwaysServerControlled; Default: ServerControlled
+
 # Section: dev.crystal.betterchat.Chat
 dev.crystal.betterchat.Chat.AlwaysVisible
 Policy: AlwaysClientControlled; Default: ClientControlled

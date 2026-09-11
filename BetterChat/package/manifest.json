@@ -1,6 +1,6 @@
 ﻿{
     "name": "BetterChat",
-    "version_number": "1.6.0",
+    "version_number": "1.6.1",
     "description": "Shows the chat window when a message is received and other chat features.",
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.2350",

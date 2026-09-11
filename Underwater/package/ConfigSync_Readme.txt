@@ -4,6 +4,10 @@ https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync
 
 This mod exposes the following properties.
 
+# Section: dev.crystal.underwater.ServerSync
+dev.crystal.underwater.ServerSync.ModRequired
+Policy: AlwaysServerControlled; Default: ServerControlled
+
 # Section: dev.crystal.underwater.Underwater
 dev.crystal.underwater.Underwater.CameraIgnoreWater
 Policy: AlwaysClientControlled; Default: ClientControlled

@@ -31,15 +31,16 @@ namespace Magical
 	{
 		public const string ModId = "dev.crystal.magical";
 		public const string ModName = "Magical";
-		public const string ModVersion = "1.2.0.0";
+		public const string ModVersion = "1.2.1.0";
 
 		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
 		{
 			DisplayName = ModName,
 			CurrentVersion = ModVersion,
-			MinimumRequiredVersion = ModVersion,
-			ModRequired = true
+			MinimumRequiredVersion = ModVersion
 		};
+
+		public static ConfigEntry<bool> ModRequired;
 
 		public static ConfigEntry<float> BaseStamina;
 		public static ConfigEntry<float> BaseEitr;
@@ -69,6 +70,11 @@ namespace Magical
 
 		private void Awake()
 		{
+			ModRequired = Config.Bind("ServerSync", nameof(ModRequired), true, "If true on server, clients connecting will be rejected if they do not have the mod. If false, clients may connect without the mod. If true on client, cannot join a server unless it is running the mod. Clients without the mod may cause it to not function reliably for others. It is recommended to keep this true if possible.");
+			ConfigSync.ModRequired = ModRequired.Value;
+			ModRequired.SettingChanged += ModRequired_SettingChanged;
+			ConfigSync.AddConfigEntry(ModRequired, ConfigSyncMode.AlwaysServerControlled);
+
 			BaseStamina = Config.Bind("Base", nameof(BaseStamina), 50.0f, "Maximum stamina before any food modifiers are applied. Game default 50. [The value will be enforced on a server.]");
 			BaseStamina.SettingChanged += PlayerVariable_SettingChanged;
 			ConfigSync.AddConfigEntry(BaseStamina, ConfigSyncMode.AlwaysServerControlled);
@@ -173,6 +179,11 @@ namespace Magical
 
 			if (SkillHealthReduction.Value < 0.0f) SkillHealthReduction.Value = 0.0f;
 			if (SkillHealthReduction.Value > 1.0f) SkillHealthReduction.Value = 1.0f;
+		}
+
+		private void ModRequired_SettingChanged(object sender, EventArgs e)
+		{
+			ConfigSync.ModRequired = ModRequired.Value;
 		}
 
 		private void PlayerVariable_SettingChanged(object sender, EventArgs e)

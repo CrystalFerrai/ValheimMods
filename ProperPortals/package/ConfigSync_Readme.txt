@@ -4,6 +4,10 @@ https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync
 
 This mod exposes the following properties.
 
+# Section: dev.crystal.properportals.ServerSync
+dev.crystal.properportals.ServerSync.ModRequired
+Policy: AlwaysServerControlled; Default: ServerControlled
+
 # Section: dev.crystal.properportals.Portal
 dev.crystal.properportals.Portal.ActivationRange
 Policy: AlwaysServerControlled; Default: ServerControlled

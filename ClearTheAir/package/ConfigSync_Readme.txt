@@ -4,6 +4,10 @@ https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync
 
 This mod exposes the following properties.
 
+# Section: dev.crystal.cleartheair.ServerSync
+dev.crystal.cleartheair.ServerSync.ModRequired
+Policy: AlwaysServerControlled; Default: ServerControlled
+
 # Section: dev.crystal.cleartheair.Mist
 dev.crystal.cleartheair.Mist.MistClearRadiusMultiplier
 Policy: AlwaysServerControlled; Default: ServerControlled

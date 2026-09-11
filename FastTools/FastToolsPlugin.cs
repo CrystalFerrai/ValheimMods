@@ -31,15 +31,16 @@ namespace FastTools
     {
         public const string ModId = "dev.crystal.fasttools";
         public const string ModName = "Fast Tools";
-        public const string ModVersion = "1.4.0.0";
+        public const string ModVersion = "1.4.1.0";
 
 		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
 		{
 			DisplayName = ModName,
 			CurrentVersion = ModVersion,
-			MinimumRequiredVersion = ModVersion,
-			ModRequired = true
+			MinimumRequiredVersion = ModVersion
 		};
+
+		public static ConfigEntry<bool> ModRequired;
 
 		public static ConfigEntry<float> PlaceDelay;
         public static ConfigEntry<float> RemoveDelay;
@@ -56,8 +57,13 @@ namespace FastTools
         }
 
         private void Awake()
-        {
-            PlaceDelay = Config.Bind("Tools", nameof(PlaceDelay), 0.25f, "The delay time for placing items, in seconds. Allowed range 0-10. Game default is 0.4. [The value may be enforced on a server via sync policy.]");
+		{
+			ModRequired = Config.Bind("ServerSync", nameof(ModRequired), true, "If true on server, clients connecting will be rejected if they do not have the mod. If false, clients may connect without the mod. If true on client, cannot join a server unless it is running the mod. Clients without the mod may cause it to not function reliably for others. It is recommended to keep this true if possible.");
+			ConfigSync.ModRequired = ModRequired.Value;
+			ModRequired.SettingChanged += ModRequired_SettingChanged;
+			ConfigSync.AddConfigEntry(ModRequired, ConfigSyncMode.AlwaysServerControlled);
+
+			PlaceDelay = Config.Bind("Tools", nameof(PlaceDelay), 0.25f, "The delay time for placing items, in seconds. Allowed range 0-10. Game default is 0.4. [The value may be enforced on a server via sync policy.]");
             PlaceDelay.SettingChanged += Delay_SettingChanged;
 			ConfigSync.AddConfigEntry(PlaceDelay, ConfigSyncMode.Conditional, serverControlledByDefault: false);
 
@@ -99,7 +105,12 @@ namespace FastTools
 			if (StaminaUseMultiplier.Value > 10.0f) StaminaUseMultiplier.Value = 10.0f;
 		}
 
-        private void Delay_SettingChanged(object sender, EventArgs e)
+		private void ModRequired_SettingChanged(object sender, EventArgs e)
+		{
+			ConfigSync.ModRequired = ModRequired.Value;
+		}
+
+		private void Delay_SettingChanged(object sender, EventArgs e)
         {
             ClampConfig();
             foreach (Player player in sPlayers)

@@ -42,15 +42,16 @@ namespace Pathfinder
     {
         public const string ModId = "dev.crystal.pathfinder";
         public const string ModName = "Pathfinder";
-        public const string ModVersion = "2.2.0.0";
+        public const string ModVersion = "2.2.1.0";
 
 		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
 		{
 			DisplayName = ModName,
 			CurrentVersion = ModVersion,
-			MinimumRequiredVersion = ModVersion,
-			ModRequired = true
+			MinimumRequiredVersion = ModVersion
 		};
+
+		public static ConfigEntry<bool> ModRequired;
 
 		public static ConfigEntry<float> MinimumRadius;
         public static ConfigEntry<float> MaximumRadius;
@@ -81,6 +82,11 @@ namespace Pathfinder
 
         private void Awake()
 		{
+			ModRequired = Config.Bind("ServerSync", nameof(ModRequired), true, "If true on server, clients connecting will be rejected if they do not have the mod. If false, clients may connect without the mod. If true on client, cannot join a server unless it is running the mod.");
+			ConfigSync.ModRequired = ModRequired.Value;
+			ModRequired.SettingChanged += ModRequired_SettingChanged;
+			ConfigSync.AddConfigEntry(ModRequired, ConfigSyncMode.AlwaysServerControlled);
+
 			MinimumRadius = Config.Bind("Base", nameof(MinimumRadius), 20.0f, "The minimum exploration radius allowed. If a lower radius is calculated, it will be increased to this value. Higher values may cause performance issues. Accepted range 0-10000. Must be equal or lower than MaximumRadius. [The value will be enforced on a server.]");
 			MinimumRadius.SettingChanged += MinimumRadius_SettingChanged;
 			ConfigSync.AddConfigEntry(MinimumRadius, ConfigSyncMode.AlwaysServerControlled);
@@ -136,7 +142,12 @@ namespace Pathfinder
 #endif
         }
 
-        private void Config_SettingChanged(object sender, EventArgs e)
+		private void ModRequired_SettingChanged(object sender, EventArgs e)
+		{
+			ConfigSync.ModRequired = ModRequired.Value;
+		}
+
+		private void Config_SettingChanged(object sender, EventArgs e)
 		{
 			ClampConfig();
         }

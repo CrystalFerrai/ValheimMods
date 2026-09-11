@@ -4,7 +4,7 @@ This mod was created primarily to assist with placing building pieces underwater
 
 Run the game once with the mod enabled to generate the config. See config for details on what each option does.
 
-This mod must be installed on client and server.
+This is primarily a client side mod. It may also be installed on a server to sync configurations. A server may optionally require that clients have the mod installed by setting `ModRequired`=`true` in the config.
 
 Some configuration options can be enforced by a server running [ConditionalConfigSync](https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync). See included ConfigSync_Readme.txt file for more information.
 
@@ -19,6 +19,10 @@ This mod is designed to install and run via a mod manager such as [r2modman](htt
 4. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything (or use a configuration management mod).
 
 ## Changelog
+
+1.2.2
+
+* Added `ModRequired` config value. If set to true on a server, connecting clients must have the mod installed. If false (default), the mod is optional for clients.
 
 1.2.1
 

@@ -1,6 +1,6 @@
 ﻿{
     "name": "Comfortable",
-    "version_number": "1.2.0",
+    "version_number": "1.2.1",
     "description": "Adjust comfort radius and rested time.",
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.2350",

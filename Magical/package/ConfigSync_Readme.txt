@@ -4,6 +4,10 @@ https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync
 
 This mod exposes the following properties.
 
+# Section: dev.crystal.magical.ServerSync
+dev.crystal.magical.ServerSync.ModRequired
+Policy: AlwaysServerControlled; Default: ServerControlled
+
 # Section: dev.crystal.magical.Base
 dev.crystal.magical.Base.BaseEitr
 Policy: AlwaysServerControlled; Default: ServerControlled

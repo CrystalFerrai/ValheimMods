@@ -4,6 +4,10 @@ https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync
 
 This mod exposes the following properties.
 
+# Section: dev.crystal.comfortable.ServerSync
+dev.crystal.comfortable.ServerSync.ModRequired
+Policy: AlwaysServerControlled; Default: ServerControlled
+
 # Section: dev.crystal.comfortable.Comfort
 dev.crystal.comfortable.Comfort.BaseRestTime
 Policy: AlwaysServerControlled; Default: ServerControlled

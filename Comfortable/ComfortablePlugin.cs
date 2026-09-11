@@ -32,15 +32,16 @@ namespace Comfortable
     {
         public const string ModId = "dev.crystal.comfortable";
         public const string ModName = "Comfortable";
-        public const string ModVersion = "1.2.0.0";
+        public const string ModVersion = "1.2.1.0";
 
 		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
 		{
 			DisplayName = ModName,
 			CurrentVersion = ModVersion,
-			MinimumRequiredVersion = ModVersion,
-			ModRequired = true
+			MinimumRequiredVersion = ModVersion
 		};
+
+		public static ConfigEntry<bool> ModRequired;
 
 		public static ConfigEntry<float> BaseRestTime;
         public static ConfigEntry<float> RestTimePerComfort;
@@ -66,8 +67,13 @@ namespace Comfortable
 		}
 
         private void Awake()
-        {
-            BaseRestTime = Config.Bind("Comfort", nameof(BaseRestTime), 480.0f, "The base time of the rested buff, in seconds. Game default 480. [The value will be enforced on a server.]");
+		{
+			ModRequired = Config.Bind("ServerSync", nameof(ModRequired), true, "If true on server, clients connecting will be rejected if they do not have the mod. If false, clients may connect without the mod. If true on client, cannot join a server unless it is running the mod. Clients without the mod may cause it to not function reliably for others. It is recommended to keep this true if possible.");
+			ConfigSync.ModRequired = ModRequired.Value;
+			ModRequired.SettingChanged += ModRequired_SettingChanged;
+			ConfigSync.AddConfigEntry(ModRequired, ConfigSyncMode.AlwaysServerControlled);
+
+			BaseRestTime = Config.Bind("Comfort", nameof(BaseRestTime), 480.0f, "The base time of the rested buff, in seconds. Game default 480. [The value will be enforced on a server.]");
             BaseRestTime.SettingChanged += BaseRestTime_SettingChanged;
             ConfigSync.AddConfigEntry(BaseRestTime, ConfigSyncMode.AlwaysServerControlled);
 
@@ -107,7 +113,12 @@ namespace Comfortable
             sEffectAreaHarmony.UnpatchSelf();
         }
 
-        private void BaseRestTime_SettingChanged(object sender, EventArgs e)
+		private void ModRequired_SettingChanged(object sender, EventArgs e)
+		{
+			ConfigSync.ModRequired = ModRequired.Value;
+		}
+
+		private void BaseRestTime_SettingChanged(object sender, EventArgs e)
         {
             ClampConfig();
 

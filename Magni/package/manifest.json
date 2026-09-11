@@ -1,6 +1,6 @@
 ﻿{
     "name": "Magni",
-    "version_number": "1.2.0",
+    "version_number": "1.2.1",
     "description": "Increased carry weight capacity.",
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.2350",

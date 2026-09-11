@@ -30,15 +30,16 @@ namespace BuildSpace
     {
         public const string ModId = "dev.crystal.buildspace";
         public const string ModName = "Build Space";
-        public const string ModVersion = "1.2.0.0";
+        public const string ModVersion = "1.2.1.0";
 
 		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
 		{
 			DisplayName = ModName,
 			CurrentVersion = ModVersion,
-			MinimumRequiredVersion = ModVersion,
-			ModRequired = true
+			MinimumRequiredVersion = ModVersion
 		};
+
+		public static ConfigEntry<bool> ModRequired;
 
 		public static ConfigEntry<float> BuildRadiusMultiplier;
 
@@ -55,8 +56,13 @@ namespace BuildSpace
 		}
 
         private void Awake()
-        {
-            BuildRadiusMultiplier = Config.Bind("Build", nameof(BuildRadiusMultiplier), 1.0f, "Multiplier to apply to the build radius of crafting stations. Game default 1. [The value will be enforced on a server.]");
+		{
+			ModRequired = Config.Bind("ServerSync", nameof(ModRequired), true, "If true on server, clients connecting will be rejected if they do not have the mod. If false, clients may connect without the mod. If true on client, cannot join a server unless it is running the mod. Clients without the mod may cause it to not function reliably for others. It is recommended to keep this true if possible.");
+			ConfigSync.ModRequired = ModRequired.Value;
+			ModRequired.SettingChanged += ModRequired_SettingChanged;
+			ConfigSync.AddConfigEntry(ModRequired, ConfigSyncMode.AlwaysServerControlled);
+
+			BuildRadiusMultiplier = Config.Bind("Build", nameof(BuildRadiusMultiplier), 1.0f, "Multiplier to apply to the build radius of crafting stations. Game default 1. [The value will be enforced on a server.]");
             BuildRadiusMultiplier.SettingChanged += BuildRadiusMultiplier_SettingChanged;
             ConfigSync.AddConfigEntry(BuildRadiusMultiplier, ConfigSyncMode.AlwaysServerControlled);
 
@@ -92,7 +98,12 @@ namespace BuildSpace
             if (BuildRadiusMultiplier.Value > 100.0f) BuildRadiusMultiplier.Value = 100.0f;
         }
 
-        private static void SetBuildRadius(CraftingStation station, float oldMultiplier, float newMultiplier)
+		private void ModRequired_SettingChanged(object sender, EventArgs e)
+		{
+			ConfigSync.ModRequired = ModRequired.Value;
+		}
+
+		private static void SetBuildRadius(CraftingStation station, float oldMultiplier, float newMultiplier)
 		{
             float radius = station.m_rangeBuild / oldMultiplier * newMultiplier;
             station.m_rangeBuild = radius;
