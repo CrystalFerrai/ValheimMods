@@ -2,6 +2,10 @@ Collection of Valheim mods created by Crystal.
 
 ## Changelog
 
+1.8.5
+
+* Updated: FastTools
+
 1.8.4
 
 * Updated: Several mods
