@@ -33,16 +33,16 @@ namespace Underwater
     {
         public const string ModId = "dev.crystal.underwater";
 		public const string ModName = "Underwater";
-		public const string ModVersion = "1.2.2.0";
+		public const string ModVersion = "1.2.3.0";
 
 		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
 		{
 			DisplayName = ModName,
 			CurrentVersion = ModVersion,
-			MinimumRequiredVersion = ModVersion
+			MinimumRequiredVersion = ModVersion,
+			ModRequired = false,
+			ModRequirementMode = ModRequirementMode.Conditional
 		};
-
-		public static ConfigEntry<bool> ModRequired;
 
 		public static ConfigEntry<bool> ModUseAllowed;
 		public static ConfigEntry<bool> PlayerSwims;
@@ -56,11 +56,6 @@ namespace Underwater
 
         private void Awake()
 		{
-			ModRequired = Config.Bind("ServerSync", nameof(ModRequired), false, "If true on server, clients connecting will be rejected if they do not have the mod. If false, clients may connect without the mod. If true on client, cannot join a server unless it is running the mod.");
-			ConfigSync.ModRequired = ModRequired.Value;
-			ModRequired.SettingChanged += ModRequired_SettingChanged;
-			ConfigSync.AddConfigEntry(ModRequired, ConfigSyncMode.AlwaysServerControlled);
-
 			ModUseAllowed = Config.Bind("Underwater", nameof(ModUseAllowed), true, "Whether this mod is allowed to be used. Intended for server owners who wish to disable the mod on their server. [The value will be enforced on a server.]");
 			ModUseAllowed.SettingChanged += ModUseAllowed_SettingChanged;
 			ConfigSync.AddConfigEntry(ModUseAllowed, ConfigSyncMode.AlwaysServerControlled);
@@ -97,11 +92,6 @@ namespace Underwater
 
             sToggleSwimBinding.Dispose();
         }
-
-		private void ModRequired_SettingChanged(object sender, EventArgs e)
-		{
-			ConfigSync.ModRequired = ModRequired.Value;
-		}
 
 		private void ModUseAllowed_SettingChanged(object sender, EventArgs e)
 		{

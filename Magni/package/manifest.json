@@ -1,10 +1,10 @@
 ﻿{
     "name": "Magni",
-    "version_number": "1.2.1",
+    "version_number": "1.2.2",
     "description": "Increased carry weight capacity.",
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.2350",
-        "shudnal-ConditionalConfigSync-1.0.5"
+        "shudnal-ConditionalConfigSync-1.0.6"
     ],
     "website_url": "https://github.com/CrystalFerrai/ValheimMods"
 }

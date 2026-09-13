@@ -32,16 +32,16 @@ namespace Farmland
     {
         public const string ModId = "dev.crystal.farmland";
         public const string ModName = "Farmland";
-        public const string ModVersion = "1.2.1.0";
+        public const string ModVersion = "1.2.2.0";
 
 		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
 		{
 			DisplayName = ModName,
 			CurrentVersion = ModVersion,
-			MinimumRequiredVersion = ModVersion
+			MinimumRequiredVersion = ModVersion,
+			ModRequired = true,
+			ModRequirementMode = ModRequirementMode.Conditional
 		};
-
-		public static ConfigEntry<bool> ModRequired;
 
 		public static ConfigEntry<float> VegetationThreshold;
 
@@ -50,11 +50,6 @@ namespace Farmland
 
         private void Awake()
 		{
-			ModRequired = Config.Bind("ServerSync", nameof(ModRequired), true, "If true on server, clients connecting will be rejected if they do not have the mod. If false, clients may connect without the mod. If true on client, cannot join a server unless it is running the mod. Clients without the mod may cause it to not function reliably for others. It is recommended to keep this true if possible.");
-			ConfigSync.ModRequired = ModRequired.Value;
-			ModRequired.SettingChanged += ModRequired_SettingChanged;
-			ConfigSync.AddConfigEntry(ModRequired, ConfigSyncMode.AlwaysServerControlled);
-
 			VegetationThreshold = Config.Bind("Land", nameof(VegetationThreshold), 0.0f, "The amount of vegetation land must support to allow cultivation. Lower values provide more farmable land. Range 0.0 to 1.0. Game default 0.25. Mod default 0.0. [The value will be enforced on a server.]");
             VegetationThreshold.SettingChanged += VegetationThreshold_SettingChanged;
 			ConfigSync.AddConfigEntry(VegetationThreshold, ConfigSyncMode.AlwaysServerControlled);
@@ -79,11 +74,6 @@ namespace Farmland
             if (VegetationThreshold.Value < 0.0f) VegetationThreshold.Value = 0.0f;
             if (VegetationThreshold.Value > 1.0f) VegetationThreshold.Value = 1.0f;
         }
-
-		private void ModRequired_SettingChanged(object sender, EventArgs e)
-		{
-			ConfigSync.ModRequired = ModRequired.Value;
-		}
 
 		private void VegetationThreshold_SettingChanged(object sender, EventArgs e)
         {

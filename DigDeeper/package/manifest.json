@@ -4,7 +4,7 @@
     "description": "Allows digging deeper into the ground.",
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.2350",
-        "shudnal-ConditionalConfigSync-1.0.5"
+        "shudnal-ConditionalConfigSync-1.0.6"
     ],
     "website_url": "https://github.com/CrystalFerrai/ValheimMods"
 }

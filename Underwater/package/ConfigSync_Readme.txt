@@ -2,11 +2,12 @@ This mod uses ConditionalConfigSync to synchronize settings among players connec
 For more information about ConditionalConfigSync and how to manage the configuration of a mod, see
 https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync
 
-This mod exposes the following properties.
+By default, this mod is optional for all clients on a server. If you want to make it required, add
+the following line to ConditionalConfigSync.ModRequirements.cfg in ConditionalConfigSync config.
 
-# Section: dev.crystal.underwater.ServerSync
-dev.crystal.underwater.ServerSync.ModRequired
-Policy: AlwaysServerControlled; Default: ServerControlled
++ dev.crystal.underwater
+
+This mod exposes the following properties.
 
 # Section: dev.crystal.underwater.Underwater
 dev.crystal.underwater.Underwater.CameraIgnoreWater

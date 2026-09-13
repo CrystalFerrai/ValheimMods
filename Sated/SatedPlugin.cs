@@ -43,10 +43,10 @@ namespace Sated
 		{
 			DisplayName = ModName,
 			CurrentVersion = ModVersion,
-			MinimumRequiredVersion = ModVersion
+			MinimumRequiredVersion = ModVersion,
+			ModRequired = true,
+			ModRequirementMode = ModRequirementMode.Conditional
 		};
-
-		public static ConfigEntry<bool> ModRequired;
 
 #if FEATURE_FOOD_BARS
         public static ConfigEntry<bool> ShowFoodTimerBars;
@@ -74,11 +74,6 @@ namespace Sated
 
         private void Awake()
 		{
-			ModRequired = Config.Bind("ServerSync", nameof(ModRequired), true, "If true on server, clients connecting will be rejected if they do not have the mod. If false, clients may connect without the mod. If true on client, cannot join a server unless it is running the mod.");
-			ConfigSync.ModRequired = ModRequired.Value;
-			ModRequired.SettingChanged += ModRequired_SettingChanged;
-			ConfigSync.AddConfigEntry(ModRequired, ConfigSyncMode.AlwaysServerControlled);
-
 #if FEATURE_FOOD_BARS
             ShowFoodTimerBars = Config.Bind("Food", nameof(ShowFoodTimerBars), true, "Whether to show timer bars below food icons on the HUD.");
             ShowFoodTimerBars.SettingChanged += ShowFoodTimerBars_SettingChanged;
@@ -134,11 +129,6 @@ namespace Sated
             if (EitrCurveExponent.Value < 0.1f) EitrCurveExponent.Value = 0.1f;
             if (EitrCurveExponent.Value > 100.0f) EitrCurveExponent.Value = 100.0f;
         }
-
-		private void ModRequired_SettingChanged(object sender, EventArgs e)
-		{
-			ConfigSync.ModRequired = ModRequired.Value;
-		}
 
 		private void CurveExponent_SettingChanged(object sender, EventArgs e)
         {

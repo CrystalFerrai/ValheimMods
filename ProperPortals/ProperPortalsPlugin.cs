@@ -31,16 +31,16 @@ namespace ProperPortals
     {
         public const string ModId = "dev.crystal.properportals";
         public const string ModName = "Proper Portals";
-        public const string ModVersion = "1.4.1.0";
+        public const string ModVersion = "1.4.2.0";
 
 		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
 		{
 			DisplayName = ModName,
 			CurrentVersion = ModVersion,
-			MinimumRequiredVersion = ModVersion
+			MinimumRequiredVersion = ModVersion,
+			ModRequired = true,
+			ModRequirementMode = ModRequirementMode.Conditional
 		};
-
-		public static ConfigEntry<bool> ModRequired;
 
 		public static ConfigEntry<bool> CarryAnything;
         public static ConfigEntry<float> FadeTime;
@@ -62,16 +62,6 @@ namespace ProperPortals
 
         private void Awake()
 		{
-			ModRequired = Config.Bind("ServerSync", nameof(ModRequired), true, "If true on server, clients connecting will be rejected if they do not have the mod. If false, clients may connect without the mod. If true on client, cannot join a server unless it is running the mod. Clients without the mod may cause it to not function reliably for others. It is recommended to keep this true if possible.");
-			ConfigSync.ModRequired = ModRequired.Value;
-			ModRequired.SettingChanged += ModRequired_SettingChanged;
-			ConfigSync.AddConfigEntry(ModRequired, ConfigSyncMode.AlwaysServerControlled);
-
-			ModRequired = Config.Bind("ServerSync", nameof(ModRequired), true, "If true on server, clients connecting will be rejected if they do not have the mod. If false, clients may connect without the mod. If true on client, cannot join a server unless it is running the mod. Clients without the mod may cause it to not function reliably for others. It is recommended to keep this true if possible.");
-			ConfigSync.ModRequired = ModRequired.Value;
-			ModRequired.SettingChanged += ModRequired_SettingChanged;
-			ConfigSync.AddConfigEntry(ModRequired, ConfigSyncMode.AlwaysServerControlled);
-
 			CarryAnything = Config.Bind("Portal", nameof(CarryAnything), true, "Whether to allow using portals while carrying portal restricted items such as metals. Set false to use world setting. Set true to force allow. [The value will be enforced on a server.]");
             CarryAnything.SettingChanged += CarryAnything_SettingChanged;
 			ConfigSync.AddConfigEntry(CarryAnything, ConfigSyncMode.AlwaysServerControlled);
@@ -128,11 +118,6 @@ namespace ProperPortals
             if (ActivationRange.Value < 0.0f) ActivationRange.Value = 0.0f;
             if (ActivationRange.Value > 10.0) ActivationRange.Value = 10.0f;
         }
-
-		private void ModRequired_SettingChanged(object sender, EventArgs e)
-		{
-			ConfigSync.ModRequired = ModRequired.Value;
-		}
 
 		private void CarryAnything_SettingChanged(object sender, EventArgs e)
         {

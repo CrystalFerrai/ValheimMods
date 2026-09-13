@@ -1,10 +1,10 @@
 ﻿{
     "name": "Pathfinder",
-    "version_number": "2.2.1",
+    "version_number": "2.2.2",
     "description": "Customizable dynamic map discovery radius based on various visibility factors.",
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.2350",
-        "shudnal-ConditionalConfigSync-1.0.5"
+        "shudnal-ConditionalConfigSync-1.0.6"
     ],
     "website_url": "https://github.com/CrystalFerrai/ValheimMods"
 }

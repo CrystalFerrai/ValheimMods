@@ -11,7 +11,7 @@ Adds configurable features to the chat system.
 
 Most everything listed is configurable. Run the game once with the mod enabled to generate the config. See config for details on what each option does.
 
-This is primarily a client side mod. It may also be installed on a server to sync configurations. A server may optionally require that clients have the mod installed by setting `ModRequired`=`true` in the config.
+This is primarily a client side mod. It may also be installed on a server to sync configurations. A server may optionally require that clients have the mod installed via the `ConditionalConfigSync.ModRequirements.cfg` file in the ConditionalConfigSync config directory.
 
 Some configuration options can be enforced by a server running [ConditionalConfigSync](https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync). See included ConfigSync_Readme.txt file for more information.
 
@@ -26,6 +26,11 @@ This mod is designed to install and run via a mod manager such as [r2modman](htt
 4. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything (or use a configuration management mod).
 
 ## Changelog
+
+1.6.2
+
+* Update to ConditionalConfigSync 1.0.6 which supports server-controlled configuration for requiring the mod on clients.
+* Removed `ModRequired` config value. The new ConditionalConfigSync.ModRequirements.cfg file in the ConditionalConfigSync config replaces this feature.
 
 1.6.1
 
