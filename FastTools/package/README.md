@@ -18,6 +18,10 @@ This mod is designed to install and run via a mod manager such as [r2modman](htt
 
 ## Changelog
 
+1.4.3
+
+* Fix stamina use multiplier not applying correctly.
+
 1.4.2
 
 * Update to ConditionalConfigSync 1.0.6 which supports server-controlled configuration for requiring the mod on clients.

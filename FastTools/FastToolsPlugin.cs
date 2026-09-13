@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
+using UnityEngine;
 
 namespace FastTools
 {
@@ -31,7 +32,7 @@ namespace FastTools
     {
         public const string ModId = "dev.crystal.fasttools";
         public const string ModName = "Fast Tools";
-        public const string ModVersion = "1.4.2.0";
+        public const string ModVersion = "1.4.3.0";
 
 		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
 		{
@@ -131,7 +132,13 @@ namespace FastTools
             private static void OnDestroy_Prefix(Player __instance)
             {
                 sPlayers.Remove(__instance);
-            }
+			}
+
+			[HarmonyPatch("GetBuildStamina"), HarmonyPostfix]
+			private static void GetBuildStamina_Postfix(Player __instance, ref float __result)
+			{
+				__result *= StaminaUseMultiplier.Value;
+			}
 		}
 
 		[HarmonyPatch(typeof(Player))]
@@ -191,7 +198,7 @@ namespace FastTools
                             yield return new CodeInstruction(OpCodes.Mul);
                             yield return new CodeInstruction(OpCodes.Stloc, stamina.LocalIndex);
 
-                            state = TranspilerState.Searching2;
+							state = TranspilerState.Searching2;
                             break;
 
                         case TranspilerState.Searching2:
@@ -255,8 +262,8 @@ namespace FastTools
 							yield return new CodeInstruction(OpCodes.Ldloc, stamina.LocalIndex);
                             yield return instruction;
 
-                            // Keep searching. There is more than one occurrence.
-                            state = TranspilerState.Searching2;
+							// Keep searching. There is more than one occurrence.
+							state = TranspilerState.Searching2;
 							break;
 					}
 				}
