@@ -25,12 +25,12 @@ namespace BuildSpace
 	[BepInPlugin(ModId, ModName, ModVersion)]
 	[BepInDependency("_shudnal.ConditionalConfigSync", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInProcess("valheim.exe")]
-    [BepInProcess("valheim_server.exe")]
-    public class BuildSpacePlugin : BaseUnityPlugin
-    {
-        public const string ModId = "dev.crystal.buildspace";
-        public const string ModName = "Build Space";
-        public const string ModVersion = "1.2.2.0";
+	[BepInProcess("valheim_server.exe")]
+	public class BuildSpacePlugin : BaseUnityPlugin
+	{
+		public const string ModId = "dev.crystal.buildspace";
+		public const string ModName = "Build Space";
+		public const string ModVersion = "1.2.3.0";
 
 		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
 		{
@@ -43,77 +43,77 @@ namespace BuildSpace
 
 		public static ConfigEntry<float> BuildRadiusMultiplier;
 
-        private static Harmony sCraftingStationHarmony;
+		private static Harmony sCraftingStationHarmony;
 
-        private static readonly FieldInfo sAllStationsField;
+		private static readonly FieldInfo sAllStationsField;
 
-        // Copy of BuildRadiusMultiplier so we can reference the old value after it changes
-        private float mBuildRadiusMultiplier;
+		// Copy of BuildRadiusMultiplier so we can reference the old value after it changes
+		private float mBuildRadiusMultiplier;
 
-        static BuildSpacePlugin()
+		static BuildSpacePlugin()
 		{
-            sAllStationsField = typeof(CraftingStation).GetField("m_allStations", BindingFlags.Static | BindingFlags.NonPublic);
+			sAllStationsField = typeof(CraftingStation).GetField("m_allStations", BindingFlags.Static | BindingFlags.NonPublic);
 		}
 
-        private void Awake()
+		private void Awake()
 		{
 			BuildRadiusMultiplier = Config.Bind("Build", nameof(BuildRadiusMultiplier), 1.0f, "Multiplier to apply to the build radius of crafting stations. Game default 1. [The value will be enforced on a server.]");
-            BuildRadiusMultiplier.SettingChanged += BuildRadiusMultiplier_SettingChanged;
-            ConfigSync.AddConfigEntry(BuildRadiusMultiplier, ConfigSyncMode.AlwaysServerControlled);
+			BuildRadiusMultiplier.SettingChanged += BuildRadiusMultiplier_SettingChanged;
+			ConfigSync.AddConfigEntry(BuildRadiusMultiplier, ConfigSyncMode.AlwaysServerControlled);
 
 			ClampConfig();
-            mBuildRadiusMultiplier = BuildRadiusMultiplier.Value;
+			mBuildRadiusMultiplier = BuildRadiusMultiplier.Value;
 
-            sCraftingStationHarmony = new Harmony(ModId + "_CraftingStation");
+			sCraftingStationHarmony = new Harmony(ModId + "_CraftingStation");
 
-            sCraftingStationHarmony.PatchAll(typeof(CraftingStation_Patches));
-        }
-
-        private void OnDestroy()
-		{
-            sCraftingStationHarmony.UnpatchSelf();
+			sCraftingStationHarmony.PatchAll(typeof(CraftingStation_Patches));
 		}
 
-        private void BuildRadiusMultiplier_SettingChanged(object sender, EventArgs e)
+		private void OnDestroy()
 		{
-            ClampConfig();
+			sCraftingStationHarmony.UnpatchSelf();
+		}
 
-            List<CraftingStation> allStations = (List<CraftingStation>)sAllStationsField.GetValue(null);
-            foreach (CraftingStation station in allStations)
+		private void BuildRadiusMultiplier_SettingChanged(object sender, EventArgs e)
+		{
+			ClampConfig();
+
+			List<CraftingStation> allStations = (List<CraftingStation>)sAllStationsField.GetValue(null);
+			foreach (CraftingStation station in allStations)
 			{
-                SetBuildRadius(station, mBuildRadiusMultiplier, BuildRadiusMultiplier.Value);
-            }
+				SetBuildRadius(station, mBuildRadiusMultiplier, BuildRadiusMultiplier.Value);
+			}
 
-            mBuildRadiusMultiplier = BuildRadiusMultiplier.Value;
+			mBuildRadiusMultiplier = BuildRadiusMultiplier.Value;
 		}
 
 		private void ClampConfig()
-        {
-            if (BuildRadiusMultiplier.Value < 0.1f) BuildRadiusMultiplier.Value = 0.1f;
-            if (BuildRadiusMultiplier.Value > 100.0f) BuildRadiusMultiplier.Value = 100.0f;
-        }
+		{
+			if (BuildRadiusMultiplier.Value < 0.1f) BuildRadiusMultiplier.Value = 0.1f;
+			if (BuildRadiusMultiplier.Value > 100.0f) BuildRadiusMultiplier.Value = 100.0f;
+		}
 
 		private static void SetBuildRadius(CraftingStation station, float oldMultiplier, float newMultiplier)
 		{
-            float radius = station.m_rangeBuild / oldMultiplier * newMultiplier;
-            station.m_rangeBuild = radius;
+			float radius = station.m_rangeBuild / oldMultiplier * newMultiplier;
+			station.m_rangeBuild = radius;
 
-            CircleProjector projector = station.m_areaMarker?.GetComponent<CircleProjector>();
-            if (projector != null)
+			CircleProjector projector = station.m_areaMarker?.GetComponent<CircleProjector>();
+			if (projector != null)
 			{
-                projector.m_radius = radius;
-                projector.m_nrOfSegments = (int)(radius * 4.0f);
+				projector.m_radius = radius;
+				projector.m_nrOfSegments = (int)(radius * 4.0f);
 			}
-        }
+		}
 
-        [HarmonyPatch(typeof(CraftingStation))]
-        private static class CraftingStation_Patches
-        {
-            [HarmonyPatch("Start"), HarmonyPostfix]
-            private static void Start_Postfix(CraftingStation __instance)
-            {
-                SetBuildRadius(__instance, 1.0f, BuildRadiusMultiplier.Value);
-            }
-        }
-    }
+		[HarmonyPatch(typeof(CraftingStation))]
+		private static class CraftingStation_Patches
+		{
+			[HarmonyPatch("Start"), HarmonyPostfix]
+			private static void Start_Postfix(CraftingStation __instance)
+			{
+				SetBuildRadius(__instance, 1.0f, BuildRadiusMultiplier.Value);
+			}
+		}
+	}
 }

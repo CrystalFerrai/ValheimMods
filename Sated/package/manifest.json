@@ -1,6 +1,6 @@
 ﻿{
     "name": "Sated",
-    "version_number": "1.3.2",
+    "version_number": "1.3.3",
     "description": "Health and stamina gained from food stays with you for more of the food's duration.",
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.2350",

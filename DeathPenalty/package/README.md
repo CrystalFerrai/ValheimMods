@@ -12,62 +12,25 @@ This mod must be installed on client and server.
 Some configuration options can be enforced by a server running [ConditionalConfigSync](https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync). See included ConfigSync_Readme.txt file for more information.
 
 ## Installation
-This mod is designed to install and run via a mod manager such as [r2modman](https://thunderstore.io/package/ebkr/r2modman/). You can optionally install it manually following the steps below.
 
-**Manual Install**
+This mod uses [BepInExPack Valheim](https://valheim.thunderstore.io/package/denikson/BepInExPack_Valheim) as a mod loader. You can use any BepinEx compatible mod manager to install the mod, or manually place it in the BepixEx `plugins` directory.
 
-1. Install [BepInExPack Valheim](https://valheim.thunderstore.io/package/denikson/BepInExPack_Valheim/)
-2. Install [ConditionalConfigSync](https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync)
-3. Download latest ``DeathPenalty.dll`` by clicking "Manual Download". Extract the dll from the zip file into ``[GameDirectory]\Bepinex\plugins``. (You only need the dll.)
-4. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything (or use a configuration management mod).
+## Valheim Skill Loss Calculation
 
-## Changelog
+Skills levels are stored as two values, the level itself and the percentage progress towards the next level.
 
-1.3.0
+When a player dies, the game calculate a skill loss factor using the formula `0.05 * SkillReductionRate`. `SkillReductionRate` is a global key determined by the death penalty world modifier. As of Valheim 1.0, these are the modifier values:
+* Casual and very easy: `0.15`
+* Easy: `0.5`
+* Normal: `1.0`
+* Hard: `1.5`
 
-* Added server config sync via [ConditionalConfigSync](https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync)
+The game then loops through all of the player's skills and does the following:
+1. Set the skill level to `current level - (current level * skill loss factor)`
+2. Reset the progress towards the next level
 
-1.2.0
+Because the factor is multiplied by the current level, that means losses impact higher level skills considerably more than lower level skills. At standard settings, a level 20 skill would drop to 19 for a loss of about 42 experience while a level 100 skill would drop to 95 for a loss of about 2420 experience. (Experience per level follows the formula `next=Floor(current + 1)^1.5 * 0.5 + 0.5`.)
 
-* Updated for Valheim 1.0
-
-1.1.4
-
-* Updated BepinEx version
-
-1.1.3
-
-* Updated BepinEx version
-* Updated .NET version
-
-1.1.2
-
-* Updated BepinEx version
-
-1.1.1
-
-* Updated BepinEx version
-
-1.1.0
-
-* Added option to disable losing progress towards next level.
-
-1.0.4
-
-* Updated BepInEx version
-
-1.0.3
-
-* Updated BepInEx version
-
-1.0.2
-
-* Changing the mod config live (via something like BepInEx Configuration Manager) is now supported.
-
-1.0.1
-
-* Clamped config values to prevent breaking things.
-
-1.0.0
-
-* Initial release
+This mod allows adjusting the skill loss calculation in the following ways:
+* Adjust the base `0.05` constant used in the loss factor calculation, represented by the config `SkillLossPercent` as a percentage value (like `5%`).
+* Optionally skip resetting the progress towards the next level that normally occurs by setting the config `ResetLevelProgress` to `false`.

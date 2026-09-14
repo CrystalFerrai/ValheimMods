@@ -28,12 +28,12 @@ namespace Underwater
 	[BepInPlugin(ModId, ModName, ModVersion)]
 	[BepInDependency("_shudnal.ConditionalConfigSync", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInProcess("valheim.exe")]
-    [BepInProcess("valheim_server.exe")]
-    public class UnderwaterPlugin : BaseUnityPlugin
-    {
-        public const string ModId = "dev.crystal.underwater";
+	[BepInProcess("valheim_server.exe")]
+	public class UnderwaterPlugin : BaseUnityPlugin
+	{
+		public const string ModId = "dev.crystal.underwater";
 		public const string ModName = "Underwater";
-		public const string ModVersion = "1.2.3.0";
+		public const string ModVersion = "1.2.4.0";
 
 		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
 		{
@@ -46,15 +46,15 @@ namespace Underwater
 
 		public static ConfigEntry<bool> ModUseAllowed;
 		public static ConfigEntry<bool> PlayerSwims;
-        public static ConfigEntry<bool> CameraIgnoreWater;
-        public static ConfigEntry<Key> ToggleSwimKey;
+		public static ConfigEntry<bool> CameraIgnoreWater;
+		public static ConfigEntry<Key> ToggleSwimKey;
 
-        private static CrystalLib.InputBinding sToggleSwimBinding;
+		private static CrystalLib.InputBinding sToggleSwimBinding;
 
 		private static Harmony sCharacterHarmony;
-        private static Harmony sGameCameraHarmony;
+		private static Harmony sGameCameraHarmony;
 
-        private void Awake()
+		private void Awake()
 		{
 			ModUseAllowed = Config.Bind("Underwater", nameof(ModUseAllowed), true, "Whether this mod is allowed to be used. Intended for server owners who wish to disable the mod on their server. [The value will be enforced on a server.]");
 			ModUseAllowed.SettingChanged += ModUseAllowed_SettingChanged;
@@ -65,7 +65,7 @@ namespace Underwater
 			ConfigSync.AddConfigEntry(PlayerSwims, ConfigSyncMode.AlwaysClientControlled);
 
 			CameraIgnoreWater = Config.Bind("Underwater", nameof(CameraIgnoreWater), false, "Whether the camera should ignore water, allowing it to move beneath the surface. This setting is implied true if PlayerSwims is false. Game default false.");
-            CameraIgnoreWater.SettingChanged += IgnoreWater_SettingChanged;
+			CameraIgnoreWater.SettingChanged += IgnoreWater_SettingChanged;
 			ConfigSync.AddConfigEntry(CameraIgnoreWater, ConfigSyncMode.AlwaysClientControlled);
 
 			ToggleSwimKey = Config.Bind("Underwater", nameof(ToggleSwimKey), Key.Backspace, "Binds a shortcut key for toggling the PlayerSwims option.");
@@ -75,23 +75,23 @@ namespace Underwater
 			sToggleSwimBinding.InputPressed += ToggleSwimBinding_InputPressed;
 
 			sCharacterHarmony = new Harmony(ModId + "_Character");
-            sGameCameraHarmony = new Harmony(ModId + "_GameCamera");
+			sGameCameraHarmony = new Harmony(ModId + "_GameCamera");
 
-            sCharacterHarmony.PatchAll(typeof(Character_Patches));
+			sCharacterHarmony.PatchAll(typeof(Character_Patches));
 
-            if (!PlayerSwims.Value || CameraIgnoreWater.Value)
-            {
-                sGameCameraHarmony.PatchAll(typeof(GameCamera_Patches));
-            }
-        }
+			if (!PlayerSwims.Value || CameraIgnoreWater.Value)
+			{
+				sGameCameraHarmony.PatchAll(typeof(GameCamera_Patches));
+			}
+		}
 
 		private void OnDestroy()
-        {
-            sCharacterHarmony.UnpatchSelf();
-            sGameCameraHarmony.UnpatchSelf();
+		{
+			sCharacterHarmony.UnpatchSelf();
+			sGameCameraHarmony.UnpatchSelf();
 
-            sToggleSwimBinding.Dispose();
-        }
+			sToggleSwimBinding.Dispose();
+		}
 
 		private void ModUseAllowed_SettingChanged(object sender, EventArgs e)
 		{
@@ -111,16 +111,16 @@ namespace Underwater
 		}
 
 		private void IgnoreWater_SettingChanged(object sender, EventArgs e)
-        {
-            sGameCameraHarmony.UnpatchSelf();
-            if (ModUseAllowed.Value && (!PlayerSwims.Value || CameraIgnoreWater.Value))
-            {
-                sGameCameraHarmony.PatchAll(typeof(GameCamera_Patches));
-            }
-        }
+		{
+			sGameCameraHarmony.UnpatchSelf();
+			if (ModUseAllowed.Value && (!PlayerSwims.Value || CameraIgnoreWater.Value))
+			{
+				sGameCameraHarmony.PatchAll(typeof(GameCamera_Patches));
+			}
+		}
 
-        private void ToggleSwimBinding_InputPressed(object sender, InputEventArgs e)
-        {
+		private void ToggleSwimBinding_InputPressed(object sender, InputEventArgs e)
+		{
 			if (ModUseAllowed.Value)
 			{
 				PlayerSwims.Value = !PlayerSwims.Value;
@@ -130,22 +130,22 @@ namespace Underwater
 			{
 				e.Player.Message(MessageHud.MessageType.TopLeft, "Underwater mod use disallowed by server or local config");
 			}
-        }
+		}
 
-        [HarmonyPatch(typeof(Character))]
-        private static class Character_Patches
-        {
-            [HarmonyPatch("InLiquidDepth"), HarmonyPrefix]
-            private static bool InLiquidDepth_Prefix(Character __instance, ref float __result)
-            {
-                __result = 0.0f;
-                return !__instance.IsPlayer() || PlayerSwims.Value;
-            }
-        }
+		[HarmonyPatch(typeof(Character))]
+		private static class Character_Patches
+		{
+			[HarmonyPatch("InLiquidDepth"), HarmonyPrefix]
+			private static bool InLiquidDepth_Prefix(Character __instance, ref float __result)
+			{
+				__result = 0.0f;
+				return !__instance.IsPlayer() || PlayerSwims.Value;
+			}
+		}
 
-        [HarmonyPatch(typeof(GameCamera))]
-        private static class GameCamera_Patches
-        {
+		[HarmonyPatch(typeof(GameCamera))]
+		private static class GameCamera_Patches
+		{
 			private enum TranspilerState
 			{
 				Searching,
@@ -242,5 +242,5 @@ namespace Underwater
 				}
 			}
 		}
-    }
+	}
 }

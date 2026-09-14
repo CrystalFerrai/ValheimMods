@@ -1,6 +1,6 @@
 ﻿{
     "name": "DeathPenalty",
-    "version_number": "1.3.0",
+    "version_number": "1.3.1",
     "description": "Allows tweaking death related values such as skill loss amount.",
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.2350",

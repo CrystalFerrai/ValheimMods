@@ -1,6 +1,6 @@
 ﻿{
     "name": "CrystalLib",
-    "version_number": "1.2.1",
+    "version_number": "1.2.2",
     "description": "Code library with utilities for mods to use.",
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.2350"

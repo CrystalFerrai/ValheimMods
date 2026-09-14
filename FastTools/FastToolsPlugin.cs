@@ -26,44 +26,44 @@ namespace FastTools
 	[BepInPlugin(ModId, ModName, ModVersion)]
 	[BepInDependency("_shudnal.ConditionalConfigSync", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInProcess("valheim.exe")]
-    [BepInProcess("valheim_server.exe")]
-    public class FastToolsPlugin : BaseUnityPlugin
-    {
-        public const string ModId = "dev.crystal.fasttools";
-        public const string ModName = "Fast Tools";
-        public const string ModVersion = "1.4.3.0";
+	[BepInProcess("valheim_server.exe")]
+	public class FastToolsPlugin : BaseUnityPlugin
+	{
+		public const string ModId = "dev.crystal.fasttools";
+		public const string ModName = "Fast Tools";
+		public const string ModVersion = "1.4.4.0";
 
 		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
 		{
 			DisplayName = ModName,
 			CurrentVersion = ModVersion,
 			MinimumRequiredVersion = ModVersion,
-			ModRequired = true,
+			ModRequired = false,
 			ModRequirementMode = ModRequirementMode.Conditional
 		};
 
 		public static ConfigEntry<float> PlaceDelay;
-        public static ConfigEntry<float> RemoveDelay;
-        public static ConfigEntry<float> StaminaUseMultiplier;
+		public static ConfigEntry<float> RemoveDelay;
+		public static ConfigEntry<float> StaminaUseMultiplier;
 
-        private static Harmony sPlayerHarmony;
-        private static Harmony sPlayerPlacementHarmony;
+		private static Harmony sPlayerHarmony;
+		private static Harmony sPlayerPlacementHarmony;
 
-        private static readonly List<Player> sPlayers;
+		private static readonly List<Player> sPlayers;
 
-        static FastToolsPlugin()
-        {
-            sPlayers = new List<Player>();
-        }
+		static FastToolsPlugin()
+		{
+			sPlayers = new List<Player>();
+		}
 
-        private void Awake()
+		private void Awake()
 		{
 			PlaceDelay = Config.Bind("Tools", nameof(PlaceDelay), 0.25f, "The delay time for placing items, in seconds. Allowed range 0-10. Game default is 0.4. [The value may be enforced on a server via sync policy.]");
-            PlaceDelay.SettingChanged += Delay_SettingChanged;
+			PlaceDelay.SettingChanged += Delay_SettingChanged;
 			ConfigSync.AddConfigEntry(PlaceDelay, ConfigSyncMode.Conditional, serverControlledByDefault: false);
 
 			RemoveDelay = Config.Bind("Tools", nameof(RemoveDelay), 0.15f, "The delay time for removing items, in seconds. Allowed range 0-10. Game default is 0.25. [The value may be enforced on a server via sync policy.]");
-            RemoveDelay.SettingChanged += Delay_SettingChanged;
+			RemoveDelay.SettingChanged += Delay_SettingChanged;
 			ConfigSync.AddConfigEntry(RemoveDelay, ConfigSyncMode.Conditional, serverControlledByDefault: false);
 
 			StaminaUseMultiplier = Config.Bind("Tools", nameof(StaminaUseMultiplier), 1.0f, "Multiplier to apply to the stamina cost of using a placement tool (hammer, hoe, cultivator). Game default is 1.0. [The value will be enforced on a server.]");
@@ -72,43 +72,43 @@ namespace FastTools
 
 			ClampConfig();
 
-            sPlayerHarmony = new Harmony(ModId + "_Player");
-            sPlayerPlacementHarmony = new Harmony(ModId + "_Player_Placement");
+			sPlayerHarmony = new Harmony(ModId + "_Player");
+			sPlayerPlacementHarmony = new Harmony(ModId + "_Player_Placement");
 
-            sPlayerHarmony.PatchAll(typeof(Player_Patches));
-            sPlayerPlacementHarmony.PatchAll(typeof(Player_Placement_Patches));
-        }
+			sPlayerHarmony.PatchAll(typeof(Player_Patches));
+			sPlayerPlacementHarmony.PatchAll(typeof(Player_Placement_Patches));
+		}
 
 		private void OnDestroy()
-        {
-            sPlayerHarmony.UnpatchSelf();
-            sPlayerPlacementHarmony.UnpatchSelf();
-            sPlayers.Clear();
-        }
+		{
+			sPlayerHarmony.UnpatchSelf();
+			sPlayerPlacementHarmony.UnpatchSelf();
+			sPlayers.Clear();
+		}
 
-        private static void ClampConfig()
-        {
-            // There is no feedback when delay is active aside from tools simply not working, so don't allow really long delays.
+		private static void ClampConfig()
+		{
+			// There is no feedback when delay is active aside from tools simply not working, so don't allow really long delays.
 
-            if (PlaceDelay.Value < 0.0f) PlaceDelay.Value = 0.0f;
-            if (PlaceDelay.Value > 10.0f) PlaceDelay.Value = 10.0f;
+			if (PlaceDelay.Value < 0.0f) PlaceDelay.Value = 0.0f;
+			if (PlaceDelay.Value > 10.0f) PlaceDelay.Value = 10.0f;
 
-            if (RemoveDelay.Value < 0.0f) RemoveDelay.Value = 0.0f;
-            if (RemoveDelay.Value > 10.0f) RemoveDelay.Value = 10.0f;
+			if (RemoveDelay.Value < 0.0f) RemoveDelay.Value = 0.0f;
+			if (RemoveDelay.Value > 10.0f) RemoveDelay.Value = 10.0f;
 
 			if (StaminaUseMultiplier.Value < 0.0f) StaminaUseMultiplier.Value = 0.0f;
 			if (StaminaUseMultiplier.Value > 10.0f) StaminaUseMultiplier.Value = 10.0f;
 		}
 
 		private void Delay_SettingChanged(object sender, EventArgs e)
-        {
-            ClampConfig();
-            foreach (Player player in sPlayers)
-            {
-                player.m_placeDelay = PlaceDelay.Value;
-                player.m_removeDelay = RemoveDelay.Value;
-            }
-        }
+		{
+			ClampConfig();
+			foreach (Player player in sPlayers)
+			{
+				player.m_placeDelay = PlaceDelay.Value;
+				player.m_removeDelay = RemoveDelay.Value;
+			}
+		}
 
 		private void StaminaUseMultiplier_SettingChanged(object sender, EventArgs e)
 		{
@@ -117,20 +117,20 @@ namespace FastTools
 		}
 
 		[HarmonyPatch(typeof(Player))]
-        private static class Player_Patches
-        {
-            [HarmonyPatch("Awake"), HarmonyPostfix]
-            private static void Awake_Postfix(Player __instance)
-            {
-                __instance.m_placeDelay = PlaceDelay.Value;
-                __instance.m_removeDelay = RemoveDelay.Value;
-                sPlayers.Add(__instance);
-            }
+		private static class Player_Patches
+		{
+			[HarmonyPatch("Awake"), HarmonyPostfix]
+			private static void Awake_Postfix(Player __instance)
+			{
+				__instance.m_placeDelay = PlaceDelay.Value;
+				__instance.m_removeDelay = RemoveDelay.Value;
+				sPlayers.Add(__instance);
+			}
 
-            [HarmonyPatch("OnDestroy"), HarmonyPrefix]
-            private static void OnDestroy_Prefix(Player __instance)
-            {
-                sPlayers.Remove(__instance);
+			[HarmonyPatch("OnDestroy"), HarmonyPrefix]
+			private static void OnDestroy_Prefix(Player __instance)
+			{
+				sPlayers.Remove(__instance);
 			}
 
 			[HarmonyPatch("GetBuildStamina"), HarmonyPostfix]
@@ -146,11 +146,11 @@ namespace FastTools
 			private enum TranspilerState
 			{
 				Searching,
-                Calculating,
-                Searching2,
-                Checking,
-                Checking2,
-                Checking3,
+				Calculating,
+				Searching2,
+				Checking,
+				Checking2,
+				Checking3,
 				Replacing
 			}
 
@@ -163,85 +163,85 @@ namespace FastTools
 				yield return new CodeInstruction(OpCodes.Ldc_R4, 0.0f);
 				yield return new CodeInstruction(OpCodes.Stloc, stamina.LocalIndex);
 
-                FieldInfo sharedField = typeof(ItemDrop.ItemData).GetField(nameof(ItemDrop.ItemData.m_shared));
-                FieldInfo attackField = typeof(ItemDrop.ItemData.SharedData).GetField(nameof(ItemDrop.ItemData.SharedData.m_attack));
-                FieldInfo attackStaminaField = typeof(Attack).GetField(nameof(Attack.m_attackStamina));
+				FieldInfo sharedField = typeof(ItemDrop.ItemData).GetField(nameof(ItemDrop.ItemData.m_shared));
+				FieldInfo attackField = typeof(ItemDrop.ItemData.SharedData).GetField(nameof(ItemDrop.ItemData.SharedData.m_attack));
+				FieldInfo attackStaminaField = typeof(Attack).GetField(nameof(Attack.m_attackStamina));
 
 				TranspilerState state = TranspilerState.Searching;
 
-                CodeInstruction instruction1 = null;
-                CodeInstruction instruction2 = null;
-                CodeInstruction instruction3 = null;
+				CodeInstruction instruction1 = null;
+				CodeInstruction instruction2 = null;
+				CodeInstruction instruction3 = null;
 
 				foreach (CodeInstruction instruction in instructions)
 				{
 					switch (state)
 					{
 						case TranspilerState.Searching:
-                            if (instruction.opcode == OpCodes.Call && ((MethodInfo)instruction.operand).Name.Equals("GetRightItem"))
-                            {
-                                state = TranspilerState.Calculating;
+							if (instruction.opcode == OpCodes.Call && ((MethodInfo)instruction.operand).Name.Equals("GetRightItem"))
+							{
+								state = TranspilerState.Calculating;
 							}
 							yield return instruction;
 							break;
 
-                        case TranspilerState.Calculating:
-                            yield return instruction; // stloc.0
+						case TranspilerState.Calculating:
+							yield return instruction; // stloc.0
 
-                            // Get the stamina cost of the tool, multiply it by the mod's multiplier, store the result in 'stamina' local variable.
-                            yield return new CodeInstruction(OpCodes.Ldloc_0);
-                            yield return new CodeInstruction(OpCodes.Ldfld, sharedField);
-                            yield return new CodeInstruction(OpCodes.Ldfld, attackField);
-                            yield return new CodeInstruction(OpCodes.Ldfld, attackStaminaField);
-                            yield return new CodeInstruction(OpCodes.Ldc_R4, StaminaUseMultiplier.Value);
-                            yield return new CodeInstruction(OpCodes.Mul);
-                            yield return new CodeInstruction(OpCodes.Stloc, stamina.LocalIndex);
+							// Get the stamina cost of the tool, multiply it by the mod's multiplier, store the result in 'stamina' local variable.
+							yield return new CodeInstruction(OpCodes.Ldloc_0);
+							yield return new CodeInstruction(OpCodes.Ldfld, sharedField);
+							yield return new CodeInstruction(OpCodes.Ldfld, attackField);
+							yield return new CodeInstruction(OpCodes.Ldfld, attackStaminaField);
+							yield return new CodeInstruction(OpCodes.Ldc_R4, StaminaUseMultiplier.Value);
+							yield return new CodeInstruction(OpCodes.Mul);
+							yield return new CodeInstruction(OpCodes.Stloc, stamina.LocalIndex);
 
 							state = TranspilerState.Searching2;
-                            break;
+							break;
 
-                        case TranspilerState.Searching2:
-                            if (instruction.opcode == OpCodes.Ldloc_0)
-                            {
-                                instruction1 = instruction;
-                                state = TranspilerState.Checking;
-                            }
-                            else
-                            {
-                                yield return instruction;
-                            }
-                            break;
+						case TranspilerState.Searching2:
+							if (instruction.opcode == OpCodes.Ldloc_0)
+							{
+								instruction1 = instruction;
+								state = TranspilerState.Checking;
+							}
+							else
+							{
+								yield return instruction;
+							}
+							break;
 
-                        case TranspilerState.Checking:
-                            if (instruction.opcode == OpCodes.Ldfld && ((FieldInfo)instruction.operand).Name == sharedField.Name)
-                            {
-                                instruction2 = instruction;
-                                state = TranspilerState.Checking2;
-                            }
-                            else
+						case TranspilerState.Checking:
+							if (instruction.opcode == OpCodes.Ldfld && ((FieldInfo)instruction.operand).Name == sharedField.Name)
+							{
+								instruction2 = instruction;
+								state = TranspilerState.Checking2;
+							}
+							else
 							{
 								yield return instruction1;
 								yield return instruction;
 								state = TranspilerState.Searching2;
-                            }
-                            break;
+							}
+							break;
 
-                        case TranspilerState.Checking2:
+						case TranspilerState.Checking2:
 							if (instruction.opcode == OpCodes.Ldfld && ((FieldInfo)instruction.operand).Name == attackField.Name)
-                            {
-                                instruction3 = instruction;
-                                state = TranspilerState.Checking3;
+							{
+								instruction3 = instruction;
+								state = TranspilerState.Checking3;
 							}
 							else
 							{
-                                yield return instruction1;
-                                yield return instruction2;
-                                yield return instruction;
+								yield return instruction1;
+								yield return instruction2;
+								yield return instruction;
 								state = TranspilerState.Searching2;
 							}
 							break;
 
-                        case TranspilerState.Checking3:
+						case TranspilerState.Checking3:
 							if (instruction.opcode == OpCodes.Ldfld && ((FieldInfo)instruction.operand).Name == attackStaminaField.Name)
 							{
 								state = TranspilerState.Replacing;
@@ -259,7 +259,7 @@ namespace FastTools
 						case TranspilerState.Replacing:
 							// We found a reference to rightItem.m_shared.m_attack.m_attackStamina. Replace it with our 'stamina' variable
 							yield return new CodeInstruction(OpCodes.Ldloc, stamina.LocalIndex);
-                            yield return instruction;
+							yield return instruction;
 
 							// Keep searching. There is more than one occurrence.
 							state = TranspilerState.Searching2;

@@ -25,12 +25,12 @@ namespace ClearTheAir
 	[BepInPlugin(ModId, ModName, ModVersion)]
 	[BepInDependency("_shudnal.ConditionalConfigSync", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInProcess("valheim.exe")]
-    [BepInProcess("valheim_server.exe")]
-    public class ClearTheAirPlugin : BaseUnityPlugin
-    {
-        public const string ModId = "dev.crystal.cleartheair";
-        public const string ModName = "Clear The Air";
-        public const string ModVersion = "1.2.2.0";
+	[BepInProcess("valheim_server.exe")]
+	public class ClearTheAirPlugin : BaseUnityPlugin
+	{
+		public const string ModId = "dev.crystal.cleartheair";
+		public const string ModName = "Clear The Air";
+		public const string ModVersion = "1.2.3.0";
 
 		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
 		{
@@ -43,76 +43,76 @@ namespace ClearTheAir
 
 		public static ConfigEntry<float> MistClearRadiusMultiplier;
 
-        // Notes on related game types
-        // Mister: emits mist within a radius
-        // Demister: blocks mist within a radius
-        // SE_Demister: Wisplight player effect which controls a demister
-        // MistEmitter: unsure
+		// Notes on related game types
+		// Mister: emits mist within a radius
+		// Demister: blocks mist within a radius
+		// SE_Demister: Wisplight player effect which controls a demister
+		// MistEmitter: unsure
 
-        private static Harmony sDemisterHarmony;
+		private static Harmony sDemisterHarmony;
 
-        private static readonly FieldInfo sAllDemistersField;
+		private static readonly FieldInfo sAllDemistersField;
 
-        // Copy of MistClearRadiusMultiplier so we can reference the old value after it changes
-        private float mMistClearRadiusMultiplier;
+		// Copy of MistClearRadiusMultiplier so we can reference the old value after it changes
+		private float mMistClearRadiusMultiplier;
 
-        static ClearTheAirPlugin()
-        {
-            sAllDemistersField = typeof(Demister).GetField("m_instances", BindingFlags.Static | BindingFlags.NonPublic);
-        }
+		static ClearTheAirPlugin()
+		{
+			sAllDemistersField = typeof(Demister).GetField("m_instances", BindingFlags.Static | BindingFlags.NonPublic);
+		}
 
-        private void Awake()
+		private void Awake()
 		{
 			MistClearRadiusMultiplier = Config.Bind("Mist", nameof(MistClearRadiusMultiplier), 1.0f, "Multiplier to apply to the fog clear radius of all items which can clear mist. Game default 1. [The value will be enforced on a server.]");
-            MistClearRadiusMultiplier.SettingChanged += MistClearRadiusMultiplier_SettingChanged;
-            ConfigSync.AddConfigEntry(MistClearRadiusMultiplier, ConfigSyncMode.AlwaysServerControlled);
+			MistClearRadiusMultiplier.SettingChanged += MistClearRadiusMultiplier_SettingChanged;
+			ConfigSync.AddConfigEntry(MistClearRadiusMultiplier, ConfigSyncMode.AlwaysServerControlled);
 
 			ClampConfig();
-            mMistClearRadiusMultiplier = MistClearRadiusMultiplier.Value;
+			mMistClearRadiusMultiplier = MistClearRadiusMultiplier.Value;
 
-            sDemisterHarmony = new Harmony(ModId + "_Demister");
+			sDemisterHarmony = new Harmony(ModId + "_Demister");
 
-            sDemisterHarmony.PatchAll(typeof(Demister_Patches));
-        }
+			sDemisterHarmony.PatchAll(typeof(Demister_Patches));
+		}
 
-        private void OnDestroy()
-        {
-            sDemisterHarmony.UnpatchSelf();
-        }
+		private void OnDestroy()
+		{
+			sDemisterHarmony.UnpatchSelf();
+		}
 
 		private void MistClearRadiusMultiplier_SettingChanged(object sender, EventArgs e)
-        {
-            ClampConfig();
+		{
+			ClampConfig();
 
-            List<Demister> allDemisters = (List<Demister>)sAllDemistersField.GetValue(null);
-            foreach (Demister demister in allDemisters)
-            {
-                SetMistClearRadius(demister, mMistClearRadiusMultiplier, MistClearRadiusMultiplier.Value);
-            }
+			List<Demister> allDemisters = (List<Demister>)sAllDemistersField.GetValue(null);
+			foreach (Demister demister in allDemisters)
+			{
+				SetMistClearRadius(demister, mMistClearRadiusMultiplier, MistClearRadiusMultiplier.Value);
+			}
 
-            mMistClearRadiusMultiplier = MistClearRadiusMultiplier.Value;
-        }
+			mMistClearRadiusMultiplier = MistClearRadiusMultiplier.Value;
+		}
 
-        private void ClampConfig()
-        {
-            if (MistClearRadiusMultiplier.Value < 0.1f) MistClearRadiusMultiplier.Value = 0.1f;
-            if (MistClearRadiusMultiplier.Value > 100.0f) MistClearRadiusMultiplier.Value = 100.0f;
-        }
+		private void ClampConfig()
+		{
+			if (MistClearRadiusMultiplier.Value < 0.1f) MistClearRadiusMultiplier.Value = 0.1f;
+			if (MistClearRadiusMultiplier.Value > 100.0f) MistClearRadiusMultiplier.Value = 100.0f;
+		}
 
-        private static void SetMistClearRadius(Demister demister, float oldMultiplier, float newMultiplier)
-        {
-            float radius = demister.m_forceField.endRange / oldMultiplier * newMultiplier;
-            demister.m_forceField.endRange = radius;
-        }
+		private static void SetMistClearRadius(Demister demister, float oldMultiplier, float newMultiplier)
+		{
+			float radius = demister.m_forceField.endRange / oldMultiplier * newMultiplier;
+			demister.m_forceField.endRange = radius;
+		}
 
-        [HarmonyPatch(typeof(Demister))]
-        private static class Demister_Patches
-        {
-            [HarmonyPatch("Awake"), HarmonyPostfix]
-            private static void Awake_Postfix(Demister __instance)
-            {
-                SetMistClearRadius(__instance, 1.0f, MistClearRadiusMultiplier.Value);
-            }
-        }
-    }
+		[HarmonyPatch(typeof(Demister))]
+		private static class Demister_Patches
+		{
+			[HarmonyPatch("Awake"), HarmonyPostfix]
+			private static void Awake_Postfix(Demister __instance)
+			{
+				SetMistClearRadius(__instance, 1.0f, MistClearRadiusMultiplier.Value);
+			}
+		}
+	}
 }

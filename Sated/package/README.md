@@ -4,101 +4,10 @@ Run the game once with the mod enabled to generate the config. See config for de
 
 Tip: The exponent of each curve is configurable. To visualize the curve and see how different exponents look, enter the above formula into a graphing calculator such as [this one](https://www.desmos.com/calculator) and change the ``8`` to whatever number you want to see.
 
-This mod should be installed on client and server. Mod features may not work reliably if any clients do not have the mod installed. By default, a server running the mod will reject clients that do not have it installed. To allow unmodded clients, at the risk of unreliable functionality, a server may disable the client mod requirement via the `ConditionalConfigSync.ModRequirements.cfg` file in the ConditionalConfigSync config directory.
+This is primarily a client side mod. It may also be installed on a server to sync configurations. A server may optionally require that clients have the mod installed via the `ConditionalConfigSync.ModRequirements.cfg` file in the ConditionalConfigSync config directory.
 
 Some configuration options can be enforced by a server running [ConditionalConfigSync](https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync). See included ConfigSync_Readme.txt file for more information.
 
 ## Installation
-This mod is designed to install and run via a mod manager such as [r2modman](https://thunderstore.io/package/ebkr/r2modman/). You can optionally install it manually following the steps below.
 
-**Manual Install**
-
-1. Install [BepInExPack Valheim](https://valheim.thunderstore.io/package/denikson/BepInExPack_Valheim/)
-2. Install [ConditionalConfigSync](https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync)
-3. Download latest ``Sated.dll`` by clicking "Manual Download". Extract the dll from the zip file into ``[GameDirectory]\Bepinex\plugins``. (You only need the dll.)
-4. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything (or use a configuration management mod).
-
-## Changelog
-
-1.3.2
-
-* Update to ConditionalConfigSync 1.0.6 which supports server-controlled configuration for requiring the mod on clients.
-* Removed `ModRequired` config value. The new ConditionalConfigSync.ModRequirements.cfg file in the ConditionalConfigSync config replaces this feature.
-
-1.3.1
-
-* Added `ModRequired` config value. If set to true on a server (default), connecting clients must have the mod installed. If false, the mod is optional for clients. Mod features may not work reliably if any clients do not have the mod installed.
-
-1.3.0
-
-* Added server config sync via [ConditionalConfigSync](https://thunderstore.io/c/valheim/p/shudnal/ConditionalConfigSync)
-
-1.2.0
-
-* Updated for Valheim 1.0
-
-1.1.12
-
-* Updated BepinEx version
-
-1.1.11
-
-* Updated BepinEx version
-* Updated .NET version
-
-1.1.10
-
-* Updated BepinEx version
-
-1.1.9
-
-* Updated BepinEx version
-
-1.1.8
-
-* Modified patching method for compatibility with Azumatt's MagicEitrBase mod.
-
-1.1.7
-
-* Fixed an issue preventing food from providing Eitr.
-
-1.1.6
-
-* Updated BepInEx version
-
-1.1.5
-
-* Fixed the time input to the curve function resulting in a proper drop off near the end. (This stopped working at some point due to a change to the vanilla formula.)
-
-1.1.4
-
-* Fixed some errors in total health and stamina calculations.
-
-1.1.3
-
-* Removed the food timer bar feature because it breaks the UI after the latest game update.
-* Updated BepInEx version
-
-1.1.2
-
-* Changing the mod config live (via something like BepInEx Configuration Manager) is now supported.
-
-1.1.1
-
-* Added config options to adjust the health and stamina food curve exponents.
-
-1.1.0
-
-* Food icons now have timer bars below them (can be disabled).
-
-1.0.2
-
-* The food bar on the HUD now properly matches the HP bar.
-
-1.0.1
-
-* Bad upload. This version contained the 1.0.0 dll.
-
-1.0.0
-
-* Initial release
+This mod uses [BepInExPack Valheim](https://valheim.thunderstore.io/package/denikson/BepInExPack_Valheim) as a mod loader. You can use any BepinEx compatible mod manager to install the mod, or manually place it in the BepixEx `plugins` directory.

@@ -37,12 +37,12 @@ namespace Pathfinder
 	[BepInPlugin(ModId, ModName, ModVersion)]
 	[BepInDependency("_shudnal.ConditionalConfigSync", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInProcess("valheim.exe")]
-    [BepInProcess("valheim_server.exe")]
-    public class PathfinderPlugin : BaseUnityPlugin
-    {
-        public const string ModId = "dev.crystal.pathfinder";
-        public const string ModName = "Pathfinder";
-        public const string ModVersion = "2.2.2.0";
+	[BepInProcess("valheim_server.exe")]
+	public class PathfinderPlugin : BaseUnityPlugin
+	{
+		public const string ModId = "dev.crystal.pathfinder";
+		public const string ModName = "Pathfinder";
+		public const string ModVersion = "2.2.3.0";
 
 		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
 		{
@@ -54,21 +54,21 @@ namespace Pathfinder
 		};
 
 		public static ConfigEntry<float> MinimumRadius;
-        public static ConfigEntry<float> MaximumRadius;
-        public static ConfigEntry<float> LandExploreRadius;
-        public static ConfigEntry<float> SeaExploreRadius;
-        public static ConfigEntry<float> AltitudeRadiusBonus;
-        public static ConfigEntry<float> ForestRadiusPenalty;
-        public static ConfigEntry<float> DaylightRadiusScale;
-        public static ConfigEntry<float> WeatherRadiusScale;
-        public static ConfigEntry<bool> DisplayCurrentRadiusValue;
-        public static ConfigEntry<bool> DisplayVariables;
+		public static ConfigEntry<float> MaximumRadius;
+		public static ConfigEntry<float> LandExploreRadius;
+		public static ConfigEntry<float> SeaExploreRadius;
+		public static ConfigEntry<float> AltitudeRadiusBonus;
+		public static ConfigEntry<float> ForestRadiusPenalty;
+		public static ConfigEntry<float> DaylightRadiusScale;
+		public static ConfigEntry<float> WeatherRadiusScale;
+		public static ConfigEntry<bool> DisplayCurrentRadiusValue;
+		public static ConfigEntry<bool> DisplayVariables;
 
-        private static Harmony sMinimapHarmony;
-        private static Harmony sHudHarmony;
+		private static Harmony sMinimapHarmony;
+		private static Harmony sHudHarmony;
 
-        private static Text sRadiusHudText;
-        private static Text sVariablesHudText;
+		private static Text sRadiusHudText;
+		private static Text sVariablesHudText;
 
 #if DEBUG_SHOW_OVERLAY
         private static Harmony sDebugHarmony;
@@ -76,11 +76,11 @@ namespace Pathfinder
         private static Text sDebugText;
 #endif
 
-        static PathfinderPlugin()
+		static PathfinderPlugin()
 		{
 		}
 
-        private void Awake()
+		private void Awake()
 		{
 			MinimumRadius = Config.Bind("Base", nameof(MinimumRadius), 20.0f, "The minimum exploration radius allowed. If a lower radius is calculated, it will be increased to this value. Higher values may cause performance issues. Accepted range 0-10000. Must be equal or lower than MaximumRadius. [The value will be enforced on a server.]");
 			MinimumRadius.SettingChanged += MinimumRadius_SettingChanged;
@@ -91,56 +91,56 @@ namespace Pathfinder
 			ConfigSync.AddConfigEntry(MaximumRadius, ConfigSyncMode.AlwaysServerControlled);
 
 			LandExploreRadius = Config.Bind("Base", nameof(LandExploreRadius), 200.0f, "The radius around the player to uncover while travelling on land near sea level. Higher values may cause performance issues. Max allowed is 2000. Game default is 100. [The value will be enforced on a server.]");
-            LandExploreRadius.SettingChanged += Config_SettingChanged;
+			LandExploreRadius.SettingChanged += Config_SettingChanged;
 			ConfigSync.AddConfigEntry(LandExploreRadius, ConfigSyncMode.AlwaysServerControlled);
 
 			SeaExploreRadius = Config.Bind("Base", nameof(SeaExploreRadius), 300.0f, "The radius around the player to uncover while travelling on a boat. Higher values may cause performance issues. Max allowed is 2000. Game default is 100. [The value will be enforced on a server.]");
-            SeaExploreRadius.SettingChanged += Config_SettingChanged;
+			SeaExploreRadius.SettingChanged += Config_SettingChanged;
 			ConfigSync.AddConfigEntry(SeaExploreRadius, ConfigSyncMode.AlwaysServerControlled);
 
 			AltitudeRadiusBonus = Config.Bind("Multipliers", nameof(AltitudeRadiusBonus), 0.5f, "Bonus multiplier to apply to land exploration radius based on altitude. For every 100 units above sea level (smooth scale), add this value multiplied by LandExploreRadius to the total. For example, with a radius of 200 and a multiplier of 0.5, radius is 200 at sea level, 250 at 50 altitude, 300 at 100 altitude, 400 at 200 altitude, etc. For reference, a typical mountain peak is around 170 altitude. Accepted range 0-2. Set to 0 to disable. [The value will be enforced on a server.]");
-            AltitudeRadiusBonus.SettingChanged += Config_SettingChanged;
+			AltitudeRadiusBonus.SettingChanged += Config_SettingChanged;
 			ConfigSync.AddConfigEntry(AltitudeRadiusBonus, ConfigSyncMode.AlwaysServerControlled);
 
 			ForestRadiusPenalty = Config.Bind("Multipliers", nameof(ForestRadiusPenalty), 0.3f, "Penalty to apply to land exploration radius when in a forest (black forest, forested parts of meadows and plains). This value is multiplied by the base land exploration radius and subtraced from the total. Accepted range 0-1. Set to 0 to disable. [The value will be enforced on a server.]");
-            ForestRadiusPenalty.SettingChanged += Config_SettingChanged;
+			ForestRadiusPenalty.SettingChanged += Config_SettingChanged;
 			ConfigSync.AddConfigEntry(ForestRadiusPenalty, ConfigSyncMode.AlwaysServerControlled);
 
 			DaylightRadiusScale = Config.Bind("Multipliers", nameof(DaylightRadiusScale), 0.2f, "Influences how much daylight (directional and ambient light) affects exploration radius. This value is multiplied by the base land or sea exploration radius and added to the total. Accepted range 0-1. Set to 0 to disable. [The value will be enforced on a server.]");
-            DaylightRadiusScale.SettingChanged += Config_SettingChanged;
+			DaylightRadiusScale.SettingChanged += Config_SettingChanged;
 			ConfigSync.AddConfigEntry(DaylightRadiusScale, ConfigSyncMode.AlwaysServerControlled);
 
 			WeatherRadiusScale = Config.Bind("Multipliers", nameof(WeatherRadiusScale), 0.5f, "Influences how much the current weather affects exploration radius. This value is multiplied by the base land or sea exploration radius and added to the total. Accepted range 0-1. Set to 0 to disable. [The value will be enforced on a server.]");
-            WeatherRadiusScale.SettingChanged += Config_SettingChanged;
+			WeatherRadiusScale.SettingChanged += Config_SettingChanged;
 			ConfigSync.AddConfigEntry(WeatherRadiusScale, ConfigSyncMode.AlwaysServerControlled);
 
 			DisplayCurrentRadiusValue = Config.Bind("Miscellaneous", nameof(DisplayCurrentRadiusValue), false, "Enabling this will display the currently computed exploration radius in the bottom left of the in-game Hud. Useful if you are trying to tweak config values and want to see the result.");
-            DisplayCurrentRadiusValue.SettingChanged += DisplayRadiusValue_SettingChanged;
+			DisplayCurrentRadiusValue.SettingChanged += DisplayRadiusValue_SettingChanged;
 			ConfigSync.AddConfigEntry(DisplayCurrentRadiusValue, ConfigSyncMode.AlwaysClientControlled);
 
 			DisplayVariables = Config.Bind("Miscellaneous", nameof(DisplayVariables), false, "Enabling this will display on the Hud the values of various variables that go into calculating the exploration radius. Mostly useful for debugging and tweaking the config.");
-            DisplayVariables.SettingChanged += DisplayVariablesValue_SettingChanged;
+			DisplayVariables.SettingChanged += DisplayVariablesValue_SettingChanged;
 			ConfigSync.AddConfigEntry(DisplayVariables, ConfigSyncMode.AlwaysClientControlled);
 
 			ClampConfig();
 
-            sMinimapHarmony = new Harmony(ModId + "_Minimap");
-            sHudHarmony = new Harmony(ModId + "_Hud");
+			sMinimapHarmony = new Harmony(ModId + "_Minimap");
+			sHudHarmony = new Harmony(ModId + "_Hud");
 
-            sMinimapHarmony.PatchAll(typeof(Minimap_Patches));
-            sHudHarmony.PatchAll(typeof(Hud_Patches));
+			sMinimapHarmony.PatchAll(typeof(Minimap_Patches));
+			sHudHarmony.PatchAll(typeof(Hud_Patches));
 
 #if DEBUG_SHOW_OVERLAY
             sDebugTextBuilder = new StringBuilder();
             sDebugHarmony = new Harmony(ModId + "_Hud_Debug");
             sDebugHarmony.PatchAll(typeof(Hud_Debug_Patch));
 #endif
-        }
+		}
 
 		private void Config_SettingChanged(object sender, EventArgs e)
 		{
 			ClampConfig();
-        }
+		}
 
 		private void MinimumRadius_SettingChanged(object sender, EventArgs e)
 		{
@@ -157,33 +157,33 @@ namespace Pathfinder
 		}
 
 		private void DisplayRadiusValue_SettingChanged(object sender, EventArgs e)
-        {
-            sRadiusHudText.gameObject.SetActive(DisplayCurrentRadiusValue.Value);
-            if (!DisplayCurrentRadiusValue.Value)
-            {
-                sRadiusHudText.text = string.Empty;
+		{
+			sRadiusHudText.gameObject.SetActive(DisplayCurrentRadiusValue.Value);
+			if (!DisplayCurrentRadiusValue.Value)
+			{
+				sRadiusHudText.text = string.Empty;
 			}
-        }
+		}
 
-        private void DisplayVariablesValue_SettingChanged(object sender, EventArgs e)
-        {
-            sVariablesHudText.gameObject.SetActive(DisplayVariables.Value);
-            if (!DisplayVariables.Value)
-            {
-                sVariablesHudText.text = string.Empty;
-            }
-        }
+		private void DisplayVariablesValue_SettingChanged(object sender, EventArgs e)
+		{
+			sVariablesHudText.gameObject.SetActive(DisplayVariables.Value);
+			if (!DisplayVariables.Value)
+			{
+				sVariablesHudText.text = string.Empty;
+			}
+		}
 
-        private void OnDestroy()
-        {
-            sMinimapHarmony.UnpatchSelf();
-            sHudHarmony.UnpatchSelf();
+		private void OnDestroy()
+		{
+			sMinimapHarmony.UnpatchSelf();
+			sHudHarmony.UnpatchSelf();
 #if DEBUG_SHOW_OVERLAY
             sDebugHarmony.UnpatchSelf();
 #endif
-        }
+		}
 
-        private static void ClampConfig()
+		private static void ClampConfig()
 		{
 			if (MinimumRadius.Value < 0.0f) MinimumRadius.Value = 0.0f;
 			if (MinimumRadius.Value > 10000.0f) MinimumRadius.Value = 10000.0f;
@@ -192,144 +192,144 @@ namespace Pathfinder
 			if (MaximumRadius.Value > 10000.0f) MaximumRadius.Value = 10000.0f;
 
 			if (LandExploreRadius.Value < 0.0f) LandExploreRadius.Value = 0.0f;
-            if (LandExploreRadius.Value > 2000.0f) LandExploreRadius.Value = 2000.0f;
+			if (LandExploreRadius.Value > 2000.0f) LandExploreRadius.Value = 2000.0f;
 
-            if (SeaExploreRadius.Value < 0.0f) SeaExploreRadius.Value = 0.0f;
-            if (SeaExploreRadius.Value > 2000.0f) SeaExploreRadius.Value = 2000.0f;
+			if (SeaExploreRadius.Value < 0.0f) SeaExploreRadius.Value = 0.0f;
+			if (SeaExploreRadius.Value > 2000.0f) SeaExploreRadius.Value = 2000.0f;
 
-            if (AltitudeRadiusBonus.Value < 0.0f) AltitudeRadiusBonus.Value = 0.0f;
-            if (AltitudeRadiusBonus.Value > 2.0f) AltitudeRadiusBonus.Value = 2.0f;
+			if (AltitudeRadiusBonus.Value < 0.0f) AltitudeRadiusBonus.Value = 0.0f;
+			if (AltitudeRadiusBonus.Value > 2.0f) AltitudeRadiusBonus.Value = 2.0f;
 
-            if (ForestRadiusPenalty.Value < 0.0f) ForestRadiusPenalty.Value = 0.0f;
-            if (ForestRadiusPenalty.Value > 1.0f) ForestRadiusPenalty.Value = 1.0f;
+			if (ForestRadiusPenalty.Value < 0.0f) ForestRadiusPenalty.Value = 0.0f;
+			if (ForestRadiusPenalty.Value > 1.0f) ForestRadiusPenalty.Value = 1.0f;
 
-            if (DaylightRadiusScale.Value < 0.0f) DaylightRadiusScale.Value = 0.0f;
-            if (DaylightRadiusScale.Value > 1.0f) DaylightRadiusScale.Value = 1.0f;
+			if (DaylightRadiusScale.Value < 0.0f) DaylightRadiusScale.Value = 0.0f;
+			if (DaylightRadiusScale.Value > 1.0f) DaylightRadiusScale.Value = 1.0f;
 
-            if (WeatherRadiusScale.Value < 0.0f) WeatherRadiusScale.Value = 0.0f;
-            if (WeatherRadiusScale.Value > 1.0f) WeatherRadiusScale.Value = 1.0f;
-        }
+			if (WeatherRadiusScale.Value < 0.0f) WeatherRadiusScale.Value = 0.0f;
+			if (WeatherRadiusScale.Value > 1.0f) WeatherRadiusScale.Value = 1.0f;
+		}
 
-        [HarmonyPatch(typeof(Minimap))]
-        private static class Minimap_Patches
-        {
-            private enum TranspilerState
-            {
-                Searching,
-                Checking,
-                Finishing
-            }
+		[HarmonyPatch(typeof(Minimap))]
+		private static class Minimap_Patches
+		{
+			private enum TranspilerState
+			{
+				Searching,
+				Checking,
+				Finishing
+			}
 
-            [HarmonyPatch("UpdateExplore"), HarmonyTranspiler]
-            private static IEnumerable<CodeInstruction> UpdateExplore_Transpiler(IEnumerable<CodeInstruction> instructions)
-            {
-                TranspilerState state = TranspilerState.Searching;
+			[HarmonyPatch("UpdateExplore"), HarmonyTranspiler]
+			private static IEnumerable<CodeInstruction> UpdateExplore_Transpiler(IEnumerable<CodeInstruction> instructions)
+			{
+				TranspilerState state = TranspilerState.Searching;
 
-                CodeInstruction previous = null;
+				CodeInstruction previous = null;
 
-                foreach (CodeInstruction instruction in instructions)
-                {
-                    switch (state)
-                    {
-                        case TranspilerState.Searching:
-                            if (instruction.opcode == OpCodes.Ldarg_0)
-                            {
-                                previous = instruction;
-                                state = TranspilerState.Checking;
-                            }
-                            else
-                            {
-                                yield return instruction;
-                            }
-                            break;
-                        case TranspilerState.Checking:
-                            if (instruction.opcode == OpCodes.Ldfld && ((FieldInfo)instruction.operand).Name == nameof(Minimap.m_exploreRadius))
-                            {
-                                yield return new CodeInstruction(OpCodes.Ldarg_2); // player
-                                yield return new CodeInstruction(OpCodes.Call, typeof(Minimap_Patches).GetMethod(nameof(GetExploreRadius), BindingFlags.Static | BindingFlags.NonPublic));
-                                state = TranspilerState.Finishing;
-                            }
-                            else
-                            {
-                                yield return previous;
-                                yield return instruction;
-                                state = TranspilerState.Searching;
-                            }
-                            previous = null;
-                            break;
-                        case TranspilerState.Finishing:
-                            yield return instruction;
-                            break;
-                    }
-                }
-            }
+				foreach (CodeInstruction instruction in instructions)
+				{
+					switch (state)
+					{
+						case TranspilerState.Searching:
+							if (instruction.opcode == OpCodes.Ldarg_0)
+							{
+								previous = instruction;
+								state = TranspilerState.Checking;
+							}
+							else
+							{
+								yield return instruction;
+							}
+							break;
+						case TranspilerState.Checking:
+							if (instruction.opcode == OpCodes.Ldfld && ((FieldInfo)instruction.operand).Name == nameof(Minimap.m_exploreRadius))
+							{
+								yield return new CodeInstruction(OpCodes.Ldarg_2); // player
+								yield return new CodeInstruction(OpCodes.Call, typeof(Minimap_Patches).GetMethod(nameof(GetExploreRadius), BindingFlags.Static | BindingFlags.NonPublic));
+								state = TranspilerState.Finishing;
+							}
+							else
+							{
+								yield return previous;
+								yield return instruction;
+								state = TranspilerState.Searching;
+							}
+							previous = null;
+							break;
+						case TranspilerState.Finishing:
+							yield return instruction;
+							break;
+					}
+				}
+			}
 
-            private static float GetExploreRadius(Player player)
-            {
-                float result;
+			private static float GetExploreRadius(Player player)
+			{
+				float result;
 
-                if (player.InInterior())
-                {
-                    // In a dungeon. Dungeons are way up high and we dont want to reveal a huge section of the map when entering one.
-                    // We actually want to reduce the radius since it doesnt make sense to be able to explore the map while in a dungeon
-                    result = Mathf.Max(LandExploreRadius.Value * 0.2f, 10.0f);
+				if (player.InInterior())
+				{
+					// In a dungeon. Dungeons are way up high and we dont want to reveal a huge section of the map when entering one.
+					// We actually want to reduce the radius since it doesnt make sense to be able to explore the map while in a dungeon
+					result = Mathf.Max(LandExploreRadius.Value * 0.2f, 10.0f);
 
-                    sRadiusHudText.text = $"Pathfinder: radius={result:0.0}";
+					sRadiusHudText.text = $"Pathfinder: radius={result:0.0}";
 
-                    return result;
-                }
+					return result;
+				}
 
-                float baseRadius;
-                float multiplier = 1.0f;
+				float baseRadius;
+				float multiplier = 1.0f;
 
-                // Player may not be the one piloting a boat, but should still get the sea radius if they are riding in one that has a pilot.
-                // A longship is about 20 units long. 19 is about as far as you could possibly get from a pilot and still be on the boat.
-                List<Player> players = new List<Player>();
-                Player.GetPlayersInRange(player.transform.position, 21.0f, players);
-                if (players.Any(p => p.IsAttachedToShip()))
-                {
-                    baseRadius = SeaExploreRadius.Value;
-                }
-                else
-                {
-                    baseRadius = LandExploreRadius.Value;
-                }
+				// Player may not be the one piloting a boat, but should still get the sea radius if they are riding in one that has a pilot.
+				// A longship is about 20 units long. 19 is about as far as you could possibly get from a pilot and still be on the boat.
+				List<Player> players = new List<Player>();
+				Player.GetPlayersInRange(player.transform.position, 21.0f, players);
+				if (players.Any(p => p.IsAttachedToShip()))
+				{
+					baseRadius = SeaExploreRadius.Value;
+				}
+				else
+				{
+					baseRadius = LandExploreRadius.Value;
+				}
 
-                // Take the higher of directional or ambient light, subtract 1 to turn this into a value we can add to our multiplier
-                float light = Mathf.Max(GetColorMagnitude(EnvMan.instance.m_dirLight.color * EnvMan.instance.m_dirLight.intensity), GetColorMagnitude(RenderSettings.ambientLight));
-                multiplier += (light - 1.0f) * DaylightRadiusScale.Value;
+				// Take the higher of directional or ambient light, subtract 1 to turn this into a value we can add to our multiplier
+				float light = Mathf.Max(GetColorMagnitude(EnvMan.instance.m_dirLight.color * EnvMan.instance.m_dirLight.intensity), GetColorMagnitude(RenderSettings.ambientLight));
+				multiplier += (light - 1.0f) * DaylightRadiusScale.Value;
 
-                // Account for weather
-                float particles = 0.0f;
-                foreach (GameObject particleSystem in EnvMan.instance.GetCurrentEnvironment().m_psystems)
-                {
-                    // Certain particle systems heavily obstruct view
-                    if (particleSystem.name.Equals("Mist", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        particles += 0.5f;
-                    }
-                    if (particleSystem.name.Equals("SnowStorm", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        // Snow storm lowers visibility during the day more than at night
-                        particles += 0.7f * light;
-                    }
-                }
+				// Account for weather
+				float particles = 0.0f;
+				foreach (GameObject particleSystem in EnvMan.instance.GetCurrentEnvironment().m_psystems)
+				{
+					// Certain particle systems heavily obstruct view
+					if (particleSystem.name.Equals("Mist", StringComparison.InvariantCultureIgnoreCase))
+					{
+						particles += 0.5f;
+					}
+					if (particleSystem.name.Equals("SnowStorm", StringComparison.InvariantCultureIgnoreCase))
+					{
+						// Snow storm lowers visibility during the day more than at night
+						particles += 0.7f * light;
+					}
+				}
 
-                // Fog density range seems to be 0.001 to 0.15 based on environment data. Multiply by 10 to get a more meaningful range.
-                float fog = Mathf.Clamp(RenderSettings.fogDensity * 10.0f + particles, 0.0f, 1.5f);
-                multiplier -= fog * WeatherRadiusScale.Value;
+				// Fog density range seems to be 0.001 to 0.15 based on environment data. Multiply by 10 to get a more meaningful range.
+				float fog = Mathf.Clamp(RenderSettings.fogDensity * 10.0f + particles, 0.0f, 1.5f);
+				multiplier -= fog * WeatherRadiusScale.Value;
 
-                // Sea level = 30, tallest mountains (not including the rare super mountains) seem to be around 220. Stop adding altitude bonus after 400
-                float altitude = Mathf.Clamp(player.transform.position.y - ZoneSystem.instance.m_waterLevel, 0.0f, 400.0f);
-                float adjustedAltitude = altitude / 100.0f * Mathf.Max(0.05f, 1.0f - particles);
-                multiplier += adjustedAltitude * AltitudeRadiusBonus.Value;
+				// Sea level = 30, tallest mountains (not including the rare super mountains) seem to be around 220. Stop adding altitude bonus after 400
+				float altitude = Mathf.Clamp(player.transform.position.y - ZoneSystem.instance.m_waterLevel, 0.0f, 400.0f);
+				float adjustedAltitude = altitude / 100.0f * Mathf.Max(0.05f, 1.0f - particles);
+				multiplier += adjustedAltitude * AltitudeRadiusBonus.Value;
 
-                // Make adjustments based on biome
-                float location = GetLocationModifier(player, adjustedAltitude);
-                multiplier += location;
+				// Make adjustments based on biome
+				float location = GetLocationModifier(player, adjustedAltitude);
+				multiplier += location;
 
-                if (multiplier > 5.0f) multiplier = 5.0f;
-                if (multiplier < 0.2f) multiplier = 0.2f;
+				if (multiplier > 5.0f) multiplier = 5.0f;
+				if (multiplier < 0.2f) multiplier = 0.2f;
 
 #if DEBUG_SHOW_OVERLAY
                 {
@@ -353,106 +353,106 @@ namespace Pathfinder
                 }
 #endif
 
-                result = Mathf.Clamp(baseRadius * multiplier, MinimumRadius.Value, MaximumRadius.Value);
+				result = Mathf.Clamp(baseRadius * multiplier, MinimumRadius.Value, MaximumRadius.Value);
 
-                if (DisplayVariables.Value)
-                {
-                    const string fmt = "+0.000;-0.000;0.000";
-                    sVariablesHudText.text = $"Pathfinder Variables\nRadius: {result:0.0}\nBase: {baseRadius:0.#}\nMultiplier: {multiplier:0.000}\n\nLight: {((light - 1.0f) * DaylightRadiusScale.Value).ToString(fmt)}\nWeather: {(-fog * WeatherRadiusScale.Value).ToString(fmt)}\nAltitude: {(adjustedAltitude * AltitudeRadiusBonus.Value).ToString(fmt)}\nLocation: {location.ToString(fmt)}";
-                }
-
-                if (DisplayCurrentRadiusValue.Value)
+				if (DisplayVariables.Value)
 				{
-                    sRadiusHudText.text = $"Pathfinder: radius={result:0.0}";
-                }
+					const string fmt = "+0.000;-0.000;0.000";
+					sVariablesHudText.text = $"Pathfinder Variables\nRadius: {result:0.0}\nBase: {baseRadius:0.#}\nMultiplier: {multiplier:0.000}\n\nLight: {((light - 1.0f) * DaylightRadiusScale.Value).ToString(fmt)}\nWeather: {(-fog * WeatherRadiusScale.Value).ToString(fmt)}\nAltitude: {(adjustedAltitude * AltitudeRadiusBonus.Value).ToString(fmt)}\nLocation: {location.ToString(fmt)}";
+				}
 
-                return result;
-            }
+				if (DisplayCurrentRadiusValue.Value)
+				{
+					sRadiusHudText.text = $"Pathfinder: radius={result:0.0}";
+				}
 
-            private static float GetColorMagnitude(Color color)
-            {
-                // Intentionally ignoring alpha here
-                return Mathf.Sqrt(color.r * color.r + color.g * color.g + color.b * color.b);
-            }
+				return result;
+			}
 
-            private static float GetLocationModifier(Player player, float altitude)
-            {
-                // Forest thresholds based on logic found in MiniMap.GetMaskColor
+			private static float GetColorMagnitude(Color color)
+			{
+				// Intentionally ignoring alpha here
+				return Mathf.Sqrt(color.r * color.r + color.g * color.g + color.b * color.b);
+			}
 
-                float forestPenalty = ForestRadiusPenalty.Value + altitude * AltitudeRadiusBonus.Value * ForestRadiusPenalty.Value;
-                switch (player.GetCurrentBiome())
-                {
-                    case Heightmap.Biome.BlackForest:
-                        // Small extra penalty to account for high daylight values in black forest
-                        return -forestPenalty - 0.25f * DaylightRadiusScale.Value;
-                    case Heightmap.Biome.Meadows:
-                        return WorldGenerator.InForest(player.transform.position) ? -forestPenalty : 0.0f;
-                    case Heightmap.Biome.Plains:
-                        // Small extra bonus to account for low daylight values in plains
-                        return (WorldGenerator.GetForestFactor(player.transform.position) < 0.8f ? -forestPenalty : 0.0f) + 0.1f * DaylightRadiusScale.Value;
-                    default:
-                        return 0.0f;
-                }
-            }
-        }
+			private static float GetLocationModifier(Player player, float altitude)
+			{
+				// Forest thresholds based on logic found in MiniMap.GetMaskColor
 
-        [HarmonyPatch(typeof(Hud))]
-        private static class Hud_Patches
-        {
-            [HarmonyPatch("Awake"), Harmony, HarmonyPostfix]
-            private static void Awake_Postfix(Hud __instance)
-            {
-                {
-                    GameObject textObject = new GameObject("Pathfinder_RadiusText");
-                    textObject.AddComponent<CanvasRenderer>();
-                    textObject.transform.localPosition = Vector3.zero;
+				float forestPenalty = ForestRadiusPenalty.Value + altitude * AltitudeRadiusBonus.Value * ForestRadiusPenalty.Value;
+				switch (player.GetCurrentBiome())
+				{
+					case Heightmap.Biome.BlackForest:
+						// Small extra penalty to account for high daylight values in black forest
+						return -forestPenalty - 0.25f * DaylightRadiusScale.Value;
+					case Heightmap.Biome.Meadows:
+						return WorldGenerator.InForest(player.transform.position) ? -forestPenalty : 0.0f;
+					case Heightmap.Biome.Plains:
+						// Small extra bonus to account for low daylight values in plains
+						return (WorldGenerator.GetForestFactor(player.transform.position) < 0.8f ? -forestPenalty : 0.0f) + 0.1f * DaylightRadiusScale.Value;
+					default:
+						return 0.0f;
+				}
+			}
+		}
 
-                    RectTransform transform = textObject.AddComponent<RectTransform>();
-                    transform.SetParent(__instance.m_rootObject.transform);
-                    transform.pivot = transform.anchorMin = transform.anchorMax = new Vector2(0.0f, 0.0f);
-                    transform.offsetMin = new Vector2(10.0f, 5.0f);
-                    transform.offsetMax = new Vector2(210.0f, 165.0f);
+		[HarmonyPatch(typeof(Hud))]
+		private static class Hud_Patches
+		{
+			[HarmonyPatch("Awake"), Harmony, HarmonyPostfix]
+			private static void Awake_Postfix(Hud __instance)
+			{
+				{
+					GameObject textObject = new GameObject("Pathfinder_RadiusText");
+					textObject.AddComponent<CanvasRenderer>();
+					textObject.transform.localPosition = Vector3.zero;
 
-                    sRadiusHudText = textObject.AddComponent<Text>();
-                    sRadiusHudText.raycastTarget = false;
-                    sRadiusHudText.font = Font.CreateDynamicFontFromOSFont(new[] { "Segoe UI", "Helvetica", "Arial" }, 12);
-                    sRadiusHudText.fontStyle = FontStyle.Bold;
-                    sRadiusHudText.color = Color.white;
-                    sRadiusHudText.fontSize = 12;
-                    sRadiusHudText.alignment = TextAnchor.LowerLeft;
+					RectTransform transform = textObject.AddComponent<RectTransform>();
+					transform.SetParent(__instance.m_rootObject.transform);
+					transform.pivot = transform.anchorMin = transform.anchorMax = new Vector2(0.0f, 0.0f);
+					transform.offsetMin = new Vector2(10.0f, 5.0f);
+					transform.offsetMax = new Vector2(210.0f, 165.0f);
 
-                    Outline textOutline = textObject.AddComponent<Outline>();
-                    textOutline.effectColor = Color.black;
+					sRadiusHudText = textObject.AddComponent<Text>();
+					sRadiusHudText.raycastTarget = false;
+					sRadiusHudText.font = Font.CreateDynamicFontFromOSFont(new[] { "Segoe UI", "Helvetica", "Arial" }, 12);
+					sRadiusHudText.fontStyle = FontStyle.Bold;
+					sRadiusHudText.color = Color.white;
+					sRadiusHudText.fontSize = 12;
+					sRadiusHudText.alignment = TextAnchor.LowerLeft;
 
-                    textObject.SetActive(DisplayCurrentRadiusValue.Value);
-                }
+					Outline textOutline = textObject.AddComponent<Outline>();
+					textOutline.effectColor = Color.black;
 
-                {
-                    GameObject textObject = new GameObject("Pathfinder_VariableText");
-                    textObject.AddComponent<CanvasRenderer>();
-                    textObject.transform.localPosition = Vector3.zero;
+					textObject.SetActive(DisplayCurrentRadiusValue.Value);
+				}
 
-                    RectTransform transform = textObject.AddComponent<RectTransform>();
-                    transform.SetParent(__instance.m_rootObject.transform);
-                    transform.pivot = transform.anchorMin = transform.anchorMax = new Vector2(0.0f, 0.0f);
-                    transform.offsetMin = new Vector2(240.0f, 5.0f);
-                    transform.offsetMax = new Vector2(440.0f, 165.0f);
+				{
+					GameObject textObject = new GameObject("Pathfinder_VariableText");
+					textObject.AddComponent<CanvasRenderer>();
+					textObject.transform.localPosition = Vector3.zero;
 
-                    sVariablesHudText = textObject.AddComponent<Text>();
-                    sVariablesHudText.raycastTarget = false;
-                    sVariablesHudText.font = Font.CreateDynamicFontFromOSFont(new[] { "Segoe UI", "Helvetica", "Arial" }, 12);
-                    sVariablesHudText.fontStyle = FontStyle.Bold;
-                    sVariablesHudText.color = Color.white;
-                    sVariablesHudText.fontSize = 12;
-                    sVariablesHudText.alignment = TextAnchor.LowerLeft;
+					RectTransform transform = textObject.AddComponent<RectTransform>();
+					transform.SetParent(__instance.m_rootObject.transform);
+					transform.pivot = transform.anchorMin = transform.anchorMax = new Vector2(0.0f, 0.0f);
+					transform.offsetMin = new Vector2(240.0f, 5.0f);
+					transform.offsetMax = new Vector2(440.0f, 165.0f);
 
-                    Outline textOutline = textObject.AddComponent<Outline>();
-                    textOutline.effectColor = Color.black;
+					sVariablesHudText = textObject.AddComponent<Text>();
+					sVariablesHudText.raycastTarget = false;
+					sVariablesHudText.font = Font.CreateDynamicFontFromOSFont(new[] { "Segoe UI", "Helvetica", "Arial" }, 12);
+					sVariablesHudText.fontStyle = FontStyle.Bold;
+					sVariablesHudText.color = Color.white;
+					sVariablesHudText.fontSize = 12;
+					sVariablesHudText.alignment = TextAnchor.LowerLeft;
 
-                    textObject.SetActive(DisplayVariables.Value);
-                }
-            }
-        }
+					Outline textOutline = textObject.AddComponent<Outline>();
+					textOutline.effectColor = Color.black;
+
+					textObject.SetActive(DisplayVariables.Value);
+				}
+			}
+		}
 
 #if DEBUG_SHOW_OVERLAY
         [HarmonyPatch(typeof(Hud))]
@@ -484,5 +484,5 @@ namespace Pathfinder
             }
         }
 #endif
-    }
+	}
 }

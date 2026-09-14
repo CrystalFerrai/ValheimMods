@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <NuGetAudit>false</NuGetAudit>
+	<RunAnalyzers>false</RunAnalyzers>
+  </PropertyGroup>
+</Project>

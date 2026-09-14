@@ -22,15 +22,15 @@ using System.Reflection.Emit;
 
 namespace GracefulLanding
 {
-    [BepInPlugin(ModId, ModName, ModVersion)]
+	[BepInPlugin(ModId, ModName, ModVersion)]
 	[BepInDependency("_shudnal.ConditionalConfigSync", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInProcess("valheim.exe")]
-    [BepInProcess("valheim_server.exe")]
-    public class GracefulLandingPlugin : BaseUnityPlugin
-    {
-        public const string ModId = "dev.crystal.gracefullanding";
-        public const string ModName = "Graceful Landing";
-        public const string ModVersion = "1.2.2.0";
+	[BepInProcess("valheim_server.exe")]
+	public class GracefulLandingPlugin : BaseUnityPlugin
+	{
+		public const string ModId = "dev.crystal.gracefullanding";
+		public const string ModName = "Graceful Landing";
+		public const string ModVersion = "1.2.3.0";
 
 		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
 		{
@@ -42,82 +42,82 @@ namespace GracefulLanding
 		};
 
 		public static ConfigEntry<float> MinDamageHeight;
-        public static ConfigEntry<float> MaxDamageHeight;
-        public static ConfigEntry<float> MaxDamageAmount;
+		public static ConfigEntry<float> MaxDamageHeight;
+		public static ConfigEntry<float> MaxDamageAmount;
 
-        private static Harmony sCharacterHarmony;
+		private static Harmony sCharacterHarmony;
 
-        private void Awake()
+		private void Awake()
 		{
 			MinDamageHeight = Config.Bind("Falling", nameof(MinDamageHeight), 8.0f, "The minimum distance you must fall to receive any fall damage. Allowed range 1-10000. Game default 4. [The value will be enforced on a server.]");
-            MinDamageHeight.SettingChanged += Falling_SettingChanged;
+			MinDamageHeight.SettingChanged += Falling_SettingChanged;
 			ConfigSync.AddConfigEntry(MinDamageHeight, ConfigSyncMode.AlwaysServerControlled);
 
 			MaxDamageHeight = Config.Bind("Falling", nameof(MaxDamageHeight), 64.0f, $"The minimum distance you must to receive maximum fall damage. Allowed range 1-10000. Must be equal to or higher than {nameof(MinDamageHeight)}. Game default 16. [The value will be enforced on a server.]");
-            MaxDamageHeight.SettingChanged += Falling_SettingChanged;
+			MaxDamageHeight.SettingChanged += Falling_SettingChanged;
 			ConfigSync.AddConfigEntry(MaxDamageHeight, ConfigSyncMode.AlwaysServerControlled);
 
 			MaxDamageAmount = Config.Bind("Falling", nameof(MaxDamageAmount), 100.0f, "The maximum fall damage that can be received. Allowed range 0-10000. Game default 100. [The value will be enforced on a server.]");
-            MaxDamageAmount.SettingChanged += Falling_SettingChanged;
+			MaxDamageAmount.SettingChanged += Falling_SettingChanged;
 			ConfigSync.AddConfigEntry(MaxDamageAmount, ConfigSyncMode.AlwaysServerControlled);
 
 			ClampConfig();
 
-            sCharacterHarmony = new Harmony(ModId + "_Character");
-            sCharacterHarmony.PatchAll(typeof(Character_Patches));
-        }
+			sCharacterHarmony = new Harmony(ModId + "_Character");
+			sCharacterHarmony.PatchAll(typeof(Character_Patches));
+		}
 
-        private void OnDestroy()
-        {
-            sCharacterHarmony.UnpatchSelf();
-        }
+		private void OnDestroy()
+		{
+			sCharacterHarmony.UnpatchSelf();
+		}
 
-        private static void ClampConfig()
-        {
-            if (MinDamageHeight.Value < 1.0f) MinDamageHeight.Value = 1.0f;
-            if (MinDamageHeight.Value > 10000.0f) MinDamageHeight.Value = 10000.0f;
+		private static void ClampConfig()
+		{
+			if (MinDamageHeight.Value < 1.0f) MinDamageHeight.Value = 1.0f;
+			if (MinDamageHeight.Value > 10000.0f) MinDamageHeight.Value = 10000.0f;
 
-            if (MaxDamageHeight.Value < MinDamageHeight.Value) MaxDamageHeight.Value = MinDamageHeight.Value;
-            if (MaxDamageHeight.Value > 10000.0f) MaxDamageHeight.Value = 10000.0f;
+			if (MaxDamageHeight.Value < MinDamageHeight.Value) MaxDamageHeight.Value = MinDamageHeight.Value;
+			if (MaxDamageHeight.Value > 10000.0f) MaxDamageHeight.Value = 10000.0f;
 
-            if (MaxDamageAmount.Value < 0.0f) MaxDamageAmount.Value = 0.0f;
-            if (MaxDamageAmount.Value > 10000.0f) MaxDamageAmount.Value = 10000.0f;
-        }
+			if (MaxDamageAmount.Value < 0.0f) MaxDamageAmount.Value = 0.0f;
+			if (MaxDamageAmount.Value > 10000.0f) MaxDamageAmount.Value = 10000.0f;
+		}
 
 		private void Falling_SettingChanged(object sender, EventArgs e)
-        {
-            ClampConfig();
+		{
+			ClampConfig();
 
-            sCharacterHarmony.UnpatchSelf();
-            sCharacterHarmony.PatchAll(typeof(Character_Patches));
-        }
+			sCharacterHarmony.UnpatchSelf();
+			sCharacterHarmony.PatchAll(typeof(Character_Patches));
+		}
 
-        [HarmonyPatch(typeof(Character))]
-        private static class Character_Patches
-        {
-            [HarmonyPatch("UpdateGroundContact"), HarmonyTranspiler]
-            private static IEnumerable<CodeInstruction> UpdateGroundContact_Transpiler(IEnumerable<CodeInstruction> instructions)
-            {
-                foreach (CodeInstruction instruction in instructions)
-                {
-                    if (instruction.opcode == OpCodes.Ldc_R4)
-                    {
-                        switch ((float)instruction.operand)
-                        {
-                            case 4.0f:
-                                instruction.operand = MinDamageHeight.Value;
-                                break;
-                            case 16.0f:
-                                instruction.operand = MaxDamageHeight.Value;
-                                break;
-                            case 100.0f:
-                                instruction.operand = MaxDamageAmount.Value;
-                                break;
-                        }
-                    }
-                    yield return instruction;
-                }
-            }
-        }
-    }
+		[HarmonyPatch(typeof(Character))]
+		private static class Character_Patches
+		{
+			[HarmonyPatch("UpdateGroundContact"), HarmonyTranspiler]
+			private static IEnumerable<CodeInstruction> UpdateGroundContact_Transpiler(IEnumerable<CodeInstruction> instructions)
+			{
+				foreach (CodeInstruction instruction in instructions)
+				{
+					if (instruction.opcode == OpCodes.Ldc_R4)
+					{
+						switch ((float)instruction.operand)
+						{
+							case 4.0f:
+								instruction.operand = MinDamageHeight.Value;
+								break;
+							case 16.0f:
+								instruction.operand = MaxDamageHeight.Value;
+								break;
+							case 100.0f:
+								instruction.operand = MaxDamageAmount.Value;
+								break;
+						}
+					}
+					yield return instruction;
+				}
+			}
+		}
+	}
 }

@@ -25,27 +25,27 @@ namespace CrystalLib
 	/// Helper to register and manage a player input binding
 	/// </summary>
 	public class InputBinding : IDisposable
-    {
-        /// <summary>
-        /// The name to use when registering the input binding
-        /// </summary>
-        /// <remarks>
-        /// The name of the binding should be unique across the entire game. For a list of built-in bindings,
-        /// see the method ZInput.Reset in assembly_utils which ships with the game.
-        /// </remarks>
-        public string Name { get; }
+	{
+		/// <summary>
+		/// The name to use when registering the input binding
+		/// </summary>
+		/// <remarks>
+		/// The name of the binding should be unique across the entire game. For a list of built-in bindings,
+		/// see the method ZInput.Reset in assembly_utils which ships with the game.
+		/// </remarks>
+		public string Name { get; }
 
-        /// <summary>
-        /// The config entry for the key code used for the binding
-        /// </summary>
+		/// <summary>
+		/// The config entry for the key code used for the binding
+		/// </summary>
 		public ConfigEntry<Key> ConfigEntry { get; }
 
-        /// <summary>
-        /// Fires when a player activates the bound input
-        /// </summary>
-        public event EventHandler<InputEventArgs> InputPressed;
+		/// <summary>
+		/// Fires when a player activates the bound input
+		/// </summary>
+		public event EventHandler<InputEventArgs> InputPressed;
 
-        private static readonly List<InputBinding> sInstances;
+		private static readonly List<InputBinding> sInstances;
 
 		private static readonly Harmony sZInputHarmony;
 		private static readonly Harmony sPlayerControllerHarmony;
@@ -61,7 +61,7 @@ namespace CrystalLib
 
 		static InputBinding()
 		{
-            sInstances = new List<InputBinding>();
+			sInstances = new List<InputBinding>();
 
 			sAddButtonMethod = typeof(ZInput).GetMethod("AddButton", BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(string), typeof(string), typeof(bool), typeof(bool), typeof(bool), typeof(float), typeof(float) }, null);
 			sKeyToPathMethod = typeof(ZInput).GetMethod("KeyToPath", BindingFlags.NonPublic | BindingFlags.Static);
@@ -79,61 +79,61 @@ namespace CrystalLib
 			sPlayerControllerHarmony.PatchAll(typeof(PlayerController_Patches));
 		}
 
-        /// <summary>
-        /// Creates and registers an input binding
-        /// </summary>
-        /// <param name="name">The name of the binding. Should be globally unique.</param>
-        /// <param name="configEntry">A config entry for the key code to use for the binding</param>
-        public InputBinding(string name, ConfigEntry<Key> configEntry)
+		/// <summary>
+		/// Creates and registers an input binding
+		/// </summary>
+		/// <param name="name">The name of the binding. Should be globally unique.</param>
+		/// <param name="configEntry">A config entry for the key code to use for the binding</param>
+		public InputBinding(string name, ConfigEntry<Key> configEntry)
 		{
-            Name = name;
+			Name = name;
 			ConfigEntry = configEntry;
 
 			ConfigEntry.SettingChanged += ConfigEntry_SettingChanged;
 
-            sInstances.Add(this);
+			sInstances.Add(this);
 
-            if (ZInput.instance != null)
+			if (ZInput.instance != null)
 			{
-                AddButton(Name, ConfigEntry.Value);
+				AddButton(Name, ConfigEntry.Value);
 			}
 		}
 
 		~InputBinding()
 		{
-            Dispose(false);
+			Dispose(false);
 		}
 
-        /// <summary>
-        /// Disposes this instance
-        /// </summary>
-        public void Dispose()
+		/// <summary>
+		/// Disposes this instance
+		/// </summary>
+		public void Dispose()
 		{
-            GC.SuppressFinalize(this);
-            Dispose(true);
+			GC.SuppressFinalize(this);
+			Dispose(true);
 		}
 
-        private void Dispose(bool disposing)
+		private void Dispose(bool disposing)
 		{
-            if (disposing)
-            {
-                ConfigEntry.SettingChanged -= ConfigEntry_SettingChanged;
-                sInstances.Remove(this);
-            }
-        }
+			if (disposing)
+			{
+				ConfigEntry.SettingChanged -= ConfigEntry_SettingChanged;
+				sInstances.Remove(this);
+			}
+		}
 
-        private void ConfigEntry_SettingChanged(object sender, EventArgs e)
-        {
-            if (ZInput.instance == null) return;
+		private void ConfigEntry_SettingChanged(object sender, EventArgs e)
+		{
+			if (ZInput.instance == null) return;
 			SetButton(Name, ConfigEntry.Value);
 		}
 
-        private static void AddButton(string name, Key keyCode, ZInput instance = null)
+		private static void AddButton(string name, Key keyCode, ZInput instance = null)
 		{
-            if (instance is null) instance = ZInput.instance;
-            if (instance is null) return;
+			if (instance is null) instance = ZInput.instance;
+			if (instance is null) return;
 
-            string path = (string)sKeyToPathMethod.Invoke(null, new object[] { keyCode });
+			string path = (string)sKeyToPathMethod.Invoke(null, new object[] { keyCode });
 			sAddButtonMethod.Invoke(instance, new object[] { name, path, false, true, false, 0.0f, 0.0f });
 		}
 
@@ -144,55 +144,55 @@ namespace CrystalLib
 			ZInput.ButtonDef newButton = new ZInput.ButtonDef(name, path, null, inputSource);
 
 			var buttons = (Dictionary<string, ZInput.ButtonDef>)sButtonsField.GetValue(ZInput.instance);
-            sUnsubscribeButtonMethod.Invoke(ZInput.instance, new object[] { buttons[name] });
+			sUnsubscribeButtonMethod.Invoke(ZInput.instance, new object[] { buttons[name] });
 			buttons[name] = newButton;
 			sSubscribeButtonMethod.Invoke(ZInput.instance, new object[] { buttons[name] });
 		}
 
 		[HarmonyPatch(typeof(PlayerController))]
-        private static class PlayerController_Patches
-        {
-            [HarmonyPatch("FixedUpdate"), HarmonyPostfix]
-            private static void FixedUpdate_Postfix(PlayerController __instance)
-            {
-                ZNetView view = (ZNetView)sViewField.GetValue(__instance);
-                if (view && !view.IsOwner())
-                {
-                    return;
-                }
-                if (!(bool)sTakeInputMethod.Invoke(__instance, new object[] { false }))
-                {
-                    return;
-                }
-
-                foreach (InputBinding instance in sInstances)
+		private static class PlayerController_Patches
+		{
+			[HarmonyPatch("FixedUpdate"), HarmonyPostfix]
+			private static void FixedUpdate_Postfix(PlayerController __instance)
+			{
+				ZNetView view = (ZNetView)sViewField.GetValue(__instance);
+				if (view && !view.IsOwner())
 				{
-                    if (ZInput.GetButtonDown(instance.Name))
-                    {
-                        Player player = (Player)sCharacterField.GetValue(__instance);
-                        instance.InputPressed?.Invoke(instance, new InputEventArgs(player));
+					return;
+				}
+				if (!(bool)sTakeInputMethod.Invoke(__instance, new object[] { false }))
+				{
+					return;
+				}
+
+				foreach (InputBinding instance in sInstances)
+				{
+					if (ZInput.GetButtonDown(instance.Name))
+					{
+						Player player = (Player)sCharacterField.GetValue(__instance);
+						instance.InputPressed?.Invoke(instance, new InputEventArgs(player));
 					}
 				}
-            }
-        }
+			}
+		}
 
-        [HarmonyPatch(typeof(ZInput))]
-        private static class ZInput_Patches
-        {
-            [HarmonyPatch("Reset"), HarmonyPostfix]
-            private static void Reset_Postfix(ZInput __instance)
-            {
-                foreach (InputBinding instance in sInstances)
+		[HarmonyPatch(typeof(ZInput))]
+		private static class ZInput_Patches
+		{
+			[HarmonyPatch("Reset"), HarmonyPostfix]
+			private static void Reset_Postfix(ZInput __instance)
+			{
+				foreach (InputBinding instance in sInstances)
 				{
 					AddButton(instance.Name, instance.ConfigEntry.Value, __instance);
-                }
-            }
-        }
-    }
+				}
+			}
+		}
+	}
 
 	public class InputEventArgs : EventArgs
 	{
-        public Player Player { get; }
+		public Player Player { get; }
 
 		public InputEventArgs(Player player)
 		{

@@ -23,234 +23,247 @@ using System.Reflection.Emit;
 
 namespace DeathPenalty
 {
-    [BepInPlugin(ModId, ModName, ModVersion)]
+	[BepInPlugin(ModId, ModName, ModVersion)]
 	[BepInDependency("_shudnal.ConditionalConfigSync", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInProcess("valheim.exe")]
-    [BepInProcess("valheim_server.exe")]
-    public class DeathPenaltyPlugin : BaseUnityPlugin
-    {
-        public const string ModId = "dev.crystal.deathpenalty";
-        public const string ModName = "Death Penalty";
-        public const string ModVersion = "1.3.0.0";
+	[BepInProcess("valheim_server.exe")]
+	public class DeathPenaltyPlugin : BaseUnityPlugin
+	{
+		public const string ModId = "dev.crystal.deathpenalty";
+		public const string ModName = "Death Penalty";
+		public const string ModVersion = "1.3.1.0";
 
 		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
 		{
 			DisplayName = ModName,
 			CurrentVersion = ModVersion,
 			MinimumRequiredVersion = ModVersion,
-			ModRequired = true
+			ModRequired = true,
+			ModRequirementMode = ModRequirementMode.Fixed
 		};
 
 		public static ConfigEntry<float> SkillLossPercent;
-        public static ConfigEntry<bool> ResetLevelProgress;
-        public static ConfigEntry<float> MercyEffectDuration;
-        public static ConfigEntry<float> SafetyEffectDuration;
+		public static ConfigEntry<bool> ResetLevelProgress;
+		public static ConfigEntry<float> MercyEffectDuration;
+		public static ConfigEntry<float> SafetyEffectDuration;
 
-        private static Harmony sSkillsLevelHarmony;
-        private static Harmony sSkillsAccumulatorHarmony;
-        private static Harmony sPlayerHarmony;
-        private static Harmony sTombStoneHarmony;
+		private static Harmony sSkillsLevelHarmony;
+		private static Harmony sSkillsAccumulatorHarmony;
+		private static Harmony sPlayerHarmony;
+		private static Harmony sTombStoneHarmony;
 
-        private static readonly List<Player> sPlayers;
-        private static readonly List<TombStone> sTombStones;
+		private static readonly List<Player> sPlayers;
+		private static readonly List<TombStone> sTombStones;
 
-        static DeathPenaltyPlugin()
-        {
-            sPlayers = new List<Player>();
-            sTombStones = new List<TombStone>();
-        }
+		static DeathPenaltyPlugin()
+		{
+			sPlayers = new List<Player>();
+			sTombStones = new List<TombStone>();
+		}
 
-        private void Awake()
-        {
-            SkillLossPercent = Config.Bind("Death", nameof(SkillLossPercent), 5.0f, "The percent loss suffered to the level of all skills when the player dies. Range 0-100. 0 disables skill loss. 50 reduces all skills by half. 100 resets all skills to 0. Game default depends on world settings. This mod overrides the value. [The value will be enforced on a server.]");
-            SkillLossPercent.SettingChanged += SkillLossPercent_SettingChanged;
+		private void Awake()
+		{
+			SkillLossPercent = Config.Bind("Death", nameof(SkillLossPercent), 5.0f, "The percent loss suffered to the total level of all skills when the player dies. Range 0-100. 0 disables skill loss. 50 reduces all skills by half. 100 resets all skills to 0. Game default is 5. This value gets multiplied by the global key SkillReductionRate which is tied to the death penalty world modifier. [The value will be enforced on a server.]");
+			SkillLossPercent.SettingChanged += SkillLossPercent_SettingChanged;
 			ConfigSync.AddConfigEntry(SkillLossPercent, ConfigSyncMode.AlwaysServerControlled);
 
-			ResetLevelProgress = Config.Bind("Death", nameof(ResetLevelProgress), true, "Whether to reset progress towards the next level for all skills when the player dies. This is independent of the loss of skill levels. Game default is true. [The value will be enforced on a server.]");
-            ResetLevelProgress.SettingChanged += ResetLevelProgress_SettingChanged;
+			ResetLevelProgress = Config.Bind("Death", nameof(ResetLevelProgress), true, "Whether to reset progress towards the next level for all skills when the player dies. This penalty applies in addition to subtracting levels. Game default is true. [The value will be enforced on a server.]");
+			ResetLevelProgress.SettingChanged += ResetLevelProgress_SettingChanged;
 			ConfigSync.AddConfigEntry(ResetLevelProgress, ConfigSyncMode.AlwaysServerControlled);
 
 			MercyEffectDuration = Config.Bind("Death", nameof(MercyEffectDuration), 600.0f, "The duration, in seconds, of the \"No Skill Loss\" status effect that is granted on death which prevents further loss of skills via subsequent deaths. Game default is 600. [The value will be enforced on a server.]");
-            MercyEffectDuration.SettingChanged += MercyEffectDuration_SettingChanged;
+			MercyEffectDuration.SettingChanged += MercyEffectDuration_SettingChanged;
 			ConfigSync.AddConfigEntry(MercyEffectDuration, ConfigSyncMode.AlwaysServerControlled);
 
 			SafetyEffectDuration = Config.Bind("Death", nameof(SafetyEffectDuration), 50.0f, "The duration, in seconds, of the \"Corpse Run\" status effect that is granted upon looting a tombstone which boosts regen and other stats. Game default is 50. [The value will be enforced on a server.]");
-            SafetyEffectDuration.SettingChanged += SafetyEffectDuration_SettingChanged;
+			SafetyEffectDuration.SettingChanged += SafetyEffectDuration_SettingChanged;
 			ConfigSync.AddConfigEntry(SafetyEffectDuration, ConfigSyncMode.AlwaysServerControlled);
 
 			ClampConfig();
 
-            sSkillsLevelHarmony = new Harmony(ModId + "_Skills_Level");
-            sSkillsAccumulatorHarmony = new Harmony(ModId + "_Skills_Accumulator");
-            sPlayerHarmony = new Harmony(ModId + "_Player");
-            sTombStoneHarmony = new Harmony(ModId + "_TombStone");
+			sSkillsLevelHarmony = new Harmony(ModId + "_Skills_Level");
+			sSkillsAccumulatorHarmony = new Harmony(ModId + "_Skills_Accumulator");
+			sPlayerHarmony = new Harmony(ModId + "_Player");
+			sTombStoneHarmony = new Harmony(ModId + "_TombStone");
 
-            sSkillsLevelHarmony.PatchAll(typeof(Skills_Level_Patches));
-            sPlayerHarmony.PatchAll(typeof(Player_Patches));
-            sTombStoneHarmony.PatchAll(typeof(TombStone_Patches));
+			sSkillsLevelHarmony.PatchAll(typeof(Skills_Level_Patches));
+			sPlayerHarmony.PatchAll(typeof(Player_Patches));
+			sTombStoneHarmony.PatchAll(typeof(TombStone_Patches));
 
-            if (!ResetLevelProgress.Value)
+			if (!ResetLevelProgress.Value)
 			{
-                sSkillsAccumulatorHarmony.PatchAll(typeof(Skills_Accumulator_Patches));
-            }
-        }
-
-        private void OnDestroy()
-        {
-            sSkillsLevelHarmony.UnpatchSelf();
-            sSkillsAccumulatorHarmony.UnpatchSelf();
-            sPlayerHarmony.UnpatchSelf();
-            sTombStoneHarmony.UnpatchSelf();
-        }
-
-        private void SkillLossPercent_SettingChanged(object sender, EventArgs e)
-        {
-            ClampConfig();
-            foreach (Player player in sPlayers)
-            {
-                player.GetSkills().m_DeathLowerFactor = SkillLossPercent.Value * 0.01f;
-            }
-        }
-
-        private void ResetLevelProgress_SettingChanged(object sender, EventArgs e)
-        {
-            if (ResetLevelProgress.Value)
-			{
-                sSkillsAccumulatorHarmony.UnpatchSelf();
+				sSkillsAccumulatorHarmony.PatchAll(typeof(Skills_Accumulator_Patches));
 			}
-            else
-            {
-                sSkillsAccumulatorHarmony.PatchAll(typeof(Skills_Accumulator_Patches));
-            }
-        }
+		}
 
-        private void MercyEffectDuration_SettingChanged(object sender, EventArgs e)
-        {
-            ClampConfig();
-            foreach (Player player in sPlayers)
-            {
-                player.m_hardDeathCooldown = MercyEffectDuration.Value;
-            }
-        }
+		private void OnDestroy()
+		{
+			sSkillsLevelHarmony.UnpatchSelf();
+			sSkillsAccumulatorHarmony.UnpatchSelf();
+			sPlayerHarmony.UnpatchSelf();
+			sTombStoneHarmony.UnpatchSelf();
+		}
 
-        private void SafetyEffectDuration_SettingChanged(object sender, EventArgs e)
-        {
-            ClampConfig();
-            foreach (TombStone tombstone in sTombStones)
-            {
-                tombstone.m_lootStatusEffect.m_ttl = SafetyEffectDuration.Value;
-            }
-        }
+		private void SkillLossPercent_SettingChanged(object sender, EventArgs e)
+		{
+			ClampConfig();
+			foreach (Player player in sPlayers)
+			{
+				player.GetSkills().m_DeathLowerFactor = SkillLossPercent.Value * 0.01f;
+			}
+		}
 
-        private static void ClampConfig()
-        {
-            if (SkillLossPercent.Value < 0.0f) SkillLossPercent.Value = 0.0f;
-            if (SkillLossPercent.Value > 100.0f) SkillLossPercent.Value = 100.0f;
+		private void ResetLevelProgress_SettingChanged(object sender, EventArgs e)
+		{
+			if (ResetLevelProgress.Value)
+			{
+				sSkillsAccumulatorHarmony.UnpatchSelf();
+			}
+			else
+			{
+				sSkillsAccumulatorHarmony.PatchAll(typeof(Skills_Accumulator_Patches));
+			}
+		}
 
-            if (MercyEffectDuration.Value < 0.0f) MercyEffectDuration.Value = 0.0f;
-            if (float.IsPositiveInfinity(MercyEffectDuration.Value)) MercyEffectDuration.Value = float.MaxValue;
+		private void MercyEffectDuration_SettingChanged(object sender, EventArgs e)
+		{
+			ClampConfig();
+			foreach (Player player in sPlayers)
+			{
+				player.m_hardDeathCooldown = MercyEffectDuration.Value;
+			}
+		}
 
-            if (SafetyEffectDuration.Value < 0.0f) SafetyEffectDuration.Value = 0.0f;
-            if (float.IsPositiveInfinity(SafetyEffectDuration.Value)) SafetyEffectDuration.Value = float.MaxValue;
-        }
+		private void SafetyEffectDuration_SettingChanged(object sender, EventArgs e)
+		{
+			ClampConfig();
+			foreach (TombStone tombstone in sTombStones)
+			{
+				tombstone.m_lootStatusEffect.m_ttl = SafetyEffectDuration.Value;
+			}
+		}
 
-        [HarmonyPatch(typeof(Skills))]
-        private static class Skills_Level_Patches
-        {
-            [HarmonyPatch("Awake"), HarmonyPostfix]
-            private static void Awake_Postfix(Skills __instance)
-            {
-                __instance.m_DeathLowerFactor = SkillLossPercent.Value * 0.01f;
-            }
-        }
+		private static void ClampConfig()
+		{
+			if (SkillLossPercent.Value < 0.0f) SkillLossPercent.Value = 0.0f;
+			if (SkillLossPercent.Value > 100.0f) SkillLossPercent.Value = 100.0f;
 
-        [HarmonyPatch(typeof(Skills))]
-        private static class Skills_Accumulator_Patches
-        {
-            private enum TranspilerState
-            {
-                Searching,
-                Updating,
-                Finishing
-            }
+			if (MercyEffectDuration.Value < 0.0f) MercyEffectDuration.Value = 0.0f;
+			if (float.IsPositiveInfinity(MercyEffectDuration.Value)) MercyEffectDuration.Value = float.MaxValue;
 
-            [HarmonyPatch("LowerAllSkills"), HarmonyTranspiler]
-            private static IEnumerable<CodeInstruction> LowerAllSkills_Transpiler(IEnumerable<CodeInstruction> instructions)
-            {
-                TranspilerState state = TranspilerState.Searching;
+			if (SafetyEffectDuration.Value < 0.0f) SafetyEffectDuration.Value = 0.0f;
+			if (float.IsPositiveInfinity(SafetyEffectDuration.Value)) SafetyEffectDuration.Value = float.MaxValue;
+		}
 
-                CodeInstruction previousInstruction = null;
+		[HarmonyPatch(typeof(Skills))]
+		private static class Skills_Level_Patches
+		{
+			[HarmonyPatch("Awake"), HarmonyPostfix]
+			private static void Awake_Postfix(Skills __instance)
+			{
+				__instance.m_DeathLowerFactor = SkillLossPercent.Value * 0.01f;
+			}
+		}
 
-                foreach (CodeInstruction instruction in instructions)
+		[HarmonyPatch(typeof(Skills))]
+		private static class Skills_Accumulator_Patches
+		{
+			private enum TranspilerState
+			{
+				Searching,
+				Updating,
+				Finishing
+			}
+
+			[HarmonyPatch("LowerAllSkills"), HarmonyTranspiler]
+			private static IEnumerable<CodeInstruction> LowerAllSkills_Transpiler(IEnumerable<CodeInstruction> instructions)
+			{
+				TranspilerState state = TranspilerState.Searching;
+
+				CodeInstruction previousInstruction = null;
+
+				foreach (CodeInstruction instruction in instructions)
 				{
 					switch (state)
 					{
 						case TranspilerState.Searching:
-                            if (instruction.opcode == OpCodes.Ldc_R4 && (float)instruction.operand == 0.0f)
-                            {
-                                previousInstruction = instruction;
-                                state = TranspilerState.Updating;
-                            }
-                            else
+							if (instruction.opcode == OpCodes.Ldc_R4 && (float)instruction.operand == 0.0f)
 							{
-                                yield return instruction;
+								previousInstruction = instruction;
+								state = TranspilerState.Updating;
+							}
+							else
+							{
+								yield return instruction;
 							}
 							break;
 						case TranspilerState.Updating:
-                            if (instruction.opcode == OpCodes.Stfld && ((FieldInfo)instruction.operand).Name == nameof(Skills.Skill.m_accumulator))
+							if (instruction.opcode == OpCodes.Stfld && ((FieldInfo)instruction.operand).Name == nameof(Skills.Skill.m_accumulator))
 							{
-                                // Omit the instructions which set m_accumulator to 0
-                                state = TranspilerState.Finishing;
+								// Omit the instructions which set m_accumulator to 0
+								state = TranspilerState.Finishing;
 							}
-                            else
+							else
 							{
-                                yield return previousInstruction;
-                                yield return instruction;
-                                state = TranspilerState.Searching;
+								yield return previousInstruction;
+								yield return instruction;
+								state = TranspilerState.Searching;
 							}
-                            previousInstruction = null;
-                            break;
+							previousInstruction = null;
+							break;
 						case TranspilerState.Finishing:
-                            yield return instruction;
+							yield return instruction;
 							break;
 					}
 				}
-            }
-        }
 
-        [HarmonyPatch(typeof(Player))]
-        private static class Player_Patches
-        {
-            [HarmonyPatch("Awake"), HarmonyPostfix]
-            private static void Awake_Postfix(Player __instance)
-            {
-                __instance.m_hardDeathCooldown = MercyEffectDuration.Value;
-                sPlayers.Add(__instance);
-            }
+				if (state != TranspilerState.Finishing)
+				{
+					throw new InvalidOperationException("[DeathPenalty] Failed to patch Skills.LowerAllSkills");
+				}
+			}
+		}
 
-            [HarmonyPatch("OnDestroy"), HarmonyPrefix]
-            private static void OnDestroy_Prefix(Player __instance)
-            {
-                sPlayers.Remove(__instance);
-            }
-        }
+		[HarmonyPatch(typeof(Player))]
+		private static class Player_Patches
+		{
+			[HarmonyPatch("Awake"), HarmonyPostfix]
+			private static void Awake_Postfix(Player __instance)
+			{
+				__instance.m_hardDeathCooldown = MercyEffectDuration.Value;
+				sPlayers.Add(__instance);
+			}
 
-        [HarmonyPatch(typeof(TombStone))]
-        private static class TombStone_Patches
-        {
-            [HarmonyPatch("Awake"), HarmonyPostfix]
-            private static void Awake_Postfix(TombStone __instance)
-            {
-                // m_lootStatusEffect is a buffed up version of SE_Stats
-                __instance.m_lootStatusEffect.m_ttl = SafetyEffectDuration.Value;
-                sTombStones.Add(__instance);
-            }
+			[HarmonyPatch("OnDestroy"), HarmonyPrefix]
+			private static void OnDestroy_Prefix(Player __instance)
+			{
+				sPlayers.Remove(__instance);
+			}
 
-            [HarmonyPatch("UpdateDespawn"), HarmonyPostfix]
-            private static void UpdateDespawn_Postfix(TombStone __instance)
-            {
-                sTombStones.Remove(__instance);
-            }
-        }
-    }
+			[HarmonyPatch("OnDeath"), HarmonyPrefix]
+			private static bool OnDeath_Prefix(Skills __instance)
+			{
+				UnityEngine.Debug.LogWarning($"m_DeathLowerFactor={__instance.m_DeathLowerFactor}, m_skillReductionRate={Game.m_skillReductionRate}");
+				return true;
+			}
+		}
+
+		[HarmonyPatch(typeof(TombStone))]
+		private static class TombStone_Patches
+		{
+			[HarmonyPatch("Awake"), HarmonyPostfix]
+			private static void Awake_Postfix(TombStone __instance)
+			{
+				// m_lootStatusEffect is a buffed up version of SE_Stats
+				__instance.m_lootStatusEffect.m_ttl = SafetyEffectDuration.Value;
+				sTombStones.Add(__instance);
+			}
+
+			[HarmonyPatch("UpdateDespawn"), HarmonyPostfix]
+			private static void UpdateDespawn_Postfix(TombStone __instance)
+			{
+				sTombStones.Remove(__instance);
+			}
+		}
+	}
 }

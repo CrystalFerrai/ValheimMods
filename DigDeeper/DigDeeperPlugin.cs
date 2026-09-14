@@ -22,215 +22,216 @@ using System.Reflection.Emit;
 
 namespace DigDeeper
 {
-    [BepInPlugin(ModId, ModName, ModVersion)]
+	[BepInPlugin(ModId, ModName, ModVersion)]
 	[BepInDependency("_shudnal.ConditionalConfigSync", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInProcess("valheim.exe")]
-    [BepInProcess("valheim_server.exe")]
-    public class DigDeeperPlugin : BaseUnityPlugin
-    {
+	[BepInProcess("valheim_server.exe")]
+	public class DigDeeperPlugin : BaseUnityPlugin
+	{
 		public const string ModId = "dev.crystal.digdeeper";
 		public const string ModName = "Dig Deeper";
-        public const string ModVersion = "1.3.0.0";
+		public const string ModVersion = "1.3.1.0";
 
 		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
-        {
-            DisplayName = ModName,
-            CurrentVersion = ModVersion,
-            MinimumRequiredVersion = ModVersion,
-            ModRequired = true
+		{
+			DisplayName = ModName,
+			CurrentVersion = ModVersion,
+			MinimumRequiredVersion = ModVersion,
+			ModRequired = true,
+			ModRequirementMode = ModRequirementMode.Fixed
 		};
 
-        public static ConfigEntry<float> MaximumDepth;
-        public static ConfigEntry<float> MaximumHeight;
+		public static ConfigEntry<float> MaximumDepth;
+		public static ConfigEntry<float> MaximumHeight;
 
-        private static Harmony sHeightmapHarmony;
-        private static Harmony sTerrainCompHarmony;
+		private static Harmony sHeightmapHarmony;
+		private static Harmony sTerrainCompHarmony;
 
-        private void Awake()
-        {
-            MaximumDepth = Config.Bind("Digging", nameof(MaximumDepth), 20.0f, "The maximum depth you can dig below the terrain surface. Range 0-128. Game default is 8. [The value will be enforced on a server.]");
-            MaximumDepth.SettingChanged += Config_SettingChanged;
-            ConfigSync.AddConfigEntry(MaximumDepth, ConfigSyncMode.AlwaysServerControlled);
+		private void Awake()
+		{
+			MaximumDepth = Config.Bind("Digging", nameof(MaximumDepth), 20.0f, "The maximum depth you can dig below the terrain surface. Range 0-128. Game default is 8. [The value will be enforced on a server.]");
+			MaximumDepth.SettingChanged += Config_SettingChanged;
+			ConfigSync.AddConfigEntry(MaximumDepth, ConfigSyncMode.AlwaysServerControlled);
 
 			MaximumHeight = Config.Bind("Digging", nameof(MaximumHeight), 8.0f, "The maximum height you can raise the terrain. Range 0-128. Game default is 8. [The value will be enforced on a server.]");
-            MaximumHeight.SettingChanged += Config_SettingChanged;
-            ConfigSync.AddConfigEntry(MaximumHeight, ConfigSyncMode.AlwaysServerControlled);
+			MaximumHeight.SettingChanged += Config_SettingChanged;
+			ConfigSync.AddConfigEntry(MaximumHeight, ConfigSyncMode.AlwaysServerControlled);
 
 			ClampConfig();
 
-            sHeightmapHarmony = new Harmony(ModId + "_Heightmap");
-            sHeightmapHarmony.PatchAll(typeof(Heightmap_Patches));
+			sHeightmapHarmony = new Harmony(ModId + "_Heightmap");
+			sHeightmapHarmony.PatchAll(typeof(Heightmap_Patches));
 
-            sTerrainCompHarmony = new Harmony(ModId + "_TerrainComp");
-            sTerrainCompHarmony.PatchAll(typeof(TerrainComp_Patches));
-        }
+			sTerrainCompHarmony = new Harmony(ModId + "_TerrainComp");
+			sTerrainCompHarmony.PatchAll(typeof(TerrainComp_Patches));
+		}
 
-        private void OnDestroy()
-        {
-            sHeightmapHarmony.UnpatchSelf();
-            sTerrainCompHarmony.UnpatchSelf();
-        }
+		private void OnDestroy()
+		{
+			sHeightmapHarmony.UnpatchSelf();
+			sTerrainCompHarmony.UnpatchSelf();
+		}
 
-        private static void ClampConfig()
-        {
-            if (MaximumDepth.Value < 0.0f) MaximumDepth.Value = 0.0f;
-            if (MaximumDepth.Value > 128.0f) MaximumDepth.Value = 128.0f;
+		private static void ClampConfig()
+		{
+			if (MaximumDepth.Value < 0.0f) MaximumDepth.Value = 0.0f;
+			if (MaximumDepth.Value > 128.0f) MaximumDepth.Value = 128.0f;
 
-            if (MaximumHeight.Value < 0.0f) MaximumHeight.Value = 0.0f;
-            if (MaximumHeight.Value > 128.0f) MaximumHeight.Value = 128.0f;
-        }
+			if (MaximumHeight.Value < 0.0f) MaximumHeight.Value = 0.0f;
+			if (MaximumHeight.Value > 128.0f) MaximumHeight.Value = 128.0f;
+		}
 
-        private static void Config_SettingChanged(object sender, EventArgs e)
-        {
-            ClampConfig();
+		private static void Config_SettingChanged(object sender, EventArgs e)
+		{
+			ClampConfig();
 
-            sHeightmapHarmony.UnpatchSelf();
-            sHeightmapHarmony.PatchAll(typeof(Heightmap_Patches));
+			sHeightmapHarmony.UnpatchSelf();
+			sHeightmapHarmony.PatchAll(typeof(Heightmap_Patches));
 
-            sTerrainCompHarmony.UnpatchSelf();
-            sTerrainCompHarmony.PatchAll(typeof(TerrainComp_Patches));
-        }
+			sTerrainCompHarmony.UnpatchSelf();
+			sTerrainCompHarmony.PatchAll(typeof(TerrainComp_Patches));
+		}
 
-        [HarmonyPatch(typeof(Heightmap))]
-        private static class Heightmap_Patches
-        {
-            private enum TranspilerState
-            {
-                Searching,
-                Replacing
-            }
+		[HarmonyPatch(typeof(Heightmap))]
+		private static class Heightmap_Patches
+		{
+			private enum TranspilerState
+			{
+				Searching,
+				Replacing
+			}
 
-            [HarmonyPatch("LevelTerrain"), HarmonyTranspiler]
-            private static IEnumerable<CodeInstruction> LevelTerrain_Transpiler(IEnumerable<CodeInstruction> instructions)
-            {
-                TranspilerState state = TranspilerState.Searching;
+			[HarmonyPatch("LevelTerrain"), HarmonyTranspiler]
+			private static IEnumerable<CodeInstruction> LevelTerrain_Transpiler(IEnumerable<CodeInstruction> instructions)
+			{
+				TranspilerState state = TranspilerState.Searching;
 
-                CodeInstruction valueInstruction = null;
+				CodeInstruction valueInstruction = null;
 
-                foreach (CodeInstruction instruction in instructions)
-                {
-                    switch (state)
-                    {
-                        case TranspilerState.Searching:
-                            if (instruction.opcode == OpCodes.Ldc_R8 && (double)instruction.operand == 8.0)
-                            {
-                                valueInstruction = instruction;
-                                state = TranspilerState.Replacing;
-                            }
-                            else
-                            {
-                                yield return instruction;
-                            }
-                            break;
-                        case TranspilerState.Replacing:
-                            if (instruction.opcode == OpCodes.Sub)
-                            {
-                                valueInstruction.operand = (double)MaximumDepth.Value;
+				foreach (CodeInstruction instruction in instructions)
+				{
+					switch (state)
+					{
+						case TranspilerState.Searching:
+							if (instruction.opcode == OpCodes.Ldc_R8 && (double)instruction.operand == 8.0)
+							{
+								valueInstruction = instruction;
+								state = TranspilerState.Replacing;
+							}
+							else
+							{
+								yield return instruction;
+							}
+							break;
+						case TranspilerState.Replacing:
+							if (instruction.opcode == OpCodes.Sub)
+							{
+								valueInstruction.operand = (double)MaximumDepth.Value;
 								yield return valueInstruction;
 							}
-                            else if (instruction.opcode == OpCodes.Add)
-                            {
-                                valueInstruction.operand = (double)MaximumHeight.Value;
+							else if (instruction.opcode == OpCodes.Add)
+							{
+								valueInstruction.operand = (double)MaximumHeight.Value;
 								yield return valueInstruction;
 							}
-                            yield return instruction;
-                            valueInstruction = null;
-                            state = TranspilerState.Searching;
-                            break;
-                    }
-                }
-            }
-        }
+							yield return instruction;
+							valueInstruction = null;
+							state = TranspilerState.Searching;
+							break;
+					}
+				}
+			}
+		}
 
-        [HarmonyPatch(typeof(TerrainComp))]
-        private static class TerrainComp_Patches
-        {
-            private enum TranspilerState
-            {
-                Searching,
-                Replacing
-            }
+		[HarmonyPatch(typeof(TerrainComp))]
+		private static class TerrainComp_Patches
+		{
+			private enum TranspilerState
+			{
+				Searching,
+				Replacing
+			}
 
-            [HarmonyPatch(nameof(TerrainComp.ApplyToHeightmap)), HarmonyTranspiler]
-            private static IEnumerable<CodeInstruction> ApplyToHeightmap_Transpiler(IEnumerable<CodeInstruction> instructions)
-            {
-                TranspilerState state = TranspilerState.Searching;
+			[HarmonyPatch(nameof(TerrainComp.ApplyToHeightmap)), HarmonyTranspiler]
+			private static IEnumerable<CodeInstruction> ApplyToHeightmap_Transpiler(IEnumerable<CodeInstruction> instructions)
+			{
+				TranspilerState state = TranspilerState.Searching;
 
-                CodeInstruction valueInstruction = null;
+				CodeInstruction valueInstruction = null;
 
-                foreach (CodeInstruction instruction in instructions)
-                {
-                    switch (state)
-                    {
-                        case TranspilerState.Searching:
-                            if (instruction.opcode == OpCodes.Ldc_R4 && (float)instruction.operand == 8.0f)
-                            {
-                                valueInstruction = instruction;
-                                state = TranspilerState.Replacing;
-                            }
-                            else
-                            {
-                                yield return instruction;
-                            }
-                            break;
-                        case TranspilerState.Replacing:
-                            if (instruction.opcode == OpCodes.Sub)
-                            {
-                                valueInstruction.operand = MaximumDepth.Value;
+				foreach (CodeInstruction instruction in instructions)
+				{
+					switch (state)
+					{
+						case TranspilerState.Searching:
+							if (instruction.opcode == OpCodes.Ldc_R4 && (float)instruction.operand == 8.0f)
+							{
+								valueInstruction = instruction;
+								state = TranspilerState.Replacing;
+							}
+							else
+							{
+								yield return instruction;
+							}
+							break;
+						case TranspilerState.Replacing:
+							if (instruction.opcode == OpCodes.Sub)
+							{
+								valueInstruction.operand = MaximumDepth.Value;
 								yield return valueInstruction;
 							}
-                            else if (instruction.opcode == OpCodes.Add)
-                            {
-                                valueInstruction.operand = MaximumHeight.Value;
+							else if (instruction.opcode == OpCodes.Add)
+							{
+								valueInstruction.operand = MaximumHeight.Value;
 								yield return valueInstruction;
 							}
-                            yield return instruction;
-                            valueInstruction = null;
-                            state = TranspilerState.Searching;
-                            break;
-                    }
-                }
-            }
+							yield return instruction;
+							valueInstruction = null;
+							state = TranspilerState.Searching;
+							break;
+					}
+				}
+			}
 
-            [HarmonyPatch("LevelTerrain"), HarmonyTranspiler]
-            private static IEnumerable<CodeInstruction> LevelTerrain_Transpiler(IEnumerable<CodeInstruction> instructions)
-            {
-                foreach (CodeInstruction instruction in instructions)
-                {
-                    if (instruction.opcode == OpCodes.Ldc_R4)
-                    {
-                        if ((float)instruction.operand == 8.0f)
-                        {
-                            instruction.operand = MaximumHeight.Value;
-                        }
-                        else if ((float)instruction.operand == -8.0f)
-                        {
-                            instruction.operand = -MaximumDepth.Value;
-                        }
-                    }
-                    yield return instruction;
-                }
-            }
+			[HarmonyPatch("LevelTerrain"), HarmonyTranspiler]
+			private static IEnumerable<CodeInstruction> LevelTerrain_Transpiler(IEnumerable<CodeInstruction> instructions)
+			{
+				foreach (CodeInstruction instruction in instructions)
+				{
+					if (instruction.opcode == OpCodes.Ldc_R4)
+					{
+						if ((float)instruction.operand == 8.0f)
+						{
+							instruction.operand = MaximumHeight.Value;
+						}
+						else if ((float)instruction.operand == -8.0f)
+						{
+							instruction.operand = -MaximumDepth.Value;
+						}
+					}
+					yield return instruction;
+				}
+			}
 
-            [HarmonyPatch("RaiseTerrain"), HarmonyTranspiler]
-            private static IEnumerable<CodeInstruction> RaiseTerrain_Transpiler(IEnumerable<CodeInstruction> instructions)
-            {
-                foreach (CodeInstruction instruction in instructions)
-                {
-                    if (instruction.opcode == OpCodes.Ldc_R4)
-                    {
-                        if ((float)instruction.operand == 8.0f)
-                        {
-                            instruction.operand = MaximumHeight.Value;
-                        }
-                        else if ((float)instruction.operand == -8.0f)
-                        {
-                            instruction.operand = -MaximumDepth.Value;
-                        }
-                    }
-                    yield return instruction;
-                }
-            }
-        }
-    }
+			[HarmonyPatch("RaiseTerrain"), HarmonyTranspiler]
+			private static IEnumerable<CodeInstruction> RaiseTerrain_Transpiler(IEnumerable<CodeInstruction> instructions)
+			{
+				foreach (CodeInstruction instruction in instructions)
+				{
+					if (instruction.opcode == OpCodes.Ldc_R4)
+					{
+						if ((float)instruction.operand == 8.0f)
+						{
+							instruction.operand = MaximumHeight.Value;
+						}
+						else if ((float)instruction.operand == -8.0f)
+						{
+							instruction.operand = -MaximumDepth.Value;
+						}
+					}
+					yield return instruction;
+				}
+			}
+		}
+	}
 }

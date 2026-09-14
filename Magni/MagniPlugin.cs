@@ -23,12 +23,12 @@ namespace Magni
 	[BepInPlugin(ModId, ModName, ModVersion)]
 	[BepInDependency("_shudnal.ConditionalConfigSync", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInProcess("valheim.exe")]
-    [BepInProcess("valheim_server.exe")]
-    public class MagniPlugin : BaseUnityPlugin
-    {
-        public const string ModId = "dev.crystal.magni";
-        public const string ModName = "Magni";
-        public const string ModVersion = "1.2.2.0";
+	[BepInProcess("valheim_server.exe")]
+	public class MagniPlugin : BaseUnityPlugin
+	{
+		public const string ModId = "dev.crystal.magni";
+		public const string ModName = "Magni";
+		public const string ModVersion = "1.2.3.0";
 
 		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
 		{
@@ -41,44 +41,44 @@ namespace Magni
 
 		public static ConfigEntry<float> CarryCapacityMultiplier;
 
-        private static Harmony sPlayerHarmony;
+		private static Harmony sPlayerHarmony;
 
-        private void Awake()
+		private void Awake()
 		{
 			CarryCapacityMultiplier = Config.Bind("Weight", nameof(CarryCapacityMultiplier), 2.0f, "Multiplier to apply to max carry weight capacity. Game default = 1.0. Mod default = 2.0. [The value will be enforced on a server.]");
-            CarryCapacityMultiplier.SettingChanged += CarryCapacity_SettingChanged;
+			CarryCapacityMultiplier.SettingChanged += CarryCapacity_SettingChanged;
 			ConfigSync.AddConfigEntry(CarryCapacityMultiplier, ConfigSyncMode.AlwaysServerControlled);
 
 			ClampConfig();
 
-            sPlayerHarmony = new Harmony(ModId + "_Player");
-            sPlayerHarmony.PatchAll(typeof(Player_Patches));
-        }
+			sPlayerHarmony = new Harmony(ModId + "_Player");
+			sPlayerHarmony.PatchAll(typeof(Player_Patches));
+		}
 
-        private void OnDestroy()
-        {
-            sPlayerHarmony.UnpatchSelf();
-        }
+		private void OnDestroy()
+		{
+			sPlayerHarmony.UnpatchSelf();
+		}
 
-        private static void ClampConfig()
-        {
-            if (CarryCapacityMultiplier.Value < 0.0f) CarryCapacityMultiplier.Value = 0.0f;
-            if (CarryCapacityMultiplier.Value > 1000.0f) CarryCapacityMultiplier.Value = 1000.0f;
-        }
+		private static void ClampConfig()
+		{
+			if (CarryCapacityMultiplier.Value < 0.0f) CarryCapacityMultiplier.Value = 0.0f;
+			if (CarryCapacityMultiplier.Value > 1000.0f) CarryCapacityMultiplier.Value = 1000.0f;
+		}
 
 		private void CarryCapacity_SettingChanged(object sender, EventArgs e)
-        {
-            ClampConfig();
-        }
+		{
+			ClampConfig();
+		}
 
-        [HarmonyPatch(typeof(Player))]
-        private static class Player_Patches
-        {
-            [HarmonyPatch(nameof(Player.GetMaxCarryWeight)), HarmonyPostfix]
-            private static void GetMaxCarryWeight_Postfix(Player __instance, ref float __result)
+		[HarmonyPatch(typeof(Player))]
+		private static class Player_Patches
+		{
+			[HarmonyPatch(nameof(Player.GetMaxCarryWeight)), HarmonyPostfix]
+			private static void GetMaxCarryWeight_Postfix(Player __instance, ref float __result)
 			{
-                __result *= CarryCapacityMultiplier.Value;
+				__result *= CarryCapacityMultiplier.Value;
 			}
-        }
-    }
+		}
+	}
 }

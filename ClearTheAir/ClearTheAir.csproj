@@ -4,6 +4,7 @@
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <Configurations>Release</Configurations>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -1,21 +1,9 @@
-Add a configuration option to modify the sea level height across the enite map.
+Add a configuration option to modify the sea level height across the entire map.
 
 WARNING: This mod is experimental and may cause irreversible world generation issues. Use at your own risk, and backup your saves first!
 
 This mod changes nothing by default until you modify the mod config. Run the game once with the mod enabled to generate the config. See config for details on what each option does.
 
-This mod is client only and does not need to be installed on dedicated servers. For the best experience, all clients should use the same configuration.
-
 ## Installation
-This mod is designed to install and run via [r2modman](https://thunderstore.io/package/ebkr/r2modman/). You can optionally install it manually following the steps below.
 
-**Manual Install**
-
-1. Install [BepInExPack Valheim](https://valheim.thunderstore.io/package/denikson/BepInExPack_Valheim/)
-2. Download latest ``SeaLevel.dll`` by clicking "Manual Download". Extract the dll from the zip file into ``[GameDirectory]\Bepinex\plugins``. (You only need the dll.)
-3. Run the game once, then close it and edit the generated cfg file in ``[GameDirectory]\Bepinex\config`` if you want to customize anything.
-
-## Changelog
-1.0.0
-
-* Initial release
+This mod uses [BepInExPack Valheim](https://valheim.thunderstore.io/package/denikson/BepInExPack_Valheim) as a mod loader. You can use any BepinEx compatible mod manager to install the mod, or manually place it in the BepixEx `plugins` directory.

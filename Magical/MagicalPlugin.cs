@@ -31,7 +31,7 @@ namespace Magical
 	{
 		public const string ModId = "dev.crystal.magical";
 		public const string ModName = "Magical";
-		public const string ModVersion = "1.2.2.0";
+		public const string ModVersion = "1.2.3.0";
 
 		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
 		{

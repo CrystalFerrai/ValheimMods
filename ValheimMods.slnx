@@ -1,0 +1,22 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Release" />
+  </Configurations>
+  <Project Path="BetterChat/BetterChat.csproj" />
+  <Project Path="BuildSpace\BuildSpace.csproj" />
+  <Project Path="ClearTheAir\ClearTheAir.csproj" />
+  <Project Path="Comfortable\Comfortable.csproj" />
+  <Project Path="CrystalLib\CrystalLib.csproj" />
+  <Project Path="DeathPenalty\DeathPenalty.csproj" />
+  <Project Path="DigDeeper\DigDeeper.csproj" />
+  <Project Path="Farmland\Farmland.csproj" />
+  <Project Path="FastTools\FastTools.csproj" />
+  <Project Path="GracefulLanding\GracefulLanding.csproj" />
+  <Project Path="Magical\Magical.csproj" />
+  <Project Path="Magni\Magni.csproj" />
+  <Project Path="Pathfinder\Pathfinder.csproj" />
+  <Project Path="ProperPortals\ProperPortals.csproj" />
+  <Project Path="Sated\Sated.csproj" />
+  <Project Path="SeaLevel\SeaLevel.csproj" />
+  <Project Path="Underwater\Underwater.csproj" />
+</Solution>

@@ -30,496 +30,506 @@ namespace BetterChat
 	[BepInPlugin(ModId, ModName, ModVersion)]
 	[BepInDependency("_shudnal.ConditionalConfigSync", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInProcess("valheim.exe")]
-    [BepInProcess("valheim_server.exe")]
-    public class BetterChatPlugin : BaseUnityPlugin
-    {
-        public const string ModId = "dev.crystal.betterchat";
-        public const string ModName = "Better Chat";
-        public const string ModVersion = "1.6.2.0";
+	[BepInProcess("valheim_server.exe")]
+	public class BetterChatPlugin : BaseUnityPlugin
+	{
+		public const string ModId = "dev.crystal.betterchat";
+		public const string ModName = "Better Chat";
+		public const string ModVersion = "1.6.3.0";
 
 		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
 		{
 			DisplayName = ModName,
 			CurrentVersion = ModVersion,
 			MinimumRequiredVersion = ModVersion,
-            ModRequired = false,
-            ModRequirementMode = ModRequirementMode.Conditional
+			ModRequired = false,
+			ModRequirementMode = ModRequirementMode.Conditional
 		};
 
+		public static ConfigEntry<bool> ShowOnNewMessage;
 		public static ConfigEntry<bool> AlwaysVisible;
-        public static ConfigEntry<float> HideDelay;
-        public static ConfigEntry<bool> ForceCase;
-        public static ConfigEntry<bool> SlashOpensChat;
-        public static ConfigEntry<bool> DefaultShout;
-        public static ConfigEntry<bool> ShowShoutPings;
-        public static ConfigEntry<float> TalkDistance;
-        public static ConfigEntry<float> WhisperDistance;
+		public static ConfigEntry<float> HideDelay;
+		public static ConfigEntry<bool> ForceCase;
+		public static ConfigEntry<bool> SlashOpensChat;
+		public static ConfigEntry<bool> DefaultShout;
+		public static ConfigEntry<bool> ShowShoutPings;
+		public static ConfigEntry<float> TalkDistance;
+		public static ConfigEntry<float> WhisperDistance;
 
-        private static Harmony sChatAwakeHarmony;
-        private static Harmony sPlayerHarmony;
-        private static Harmony sChatShowHarmony;
-        private static Harmony sChatAlwaysShowHarmony;
-        private static Harmony sChatMixedCaseHarmony;
-        private static Harmony sChatShoutHarmony;
-        private static Harmony sMinimapHarmony;
-        private static Harmony sChatSlashHarmony;
+		private static Harmony sChatAwakeHarmony;
+		private static Harmony sPlayerHarmony;
+		private static Harmony sChatShowHarmony;
+		private static Harmony sChatAlwaysShowHarmony;
+		private static Harmony sChatMixedCaseHarmony;
+		private static Harmony sChatShoutHarmony;
+		private static Harmony sMinimapHarmony;
+		private static Harmony sChatSlashHarmony;
 
-        private static Chat sChat;
-        private static List<Talker> sTalkers;
+		private static Chat sChat;
+		private static List<Talker> sTalkers;
 
-        private static readonly FieldInfo sHideTimerField;
+		private static readonly FieldInfo sHideTimerField;
 
-        private static bool sMoveCaretToEnd = false;
+		private static bool sMoveCaretToEnd = false;
 
-        static BetterChatPlugin()
-        {
-            sTalkers = new List<Talker>();
-            sHideTimerField = typeof(Chat).GetField("m_hideTimer", BindingFlags.Instance | BindingFlags.NonPublic);
-        }
+		static BetterChatPlugin()
+		{
+			sTalkers = new List<Talker>();
+			sHideTimerField = typeof(Chat).GetField("m_hideTimer", BindingFlags.Instance | BindingFlags.NonPublic);
+		}
 
-        private void Awake()
-        {
-			AlwaysVisible = Config.Bind("Chat", nameof(AlwaysVisible), false, "If True, the chat window will remain visible at all times. If False, the chat window will appear when new messages are received.");
-            AlwaysVisible.SettingChanged += AlwaysVisible_SettingChanged;
-            ConfigSync.AddConfigEntry(AlwaysVisible, ConfigSyncMode.AlwaysClientControlled);
+		private void Awake()
+		{
+			ShowOnNewMessage = Config.Bind("Chat", nameof(ShowOnNewMessage), true, "If True, the chat window will appear when new messages are received. If False, the chat window will remain hidden until opened via player input. The AlwaysVisible setting overrides this setting, if enabled.");
+			ShowOnNewMessage.SettingChanged += ShowChat_SettingChanged;
+			ConfigSync.AddConfigEntry(ShowOnNewMessage, ConfigSyncMode.AlwaysClientControlled);
 
-            HideDelay = Config.Bind("Chat", nameof(HideDelay), 10.0f, "The time, in seconds, to keep the chat window visible after sending or receiving a message. Minimum is 0.5. Has no effect if AlwaysVisible=true.");
-            HideDelay.SettingChanged += HideDelay_SettingChanged;
+			AlwaysVisible = Config.Bind("Chat", nameof(AlwaysVisible), false, "If True, the chat window will remain visible at all times. If False, the behavior will depend on the ShowOnNewMessage setting.");
+			AlwaysVisible.SettingChanged += ShowChat_SettingChanged;
+			ConfigSync.AddConfigEntry(AlwaysVisible, ConfigSyncMode.AlwaysClientControlled);
+
+			HideDelay = Config.Bind("Chat", nameof(HideDelay), 10.0f, "The time, in seconds, to keep the chat window visible after sending or receiving a message. Minimum is 0.5. Has no effect if AlwaysVisible=true.");
+			HideDelay.SettingChanged += HideDelay_SettingChanged;
 			ConfigSync.AddConfigEntry(HideDelay, ConfigSyncMode.AlwaysClientControlled);
 
 			ForceCase = Config.Bind("Chat", nameof(ForceCase), false, "If True, shout will be in all caps and whisper will be in all lowercase (game default). If False, messages will appear as they were originally entered.");
-            ForceCase.SettingChanged += ForceCase_SettingChanged;
+			ForceCase.SettingChanged += ForceCase_SettingChanged;
 			ConfigSync.AddConfigEntry(ForceCase, ConfigSyncMode.AlwaysClientControlled);
 
 			SlashOpensChat = Config.Bind("Chat", nameof(SlashOpensChat), true, "If True, pressing the slash key (/) will open the chat window and start a message.");
-            SlashOpensChat.SettingChanged += SlashOpensChat_SettingChanged;
+			SlashOpensChat.SettingChanged += SlashOpensChat_SettingChanged;
 			ConfigSync.AddConfigEntry(SlashOpensChat, ConfigSyncMode.AlwaysClientControlled);
 
 			DefaultShout = Config.Bind("Chat", nameof(DefaultShout), false, "If True, text entered will shout by default - type /say for talk. If False, chat will be talk by default - type /s for shout.");
-            DefaultShout.SettingChanged += DefaultShout_SettingChanged;
+			DefaultShout.SettingChanged += DefaultShout_SettingChanged;
 			ConfigSync.AddConfigEntry(DefaultShout, ConfigSyncMode.AlwaysClientControlled);
 
 			ShowShoutPings = Config.Bind("Chat", nameof(ShowShoutPings), true, "If True, pings will show on your map when players shout (game default). If False, the pings will not show. (Other players can still see your shout pings.) [The value may be enforced on a server via sync policy.]");
-            ShowShoutPings.SettingChanged += ShowShoutPings_SettingChanged;
+			ShowShoutPings.SettingChanged += ShowShoutPings_SettingChanged;
 			ConfigSync.AddConfigEntry(ShowShoutPings, ConfigSyncMode.Conditional, serverControlledByDefault: true);
 
 			TalkDistance = Config.Bind("Chat", nameof(TalkDistance), 15.0f, "The maximum distance from a player at which you will receive their normal chat messages (not whisper or shout). Game default is 15. Acceptable range is 1-100. [The value may be enforced on a server via sync policy.]");
-            TalkDistance.SettingChanged += Distance_SettingChanged;
+			TalkDistance.SettingChanged += Distance_SettingChanged;
 			ConfigSync.AddConfigEntry(TalkDistance, ConfigSyncMode.Conditional, serverControlledByDefault: true);
 
 			WhisperDistance = Config.Bind("Chat", nameof(WhisperDistance), 4.0f, "The maximum distance from a player at which you will receive their whispered chat messages. Game default is 4. Acceptable range is 1-20. [The value may be enforced on a server via sync policy.]");
-            WhisperDistance.SettingChanged += Distance_SettingChanged;
+			WhisperDistance.SettingChanged += Distance_SettingChanged;
 			ConfigSync.AddConfigEntry(WhisperDistance, ConfigSyncMode.Conditional, serverControlledByDefault: true);
 
 			ClampConfig();
 
-            sChatAwakeHarmony = new Harmony(ModId + "_ChatAwake");
-            sPlayerHarmony = new Harmony(ModId + "_Player");
-            sChatShowHarmony = new Harmony(ModId + "_ChatShow");
-            sChatAlwaysShowHarmony = new Harmony(ModId + "_ChatAlwaysShow");
-            sChatMixedCaseHarmony = new Harmony(ModId + "_ChatMixedCase");
-            sChatShoutHarmony = new Harmony(ModId + "_ChatShout");
-            sMinimapHarmony = new Harmony(ModId + "_Minimap");
-            sChatSlashHarmony = new Harmony(ModId + "_ChatSlash");
+			sChatAwakeHarmony = new Harmony(ModId + "_ChatAwake");
+			sPlayerHarmony = new Harmony(ModId + "_Player");
+			sChatShowHarmony = new Harmony(ModId + "_ChatShow");
+			sChatAlwaysShowHarmony = new Harmony(ModId + "_ChatAlwaysShow");
+			sChatMixedCaseHarmony = new Harmony(ModId + "_ChatMixedCase");
+			sChatShoutHarmony = new Harmony(ModId + "_ChatShout");
+			sMinimapHarmony = new Harmony(ModId + "_Minimap");
+			sChatSlashHarmony = new Harmony(ModId + "_ChatSlash");
 
-            sChatAwakeHarmony.PatchAll(typeof(Chat_Patches));
-            sPlayerHarmony.PatchAll(typeof(Player_Patches));
-            if (AlwaysVisible.Value)
-            {
-                sChatAlwaysShowHarmony.PatchAll(typeof(Chat_AlwaysShow_Patch));
-            }
-            else
-            {
-                sChatShowHarmony.PatchAll(typeof(Chat_Show_Patch));
-            }
-            if (!ForceCase.Value)
-            {
-                sChatMixedCaseHarmony.PatchAll(typeof(Chat_MixedCase_Terminal_Patch));
-                sChatMixedCaseHarmony.PatchAll(typeof(Chat_MixedCase_Chat_Patch));
-            }
-            if (DefaultShout.Value)
-            {
-                sChatShoutHarmony.PatchAll(typeof(Chat_Shout_Patch));
-            }
-            if (!ShowShoutPings.Value)
-            {
-                sMinimapHarmony.PatchAll(typeof(Minimap_Patches));
-            }
-            if (SlashOpensChat.Value)
-            {
-                sChatSlashHarmony.PatchAll(typeof(Chat_Slash_Patches));
-            }
-        }
+			sChatAwakeHarmony.PatchAll(typeof(Chat_Patches));
+			sPlayerHarmony.PatchAll(typeof(Player_Patches));
+			if (AlwaysVisible.Value)
+			{
+				sChatAlwaysShowHarmony.PatchAll(typeof(Chat_AlwaysShow_Patch));
+			}
+			else if (ShowOnNewMessage.Value)
+			{
+				sChatShowHarmony.PatchAll(typeof(Chat_Show_Patch));
+			}
+			if (!ForceCase.Value)
+			{
+				sChatMixedCaseHarmony.PatchAll(typeof(Chat_MixedCase_Terminal_Patch));
+				sChatMixedCaseHarmony.PatchAll(typeof(Chat_MixedCase_Chat_Patch));
+			}
+			if (DefaultShout.Value)
+			{
+				sChatShoutHarmony.PatchAll(typeof(Chat_Shout_Patch));
+			}
+			if (!ShowShoutPings.Value)
+			{
+				sMinimapHarmony.PatchAll(typeof(Minimap_Patches));
+			}
+			if (SlashOpensChat.Value)
+			{
+				sChatSlashHarmony.PatchAll(typeof(Chat_Slash_Patches));
+			}
+		}
 
-        private void OnDestroy()
-        {
-            sChatAwakeHarmony.UnpatchSelf();
-            sPlayerHarmony.UnpatchSelf();
-            sChatShowHarmony.UnpatchSelf();
-            sChatAlwaysShowHarmony.UnpatchSelf();
-            sChatMixedCaseHarmony.UnpatchSelf();
-            sChatShoutHarmony.UnpatchSelf();
-            sMinimapHarmony.UnpatchSelf();
-            sChatSlashHarmony.UnpatchSelf();
-        }
+		private void OnDestroy()
+		{
+			sChatAwakeHarmony.UnpatchSelf();
+			sPlayerHarmony.UnpatchSelf();
+			sChatShowHarmony.UnpatchSelf();
+			sChatAlwaysShowHarmony.UnpatchSelf();
+			sChatMixedCaseHarmony.UnpatchSelf();
+			sChatShoutHarmony.UnpatchSelf();
+			sMinimapHarmony.UnpatchSelf();
+			sChatSlashHarmony.UnpatchSelf();
+		}
 
-        private static void ClampConfig()
-        {
-            // Minimum delay prevents issues like flickering or permanently hidden chat window
-            if (HideDelay.Value < 0.5f) HideDelay.Value = 0.5f;
-            if (HideDelay.Value > 3600.0f) HideDelay.Value = 3600.0f;
+		private static void ClampConfig()
+		{
+			// Minimum delay prevents issues like flickering or permanently hidden chat window
+			if (HideDelay.Value < 0.5f) HideDelay.Value = 0.5f;
+			if (HideDelay.Value > 3600.0f) HideDelay.Value = 3600.0f;
 
-            // Distance values are clamped primarily for privacy concerns
-            if (TalkDistance.Value < 1.0f) TalkDistance.Value = 1.0f;
-            if (TalkDistance.Value > 100.0f) TalkDistance.Value = 100.0f;
+			// Distance values are clamped primarily for privacy concerns
+			if (TalkDistance.Value < 1.0f) TalkDistance.Value = 1.0f;
+			if (TalkDistance.Value > 100.0f) TalkDistance.Value = 100.0f;
 
-            if (WhisperDistance.Value < 1.0f) WhisperDistance.Value = 1.0f;
-            if (WhisperDistance.Value > 20.0f) WhisperDistance.Value = 20.0f;
-        }
+			if (WhisperDistance.Value < 1.0f) WhisperDistance.Value = 1.0f;
+			if (WhisperDistance.Value > 20.0f) WhisperDistance.Value = 20.0f;
+		}
 
-        private void AlwaysVisible_SettingChanged(object sender, EventArgs e)
-        {
-            if (AlwaysVisible.Value)
-            {
-                sChatShowHarmony.UnpatchSelf();
-                sChatAlwaysShowHarmony.PatchAll(typeof(Chat_AlwaysShow_Patch));
-            }
-            else
-            {
-                sChatAlwaysShowHarmony.UnpatchSelf();
-                sChatShowHarmony.PatchAll(typeof(Chat_Show_Patch));
-            }
-        }
+		private void ShowChat_SettingChanged(object sender, EventArgs e)
+		{
+			if (AlwaysVisible.Value)
+			{
+				sChatShowHarmony.UnpatchSelf();
+				sChatAlwaysShowHarmony.PatchAll(typeof(Chat_AlwaysShow_Patch));
+			}
+			else if (ShowOnNewMessage.Value)
+			{
+				sChatAlwaysShowHarmony.UnpatchSelf();
+				sChatShowHarmony.PatchAll(typeof(Chat_Show_Patch));
+			}
+			else
+			{
+				sChatShowHarmony.UnpatchSelf();
+				sChatAlwaysShowHarmony.UnpatchSelf();
+			}
+		}
 
-        private void HideDelay_SettingChanged(object sender, EventArgs e)
-        {
-            ClampConfig();
+		private void HideDelay_SettingChanged(object sender, EventArgs e)
+		{
+			ClampConfig();
 
-            if (sChat != null)
-            {
-                sChat.m_hideDelay = HideDelay.Value;
-            }
-        }
+			if (sChat != null)
+			{
+				sChat.m_hideDelay = HideDelay.Value;
+			}
+		}
 
-        private void ForceCase_SettingChanged(object sender, EventArgs e)
-        {
-            if (ForceCase.Value)
-            {
-                sChatMixedCaseHarmony.UnpatchSelf();
-            }
-            else
-            {
-                sChatMixedCaseHarmony.PatchAll(typeof(Chat_MixedCase_Terminal_Patch));
-                sChatMixedCaseHarmony.PatchAll(typeof(Chat_MixedCase_Chat_Patch));
-            }
-        }
+		private void ForceCase_SettingChanged(object sender, EventArgs e)
+		{
+			if (ForceCase.Value)
+			{
+				sChatMixedCaseHarmony.UnpatchSelf();
+			}
+			else
+			{
+				sChatMixedCaseHarmony.PatchAll(typeof(Chat_MixedCase_Terminal_Patch));
+				sChatMixedCaseHarmony.PatchAll(typeof(Chat_MixedCase_Chat_Patch));
+			}
+		}
 
-        private void SlashOpensChat_SettingChanged(object sender, EventArgs e)
-        {
-            if (SlashOpensChat.Value)
-            {
-                sChatSlashHarmony.PatchAll(typeof(Chat_Slash_Patches));
-            }
-            else
-            {
-                sChatSlashHarmony.UnpatchSelf();
-            }
-        }
+		private void SlashOpensChat_SettingChanged(object sender, EventArgs e)
+		{
+			if (SlashOpensChat.Value)
+			{
+				sChatSlashHarmony.PatchAll(typeof(Chat_Slash_Patches));
+			}
+			else
+			{
+				sChatSlashHarmony.UnpatchSelf();
+			}
+		}
 
-        private void DefaultShout_SettingChanged(object sender, EventArgs e)
-        {
-            if (DefaultShout.Value)
-            {
-                sChatShoutHarmony.PatchAll(typeof(Chat_Shout_Patch));
-            }
-            else
-            {
-                sChatShoutHarmony.UnpatchSelf();
-            }
-        }
+		private void DefaultShout_SettingChanged(object sender, EventArgs e)
+		{
+			if (DefaultShout.Value)
+			{
+				sChatShoutHarmony.PatchAll(typeof(Chat_Shout_Patch));
+			}
+			else
+			{
+				sChatShoutHarmony.UnpatchSelf();
+			}
+		}
 
-        private void ShowShoutPings_SettingChanged(object sender, EventArgs e)
-        {
-            if (ShowShoutPings.Value)
-            {
-                sMinimapHarmony.UnpatchSelf();
-            }
-            else
-            {
-                sMinimapHarmony.PatchAll(typeof(Minimap_Patches));
-            }
-        }
+		private void ShowShoutPings_SettingChanged(object sender, EventArgs e)
+		{
+			if (ShowShoutPings.Value)
+			{
+				sMinimapHarmony.UnpatchSelf();
+			}
+			else
+			{
+				sMinimapHarmony.PatchAll(typeof(Minimap_Patches));
+			}
+		}
 
-        private void Distance_SettingChanged(object sender, EventArgs e)
-        {
-            ClampConfig();
+		private void Distance_SettingChanged(object sender, EventArgs e)
+		{
+			ClampConfig();
 
-            foreach (Talker talker in sTalkers)
-            {
-                ApplyChatDistances(talker);
-            }
-        }
+			foreach (Talker talker in sTalkers)
+			{
+				ApplyChatDistances(talker);
+			}
+		}
 
-        private static void ApplyChatDistances(Talker talker)
-        {
-            talker.m_visperDistance = WhisperDistance.Value;
-            talker.m_normalDistance = TalkDistance.Value;
-        }
+		private static void ApplyChatDistances(Talker talker)
+		{
+			talker.m_visperDistance = WhisperDistance.Value;
+			talker.m_normalDistance = TalkDistance.Value;
+		}
 
-        [HarmonyPatch(typeof(Chat))]
-        private static class Chat_Patches
-        {
-            [HarmonyPatch("Awake"), HarmonyPostfix]
-            private static void Awake_Postfix(Chat __instance)
-            {
-                __instance.m_hideDelay = HideDelay.Value;
-                sChat = __instance;
+		[HarmonyPatch(typeof(Chat))]
+		private static class Chat_Patches
+		{
+			[HarmonyPatch("Awake"), HarmonyPostfix]
+			private static void Awake_Postfix(Chat __instance)
+			{
+				__instance.m_hideDelay = HideDelay.Value;
+				sChat = __instance;
 
-                // Make the chat window click-through so that it is still possible to interact with UI behind it like the map or crafting menu
-                Graphic[] graphics = __instance.m_chatWindow.GetComponentsInChildren<Graphic>();
-                foreach (Graphic graphic in graphics)
-                {
-                    graphic.raycastTarget = false;
-                }
-            }
-        }
+				// Make the chat window click-through so that it is still possible to interact with UI behind it like the map or crafting menu
+				Graphic[] graphics = __instance.m_chatWindow.GetComponentsInChildren<Graphic>();
+				foreach (Graphic graphic in graphics)
+				{
+					graphic.raycastTarget = false;
+				}
+			}
+		}
 
-        [HarmonyPatch(typeof(Player))]
-        private static class Player_Patches
-        {
-            [HarmonyPatch("Awake"), HarmonyPostfix]
-            private static void Awake_Postfix(Player __instance)
-            {
-                Talker talker = __instance.GetComponent<Talker>();
-                ApplyChatDistances(talker);
-                sTalkers.Add(talker);
-            }
+		[HarmonyPatch(typeof(Player))]
+		private static class Player_Patches
+		{
+			[HarmonyPatch("Awake"), HarmonyPostfix]
+			private static void Awake_Postfix(Player __instance)
+			{
+				Talker talker = __instance.GetComponent<Talker>();
+				ApplyChatDistances(talker);
+				sTalkers.Add(talker);
+			}
 
-            [HarmonyPatch("OnDestroy"), HarmonyPrefix]
-            private static void OnDestroy_Prefix(Player __instance)
-            {
-                sTalkers.Remove(__instance.GetComponent<Talker>());
-            }
-        }
+			[HarmonyPatch("OnDestroy"), HarmonyPrefix]
+			private static void OnDestroy_Prefix(Player __instance)
+			{
+				sTalkers.Remove(__instance.GetComponent<Talker>());
+			}
+		}
 
-        [HarmonyPatch(typeof(Chat))]
-        private static class Chat_AlwaysShow_Patch
-        {
-            [HarmonyPatch("Update"), HarmonyPrefix]
-            private static bool Update_Prefix(Chat __instance)
-            {
-                // Resetting this to 0 restarts the window hide timer (and makes the window visible)
-                sHideTimerField.SetValue(__instance, 0.0f);
-                return true;
-            }
-        }
+		[HarmonyPatch(typeof(Chat))]
+		private static class Chat_AlwaysShow_Patch
+		{
+			[HarmonyPatch("Update"), HarmonyPrefix]
+			private static bool Update_Prefix(Chat __instance)
+			{
+				// Resetting this to 0 restarts the window hide timer (and makes the window visible)
+				sHideTimerField.SetValue(__instance, 0.0f);
+				return true;
+			}
+		}
 
-        [HarmonyPatch(typeof(Chat))]
-        private static class Chat_Slash_Patches
-        {
-            private enum TranspilerState
-            {
-                Searching,
-                Inserting,
-                Searching2,
-                Labeling,
-                Finishing
-            }
+		[HarmonyPatch(typeof(Chat))]
+		private static class Chat_Slash_Patches
+		{
+			private enum TranspilerState
+			{
+				Searching,
+				Inserting,
+				Searching2,
+				Labeling,
+				Finishing
+			}
 
-            [HarmonyPatch("Update"), HarmonyTranspiler]
-            private static IEnumerable<CodeInstruction> Update_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
-            {
-                LocalBuilder isSlashPressed = generator.DeclareLocal(typeof(bool));
-                isSlashPressed.SetLocalSymInfo(nameof(isSlashPressed));
+			[HarmonyPatch("Update"), HarmonyTranspiler]
+			private static IEnumerable<CodeInstruction> Update_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+			{
+				LocalBuilder isSlashPressed = generator.DeclareLocal(typeof(bool));
+				isSlashPressed.SetLocalSymInfo(nameof(isSlashPressed));
 
-                Label label = generator.DefineLabel();
+				Label label = generator.DefineLabel();
 
-                yield return new CodeInstruction(OpCodes.Ldc_I4_0);
-                yield return new CodeInstruction(OpCodes.Stloc, isSlashPressed.LocalIndex);
+				yield return new CodeInstruction(OpCodes.Ldc_I4_0);
+				yield return new CodeInstruction(OpCodes.Stloc, isSlashPressed.LocalIndex);
 
-                TranspilerState state = TranspilerState.Searching;
+				TranspilerState state = TranspilerState.Searching;
 
-                foreach (CodeInstruction instruction in instructions)
-                {
-                    if (state == TranspilerState.Inserting)
-                    {
-                        if (instruction.opcode != OpCodes.Brtrue)
-                        {
-                            throw new InvalidOperationException($"[BetterChat] {nameof(Chat_Slash_Patches)} encountered unexpected IL code. Unable to patch. This is most likely due to a game update changing the target code. Disable {nameof(SlashOpensChat)} in the config as a workaround until the mod can be fixed. Details: Search failed, opcode={instruction.opcode}");
-                        }
+				foreach (CodeInstruction instruction in instructions)
+				{
+					if (state == TranspilerState.Inserting)
+					{
+						if (instruction.opcode != OpCodes.Brtrue)
+						{
+							throw new InvalidOperationException($"[BetterChat] {nameof(Chat_Slash_Patches)} encountered unexpected IL code. Unable to patch. This is most likely due to a game update changing the target code. Disable {nameof(SlashOpensChat)} in the config as a workaround until the mod can be fixed. Details: Search failed, opcode={instruction.opcode}");
+						}
 
-                        // Previous instruction was checking if enter is pressed. If so, skip the slash key check.
-                        yield return instruction.Clone();
+						// Previous instruction was checking if enter is pressed. If so, skip the slash key check.
+						yield return instruction.Clone();
 
 						// Check for slash key if enter is not pressed. Also store the result of the check.
 						yield return new CodeInstruction(OpCodes.Ldc_I4, (int)KeyCode.Slash);
-                        yield return new CodeInstruction(OpCodes.Call, typeof(Input).GetMethod(nameof(ZInput.GetKeyDown), new[] { typeof(KeyCode) }));
-                        yield return new CodeInstruction(OpCodes.Stloc, isSlashPressed.LocalIndex);
-                        yield return new CodeInstruction(OpCodes.Ldloc, isSlashPressed.LocalIndex);
+						yield return new CodeInstruction(OpCodes.Call, typeof(Input).GetMethod(nameof(ZInput.GetKeyDown), new[] { typeof(KeyCode) }));
+						yield return new CodeInstruction(OpCodes.Stloc, isSlashPressed.LocalIndex);
+						yield return new CodeInstruction(OpCodes.Ldloc, isSlashPressed.LocalIndex);
 
 						state = TranspilerState.Searching2;
-                    }
-                    else if (state == TranspilerState.Labeling)
-                    {
-                        // Label this instruction as the one to jump to when skipping the slash insertion code.
-                        instruction.labels.Add(label);
-                        state = TranspilerState.Finishing;
-                    }
+					}
+					else if (state == TranspilerState.Labeling)
+					{
+						// Label this instruction as the one to jump to when skipping the slash insertion code.
+						instruction.labels.Add(label);
+						state = TranspilerState.Finishing;
+					}
 
-                    yield return instruction;
+					yield return instruction;
 
-                    if (state == TranspilerState.Searching && instruction.opcode == OpCodes.Call)
-                    {
-                        MethodBase method = (MethodBase)instruction.operand;
-                        if (method.Name == nameof(ZInput.GetButtonDown))
-                        {
-                            state = TranspilerState.Inserting;
-                        }
-                    }
-                    else if (state == TranspilerState.Searching2 && instruction.opcode == OpCodes.Callvirt)
-                    {
-                        MethodBase method = (MethodBase)instruction.operand;
-                        if (method.Name == nameof(InputField.ActivateInputField))
-                        {
-                            // If slash was not pressed (meaning some other chat activation key was), then skip the block below
-                            yield return new CodeInstruction(OpCodes.Ldloc, isSlashPressed.LocalIndex);
-                            yield return new CodeInstruction(OpCodes.Brfalse, label);
+					if (state == TranspilerState.Searching && instruction.opcode == OpCodes.Call)
+					{
+						MethodBase method = (MethodBase)instruction.operand;
+						if (method.Name == nameof(ZInput.GetButtonDown))
+						{
+							state = TranspilerState.Inserting;
+						}
+					}
+					else if (state == TranspilerState.Searching2 && instruction.opcode == OpCodes.Callvirt)
+					{
+						MethodBase method = (MethodBase)instruction.operand;
+						if (method.Name == nameof(InputField.ActivateInputField))
+						{
+							// If slash was not pressed (meaning some other chat activation key was), then skip the block below
+							yield return new CodeInstruction(OpCodes.Ldloc, isSlashPressed.LocalIndex);
+							yield return new CodeInstruction(OpCodes.Brfalse, label);
 
-                            // If slash was pressed, replace current chat input string with a / character
-                            yield return new CodeInstruction(OpCodes.Ldarg_0);
-                            yield return new CodeInstruction(OpCodes.Ldfld, typeof(Terminal).GetField(nameof(Terminal.m_input)));
-                            yield return new CodeInstruction(OpCodes.Ldstr, "/");
-                            yield return new CodeInstruction(OpCodes.Call, typeof(TMP_InputField).GetMethod("set_text"));
+							// If slash was pressed, replace current chat input string with a / character
+							yield return new CodeInstruction(OpCodes.Ldarg_0);
+							yield return new CodeInstruction(OpCodes.Ldfld, typeof(Terminal).GetField(nameof(Terminal.m_input)));
+							yield return new CodeInstruction(OpCodes.Ldstr, "/");
+							yield return new CodeInstruction(OpCodes.Call, typeof(TMP_InputField).GetMethod("set_text"));
 
-                            // Move caret to end (after slash) in LateUpdate
-                            yield return new CodeInstruction(OpCodes.Ldc_I4_1);
-                            yield return new CodeInstruction(OpCodes.Stsfld, typeof(BetterChatPlugin).GetField(nameof(sMoveCaretToEnd), BindingFlags.Static | BindingFlags.NonPublic));
+							// Move caret to end (after slash) in LateUpdate
+							yield return new CodeInstruction(OpCodes.Ldc_I4_1);
+							yield return new CodeInstruction(OpCodes.Stsfld, typeof(BetterChatPlugin).GetField(nameof(sMoveCaretToEnd), BindingFlags.Static | BindingFlags.NonPublic));
 
-                            state = TranspilerState.Labeling;
-                        }
-                    }
-                }
+							state = TranspilerState.Labeling;
+						}
+					}
+				}
 
-                if (state != TranspilerState.Finishing)
+				if (state != TranspilerState.Finishing)
 				{
 					throw new InvalidOperationException($"[BetterChat] {nameof(Chat_Slash_Patches)} encountered unexpected IL code. Unable to patch. This is most likely due to a game update changing the target code. Disable {nameof(SlashOpensChat)} in the config as a workaround until the mod can be fixed. Details: Never reached finishing state");
 				}
-            }
+			}
 
-            [HarmonyPatch("LateUpdate"), HarmonyPostfix]
-            private static void LateUpdate_Postfix(Chat __instance)
-            {
-                if (sMoveCaretToEnd)
-                {
-                    __instance.m_input.MoveTextEnd(false);
-                    sMoveCaretToEnd = false;
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(Chat))]
-        private static class Chat_Show_Patch
-        {
-            [HarmonyPatch(nameof(Chat.OnNewChatMessage)), HarmonyPostfix]
-            private static void OnNewChatMessage_Postfix(Chat __instance, GameObject go, long senderID, Vector3 pos, Talker.Type type, UserInfo sender, string text)
-            {
-                // Resetting this to 0 restarts the window hide timer (and makes the window visible)
-                sHideTimerField.SetValue(__instance, 0.0f);
-            }
-        }
-
-        [HarmonyPatch(typeof(Terminal))]
-        private static class Chat_MixedCase_Terminal_Patch
-        {
-            [HarmonyTranspiler]
-            [HarmonyPatch("AddString", new[] { typeof(string), typeof(string), typeof(Talker.Type), typeof(bool) })]
-			[HarmonyPatch("AddString", new[] { typeof(PlatformUserID), typeof(string), typeof(Talker.Type), typeof(bool) })]
-			private static IEnumerable<CodeInstruction> AddString_Transpiler(IEnumerable<CodeInstruction> instructions)
-            {
-                return StripForcedCase(instructions);
-            }
+			[HarmonyPatch("LateUpdate"), HarmonyPostfix]
+			private static void LateUpdate_Postfix(Chat __instance)
+			{
+				if (sMoveCaretToEnd)
+				{
+					__instance.m_input.MoveTextEnd(false);
+					sMoveCaretToEnd = false;
+				}
+			}
 		}
 
-        [HarmonyPatch(typeof(Chat))]
-        private static class Chat_MixedCase_Chat_Patch
-        {
-            [HarmonyPatch("AddInworldText"), HarmonyTranspiler]
-            private static IEnumerable<CodeInstruction> AddInworldText_Transpiler(IEnumerable<CodeInstruction> instructions)
-            {
-                return StripForcedCase(instructions);
-            }
-        }
+		[HarmonyPatch(typeof(Chat))]
+		private static class Chat_Show_Patch
+		{
+			[HarmonyPatch(nameof(Chat.OnNewChatMessage)), HarmonyPostfix]
+			private static void OnNewChatMessage_Postfix(Chat __instance, GameObject go, long senderID, Vector3 pos, Talker.Type type, UserInfo sender, string text)
+			{
+				// Resetting this to 0 restarts the window hide timer (and makes the window visible)
+				sHideTimerField.SetValue(__instance, 0.0f);
+			}
+		}
 
-        [HarmonyPatch(typeof(Chat))]
-        private static class Chat_Shout_Patch
-        {
-            [HarmonyPatch("InputText"), HarmonyTranspiler]
-            private static IEnumerable<CodeInstruction> InputText_Transpiler(IEnumerable<CodeInstruction> instructions)
-            {
-                foreach (CodeInstruction instruction in instructions)
-                {
-                    if (instruction.opcode == OpCodes.Ldstr && instruction.operand.Equals("say "))
-                    {
-                        instruction.operand = "s ";
-                    }
-                    yield return instruction;
-                }
-            }
-        }
+		[HarmonyPatch(typeof(Terminal))]
+		private static class Chat_MixedCase_Terminal_Patch
+		{
+			[HarmonyTranspiler]
+			[HarmonyPatch("AddString", new[] { typeof(string), typeof(string), typeof(Talker.Type), typeof(bool) })]
+			[HarmonyPatch("AddString", new[] { typeof(PlatformUserID), typeof(string), typeof(Talker.Type), typeof(bool) })]
+			private static IEnumerable<CodeInstruction> AddString_Transpiler(IEnumerable<CodeInstruction> instructions)
+			{
+				return StripForcedCase(instructions);
+			}
+		}
 
-        [HarmonyPatch(typeof(Minimap))]
-        private static class Minimap_Patches
-        {
-            [HarmonyPatch("UpdateDynamicPins"), HarmonyTranspiler]
-            private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-            {
-                // Using a list to make looking ahead simpler
-                List<CodeInstruction> modified = new List<CodeInstruction>(instructions);
+		[HarmonyPatch(typeof(Chat))]
+		private static class Chat_MixedCase_Chat_Patch
+		{
+			[HarmonyPatch("AddInworldText"), HarmonyTranspiler]
+			private static IEnumerable<CodeInstruction> AddInworldText_Transpiler(IEnumerable<CodeInstruction> instructions)
+			{
+				return StripForcedCase(instructions);
+			}
+		}
 
-                for (int i = 0; i < modified.Count - 1; ++i)
-                {
-                    if (modified[i + 1].opcode == OpCodes.Call)
-                    {
-                        MethodBase method = (MethodBase)modified[i + 1].operand;
-                        if (method.Name == "UpdateShoutPins")
-                        {
-                            modified.RemoveRange(i, 2);
-                            break;
-                        }
-                    }
-                }
+		[HarmonyPatch(typeof(Chat))]
+		private static class Chat_Shout_Patch
+		{
+			[HarmonyPatch("InputText"), HarmonyTranspiler]
+			private static IEnumerable<CodeInstruction> InputText_Transpiler(IEnumerable<CodeInstruction> instructions)
+			{
+				foreach (CodeInstruction instruction in instructions)
+				{
+					if (instruction.opcode == OpCodes.Ldstr && instruction.operand.Equals("say "))
+					{
+						instruction.operand = "s ";
+					}
+					yield return instruction;
+				}
+			}
+		}
 
-                return modified;
-            }
-        }
+		[HarmonyPatch(typeof(Minimap))]
+		private static class Minimap_Patches
+		{
+			[HarmonyPatch("UpdateDynamicPins"), HarmonyTranspiler]
+			private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+			{
+				// Using a list to make looking ahead simpler
+				List<CodeInstruction> modified = new List<CodeInstruction>(instructions);
 
-        private static IEnumerable<CodeInstruction> StripForcedCase(IEnumerable<CodeInstruction> instructions)
-        {
-            // Using a list to make looking ahead simpler
-            List<CodeInstruction> modified = new List<CodeInstruction>(instructions);
+				for (int i = 0; i < modified.Count - 1; ++i)
+				{
+					if (modified[i + 1].opcode == OpCodes.Call)
+					{
+						MethodBase method = (MethodBase)modified[i + 1].operand;
+						if (method.Name == "UpdateShoutPins")
+						{
+							modified.RemoveRange(i, 2);
+							break;
+						}
+					}
+				}
 
-            for (int i = 0; i < modified.Count; ++i)
-            {
-                if (modified[i].opcode == OpCodes.Callvirt)
-                {
-                    MethodBase method = modified[i].operand as MethodBase;
-                    if (method != null)
-                    {
-                        if (method.Name == nameof(string.ToLowerInvariant) || method.Name == nameof(string.ToUpper))
-                        {
-                            // Remove
-                            //   text = text.ToLowerInvariant()
-                            // Or
-                            //   text = text.ToUpper()
-                            // ldarg.2, callvirt, starg.s
-                            modified.RemoveRange(i - 1, 3);
-                            i -= 2;
-                        }
-                    }
-                }
-            }
+				return modified;
+			}
+		}
 
-            return modified;
-        }
-    }
+		private static IEnumerable<CodeInstruction> StripForcedCase(IEnumerable<CodeInstruction> instructions)
+		{
+			// Using a list to make looking ahead simpler
+			List<CodeInstruction> modified = new List<CodeInstruction>(instructions);
+
+			for (int i = 0; i < modified.Count; ++i)
+			{
+				if (modified[i].opcode == OpCodes.Callvirt)
+				{
+					MethodBase method = modified[i].operand as MethodBase;
+					if (method != null)
+					{
+						if (method.Name == nameof(string.ToLowerInvariant) || method.Name == nameof(string.ToUpper))
+						{
+							// Remove
+							//   text = text.ToLowerInvariant()
+							// Or
+							//   text = text.ToUpper()
+							// ldarg.2, callvirt, starg.s
+							modified.RemoveRange(i - 1, 3);
+							i -= 2;
+						}
+					}
+				}
+			}
+
+			return modified;
+		}
+	}
 }
