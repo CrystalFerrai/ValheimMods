@@ -1,9 +1,9 @@
 {
     "name": "CrystalPack",
-    "version_number": "1.8.6",
+    "version_number": "1.8.7",
     "description": "Collection of all of Crystal's Valheim Mods",
     "dependencies": [
-        "Crystal-BetterChat-1.6.3",
+        "Crystal-BetterChat-1.6.4",
         "Crystal-BuildSpace-1.2.3",
         "Crystal-ClearTheAir-1.2.3",
         "Crystal-Comfortable-1.2.3",

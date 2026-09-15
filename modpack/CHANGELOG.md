@@ -1,3 +1,7 @@
+## 1.8.7
+
+* Updated: BetterChat
+
 ## 1.8.6
 
 * Updated: All Mods
