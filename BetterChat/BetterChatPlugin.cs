@@ -35,7 +35,7 @@ namespace BetterChat
 	{
 		public const string ModId = "dev.crystal.betterchat";
 		public const string ModName = "Better Chat";
-		public const string ModVersion = "1.6.3.0";
+		public const string ModVersion = "1.6.4.0";
 
 		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
 		{
@@ -58,7 +58,7 @@ namespace BetterChat
 
 		private static Harmony sChatAwakeHarmony;
 		private static Harmony sPlayerHarmony;
-		private static Harmony sChatShowHarmony;
+		private static Harmony sChatHideHarmony;
 		private static Harmony sChatAlwaysShowHarmony;
 		private static Harmony sChatMixedCaseHarmony;
 		private static Harmony sChatShoutHarmony;
@@ -120,7 +120,7 @@ namespace BetterChat
 
 			sChatAwakeHarmony = new Harmony(ModId + "_ChatAwake");
 			sPlayerHarmony = new Harmony(ModId + "_Player");
-			sChatShowHarmony = new Harmony(ModId + "_ChatShow");
+			sChatHideHarmony = new Harmony(ModId + "_ChatHide");
 			sChatAlwaysShowHarmony = new Harmony(ModId + "_ChatAlwaysShow");
 			sChatMixedCaseHarmony = new Harmony(ModId + "_ChatMixedCase");
 			sChatShoutHarmony = new Harmony(ModId + "_ChatShout");
@@ -133,9 +133,9 @@ namespace BetterChat
 			{
 				sChatAlwaysShowHarmony.PatchAll(typeof(Chat_AlwaysShow_Patch));
 			}
-			else if (ShowOnNewMessage.Value)
+			else if (!ShowOnNewMessage.Value)
 			{
-				sChatShowHarmony.PatchAll(typeof(Chat_Show_Patch));
+				sChatHideHarmony.PatchAll(typeof(Chat_Hide_Patch));
 			}
 			if (!ForceCase.Value)
 			{
@@ -160,7 +160,7 @@ namespace BetterChat
 		{
 			sChatAwakeHarmony.UnpatchSelf();
 			sPlayerHarmony.UnpatchSelf();
-			sChatShowHarmony.UnpatchSelf();
+			sChatHideHarmony.UnpatchSelf();
 			sChatAlwaysShowHarmony.UnpatchSelf();
 			sChatMixedCaseHarmony.UnpatchSelf();
 			sChatShoutHarmony.UnpatchSelf();
@@ -184,20 +184,15 @@ namespace BetterChat
 
 		private void ShowChat_SettingChanged(object sender, EventArgs e)
 		{
+			sChatHideHarmony.UnpatchSelf();
+			sChatAlwaysShowHarmony.UnpatchSelf();
 			if (AlwaysVisible.Value)
 			{
-				sChatShowHarmony.UnpatchSelf();
 				sChatAlwaysShowHarmony.PatchAll(typeof(Chat_AlwaysShow_Patch));
 			}
-			else if (ShowOnNewMessage.Value)
+			else if (!ShowOnNewMessage.Value)
 			{
-				sChatAlwaysShowHarmony.UnpatchSelf();
-				sChatShowHarmony.PatchAll(typeof(Chat_Show_Patch));
-			}
-			else
-			{
-				sChatShowHarmony.UnpatchSelf();
-				sChatAlwaysShowHarmony.UnpatchSelf();
+				sChatHideHarmony.PatchAll(typeof(Chat_Hide_Patch));
 			}
 		}
 
@@ -428,13 +423,22 @@ namespace BetterChat
 		}
 
 		[HarmonyPatch(typeof(Chat))]
-		private static class Chat_Show_Patch
+		private static class Chat_Hide_Patch
 		{
+			private static float sLastHideTimer = 0.0f;
+
+			[HarmonyPatch(nameof(Chat.OnNewChatMessage)), HarmonyPrefix]
+			private static void OnNewChatMessage_Pretfix(Chat __instance, GameObject go, long senderID, Vector3 pos, Talker.Type type, UserInfo sender, string text)
+			{
+				sLastHideTimer = (float)sHideTimerField.GetValue(__instance);
+			}
+
 			[HarmonyPatch(nameof(Chat.OnNewChatMessage)), HarmonyPostfix]
 			private static void OnNewChatMessage_Postfix(Chat __instance, GameObject go, long senderID, Vector3 pos, Talker.Type type, UserInfo sender, string text)
 			{
-				// Resetting this to 0 restarts the window hide timer (and makes the window visible)
-				sHideTimerField.SetValue(__instance, 0.0f);
+				// OnNewChatMessage sets the hide timer to 0 to make the chat window appear. We reset it to what it was just before we processed the new
+				// message so that the window visibiltiy is not affected by the arrival of the message.
+				sHideTimerField.SetValue(__instance, sLastHideTimer);
 			}
 		}
 

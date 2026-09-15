@@ -1,7 +1,7 @@
 Adds configurable features to the chat system.
 
-* Show the chat window when a message is received, or have it always visible.
 * Configure how long the window shows when a new message is received.
+* Optionally keep the chat window visible at all times.
 * Remove the force caps from shouts and force lower case from whispers.
 * Pressing the slash key (``/``) will open the chat window and start a message.
 * Option to not see map pings when players shout.

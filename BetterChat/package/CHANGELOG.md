@@ -1,3 +1,7 @@
+## 1.6.4
+
+* Fix the config option `ShowOnNewMessage`. Setting it to false was not having the intended effect.
+
 ## 1.6.3
 
 * New config option `ShowOnNewMessage` controls whether the mod will force the chat window to appear when a new message is received. Set to `true` by default which is consistent with the previous mod behavior.
