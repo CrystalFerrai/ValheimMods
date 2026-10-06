@@ -1,3 +1,8 @@
+## 2.2.4
+
+* Mod is now optional by default when connecting to a server. It can be set to required if a server owner chooses to.
+* Server-controlled config values can now optionally be set to client-controlled by a server running the mod.
+
 ## 2.2.3
 
 * Updated mod package and documentation. No functional changes.
