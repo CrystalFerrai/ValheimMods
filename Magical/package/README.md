@@ -1,7 +1,7 @@
 Allows customization of many values related to player stats via the mod configuration.
-* Base Health, Stamina and Eitr.
+* Base health, stamina and eitr.
 * Health, stamina and eitr regeneration rates.
-* Reduction to helath, stamina and eitr cost of actions based on player skills.
+* Reduction to health, stamina and eitr cost of actions based on player skills.
 
 The primary goal of the mod is to allow rebalancing the resource usage of magical and physical attacks. All configuration values default to vanilla game values.
 
