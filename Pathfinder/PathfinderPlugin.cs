@@ -42,7 +42,7 @@ namespace Pathfinder
 	{
 		public const string ModId = "dev.crystal.pathfinder";
 		public const string ModName = "Pathfinder";
-		public const string ModVersion = "2.2.4.0";
+		public const string ModVersion = "2.2.5";
 
 		internal static readonly ConfigSync ConfigSync = new ConfigSync(ModId)
 		{

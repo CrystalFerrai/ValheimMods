@@ -1,3 +1,7 @@
+## 2.2.5
+
+* Fix release. Previous release included old dll version by mistake.
+
 ## 2.2.4
 
 * Mod is now optional by default when connecting to a server. It can be set to required if a server owner chooses to.
